@@ -1,8 +1,8 @@
-from fastapi import FastAPI, Depends, HTTPException
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from sqlalchemy.orm import Session
-from database import engine, get_db, Base
+from database import engine, Base
 import models
+from routers import songs
 
 # Create database tables
 Base.metadata.create_all(bind=engine)
@@ -18,6 +18,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Include routers
+app.include_router(songs.router)
+
 # Root endpoint
 @app.get("/")
 def read_root():
@@ -27,26 +30,3 @@ def read_root():
 @app.get("/health")
 def health_check():
     return {"status": "healthy"}
-
-# Get all users
-@app.get("/api/songs")
-def get_users(db: Session = Depends(get_db)):
-    users = db.query(models.Songs).all()
-    return users
-
-# Get single song
-@app.get("/api/songs/{song_id}")
-def get_song(song_id: int, db: Session = Depends(get_db)):
-    song = db.query(models.Songs).filter(models.Songs.Id == song_id).first()
-    if not song:
-        raise HTTPException(status_code=404, detail="Song not found")
-    return song
-
-# Create Song
-@app.post("/api/songs")
-def create_song(song: str, artist: str, db: Session = Depends(get_db)):
-    new_song = models.Songs(Song=song, Artist=artist)
-    db.add(new_song)
-    db.commit()
-    db.refresh(new_song)
-    return new_song
