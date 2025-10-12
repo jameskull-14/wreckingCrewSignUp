@@ -120,8 +120,9 @@ export default function KaraokePage() {
 
     } catch (error) {
       console.error('Error loading admin data:', error);
+    } finally {
+      setIsLoading(false);
     }
-    setIsLoading(false);
   }, [initializeTimeSlots]);
 
   const loadData = useCallback(async () => {
@@ -162,8 +163,9 @@ export default function KaraokePage() {
 
     } catch (error) {
       console.error('Error loading data:', error);
+    }finally{
+      setIsLoading(false);
     }
-    setIsLoading(false);
   }, [isAdminMode]);
 
   useEffect(() => {

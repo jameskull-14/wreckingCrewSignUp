@@ -26,7 +26,7 @@ export default function SongImport({ onImportComplete, allSongs, setSongError })
 
     // Validate file type
     const validTypes = ['.csv'];
-    const fileExtension = file.name.toLowerCase().substr(file.name.lastIndexOf('.'));
+    const fileExtension = file.name.toLowerCase().substring(file.name.lastIndexOf('.'));
     if (!validTypes.includes(fileExtension)) {
       setUploadResults({
         error: 'Please upload a CSV file (.csv only)',
