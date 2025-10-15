@@ -23,7 +23,7 @@ def get_songs(
 
     #Apply filters
     if artist:
-        query = query.filter(models.Song.Artist.ilike(f"%{artist}%"))
+        query = query.filter(models.Songs.Artist.ilike(f"%{artist}%"))
     if genre:
         query = query.filter(models.Songs.Genre.ilike(f"%{genre}%"))
     
@@ -43,9 +43,9 @@ def get_songs(
             if sort_by == 'title':
                 query = query.order_by(asc(models.Songs.Song))
             elif sort_by == 'artist':
-                query = query.order_by(asc(models.Songs.Song))
+                query = query.order_by(asc(models.Songs.Artist))
             elif sort_by == 'genre':
-                query = query.order_by(asc(models.Songs.Song))
+                query = query.order_by(asc(models.Songs.Genre))
     songs = query.all()
     return songs
 
@@ -75,8 +75,8 @@ def bulk_create_songs(songs: List[schemas.SongCreate], db: Session = Depends(get
     """Bulk create multiple songs"""
     new_songs = []
     for song in songs:
-        new_song = model.Songs(
-            Song=song.Title,
+        new_song = models.Songs(
+            Song=song.title,
             Artist=song.artist,
             Genre=song.genre
         )
@@ -110,7 +110,7 @@ def update_song(song_id: int, song: schemas.SongUpdate, db: Session = Depends(ge
         db_field = field_mapping.get(field, field)
         setattr(db_song, db_field, value)
 
-    db_commit()
+    db.commit()
     db.refresh(db_song)
     return db_song
 

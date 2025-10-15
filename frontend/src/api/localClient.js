@@ -74,11 +74,11 @@ class SongAPI {
 
     async filter(filters, sortBy = null){
         const params = new URLSearchParams();
-        if(filter.artist) params.append('artist', filters.artists);
+        if(filters.artist) params.append('artist', filters.artists);
         if(filters.genre) params.append('genre', filters.genre);
         if(sortBy) params.append('sort_by', sortBy);
 
-        const query = params.toString() ? 1 `?${params.toString()}` : '';
+        const query = params.toString() ? `?${params.toString()}` : '';
         return this.client.request(`/api/songs${query}`);
     }
 }

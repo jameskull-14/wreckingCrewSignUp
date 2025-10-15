@@ -132,7 +132,7 @@ export default function KaraokePage() {
     try {
       const songs = await Song.list('title');
       setAllSongs(songs);
-      setAvailableSongs(songs);
+      // setAvailableSongs(songs);
 
       const activeSessions = await AdminSession.filter({ is_active: true }, '-updated_date', 1);
       const publicActiveSession = activeSessions.length > 0 ? activeSessions[0] : null;
@@ -206,7 +206,7 @@ export default function KaraokePage() {
       });
     }
 
-    loadAdminData(username);
+    await loadAdminData(username);
   };
 
   const handleAdminLogout = () => {

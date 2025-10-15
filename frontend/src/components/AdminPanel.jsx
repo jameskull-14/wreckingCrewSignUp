@@ -387,10 +387,10 @@ export default function AdminPanel({
     }
   };
 
-  const unselectedSongs = allSongs.filter(song => 
+  const unselectedSongs = allSongs.filter(song => song &&
     !selectedSongs.some(selected => selected.song_id === song.id) &&
-    (song.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
-     song.artist.toLowerCase().includes(searchTerm.toLowerCase()))
+    (song.title?.toLowerCase().includes(searchTerm.toLowerCase()) || 
+     song.artist?.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
   const takenSlots = timeSlots.filter(slot => slot.is_taken);
