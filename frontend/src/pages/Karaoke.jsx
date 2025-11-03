@@ -132,7 +132,7 @@ export default function KaraokePage() {
     try {
       const songs = await Song.list('title');
       setAllSongs(songs);
-      // setAvailableSongs(songs);
+      setAvailableSongs(songs);
 
       const activeSessions = await AdminSession.filter({ is_active: true }, '-updated_date', 1);
       const publicActiveSession = activeSessions.length > 0 ? activeSessions[0] : null;
@@ -486,7 +486,7 @@ export default function KaraokePage() {
 
             <div className="flex justify-center items-center gap-4 flex-wrap">
               {isAdminMode && (
-                <>
+                <React.Fragment key="admin-controls">
                   <div className="flex items-center gap-3">
                     <span className="text-amber-300 font-semibold">Admin: {currentAdminUsername}</span>
                     {!activeSession?.is_active && (
@@ -503,7 +503,7 @@ export default function KaraokePage() {
                     <ShieldOff className="w-4 h-4 mr-2" />
                     Exit Admin Mode
                   </Button>
-                </>
+                </React.Fragment>
               )}
 
               {!isAdminMode && (
@@ -606,7 +606,7 @@ export default function KaraokePage() {
           setAddSongInfo(null);
           setSelectedSlot(null);
         }}
-        songs={availableSongs}
+        songs={isAdminMode ? allSongs : availableSongs}
         slotInfo={addSongInfo ? { slot: addSongInfo.slot, mode: 'add' } : { slot: selectedSlot, mode: isOrderMode ? 'queue' : 'signup' }}
         onConfirm={addSongInfo ? handleConfirmAddSong : (isOrderMode ? handleConfirmQueueSignup : handleConfirmSignup)}
         currentUser={currentUser}

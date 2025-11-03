@@ -425,6 +425,7 @@ export default function AdminPanel({
           
           <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
             <Button
+              key="export-csv"
               onClick={handleExportCSV}
               variant="outline"
               className="border-green-400/30 text-green-400 hover:bg-green-400/20 hover:text-green-300 text-sm px-3 py-2 sm:px-4 sm:py-2"
@@ -435,6 +436,7 @@ export default function AdminPanel({
             
             {activeSession.is_active ? (
               <Button
+                key="end-session"
                 onClick={handleEndSession}
                 className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white flex-1 sm:flex-none"
               >
@@ -443,6 +445,7 @@ export default function AdminPanel({
               </Button>
             ) : (
               <Button
+                key="launch-session"
                 onClick={handleLaunchSession}
                 className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white flex-1 sm:flex-none"
               >
@@ -467,7 +470,7 @@ export default function AdminPanel({
 
           <TabsContent value="overview" className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              <Card className="bg-gray-800/50 border-amber-400/20">
+              <Card key="signed-up" className="bg-gray-800/50 border-amber-400/20">
                 <CardContent className="p-4">
                   <div className="flex items-center gap-3">
                     <div className="w-12 h-12 rounded-xl bg-green-500/20 flex items-center justify-center">
@@ -481,7 +484,7 @@ export default function AdminPanel({
                 </CardContent>
               </Card>
 
-              <Card className="bg-gray-800/50 border-amber-400/20">
+              <Card key="available" className="bg-gray-800/50 border-amber-400/20">
                 <CardContent className="p-4">
                   <div className="flex items-center gap-3">
                     <div className="w-12 h-12 rounded-xl bg-blue-500/20 flex items-center justify-center">
@@ -495,7 +498,7 @@ export default function AdminPanel({
                 </CardContent>
               </Card>
 
-              <Card className="bg-gray-800/50 border-amber-400/20">
+              <Card key="total-songs" className="bg-gray-800/50 border-amber-400/20">
                 <CardContent className="p-4">
                   <div className="flex items-center gap-3">
                     <div className="w-12 h-12 rounded-xl bg-purple-500/20 flex items-center justify-center">
@@ -509,7 +512,7 @@ export default function AdminPanel({
                 </CardContent>
               </Card>
               
-              <Dialog>
+              <Dialog key="qr-code">
                 <DialogTrigger asChild>
                     <Button variant="outline" className="w-full h-full text-lg bg-gray-800/50 border-amber-400/20 hover:bg-gray-700/50 text-amber-300 hover:text-amber-200" disabled={!activeSession.is_active}>
                         <QrCode className="w-6 h-6 mr-3"/>
@@ -561,7 +564,7 @@ export default function AdminPanel({
             
             <div className="space-y-4">
                 <h3 className="text-lg font-semibold text-amber-400">Song Selection & Queueing</h3>
-                <div className="flex items-center justify-between p-4 bg-gray-800/50 rounded-lg border border-gray-600/50">
+                <div key="use-all-songs" className="flex items-center justify-between p-4 bg-gray-800/50 rounded-lg border border-gray-600/50">
                     <div className="flex items-center gap-3">
                         <Database className="w-6 h-6 text-blue-400" />
                         <div>
@@ -571,7 +574,7 @@ export default function AdminPanel({
                     </div>
                     <Switch checked={activeSession.use_all_songs || false} onCheckedChange={handleToggleUseAllSongs} />
                 </div>
-                <div className="flex items-center justify-between p-4 bg-gray-800/50 rounded-lg border border-gray-600/50">
+                <div key="allow-reuse" className="flex items-center justify-between p-4 bg-gray-800/50 rounded-lg border border-gray-600/50">
                     <div className="flex items-center gap-3">
                         <RefreshCw className="w-6 h-6 text-green-400" />
                         <div>
@@ -581,7 +584,7 @@ export default function AdminPanel({
                     </div>
                     <Switch checked={activeSession.allow_song_reuse || false} onCheckedChange={handleToggleAllowReuse} />
                 </div>
-                <div className="flex items-center justify-between p-4 bg-gray-800/50 rounded-lg border border-gray-600/50">
+                <div key="performer-limit" className="flex items-center justify-between p-4 bg-gray-800/50 rounded-lg border border-gray-600/50">
                     <div className="flex items-center gap-3">
                         <Users className="w-6 h-6 text-cyan-400" />
                         <div>

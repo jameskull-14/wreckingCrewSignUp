@@ -81,14 +81,20 @@ export default function SongSearchModal({
   // Get songs that are already used in the session
   const usedSongIds = isOrderMode
     ? queueEntries.flatMap(entry => entry.song_ids || [])
-    : timeSlots.flatMap(s => s.song_ids || []);
+    : timeSlots.filter(s => s.id !== slot?.id).flatMap(s => s.song_ids || []);
+
+  console.log('Allow song reuse');
+activeSession?.allow_song_reuse;
+  console.log('Used song IDs:', usedSongIds);
+  console.log('Current slot ID:', slot?.id);
+
 
   // Simplified filtering - just search, no complex availability logic
   const filteredSongs = (songs || []).filter(song => {
     if (!song || !song.title) return false;
-    
+
     if (!searchTerm.trim()) return true;
-    
+
     const searchLower = searchTerm.toLowerCase();
     return (
       song.title.toLowerCase().includes(searchLower) ||
@@ -108,7 +114,14 @@ export default function SongSearchModal({
 
     if (isAlreadySelected) {
       setSelectedSongs(selectedSongs.filter(s => s.id !== song.id));
-    } else {
+    } 
+    else {
+      // check if a song has been selected based off allow_song_reuse
+      if(!canSelectSong(song)){
+        setErrorMessage('This song has already been selected by another performer');
+        setTimeout(()=>setErrorMessage(''), 3000);
+        return;
+      }
       if (selectedSongs.length < effectiveSongLimit) {
         setSelectedSongs([...selectedSongs, song]);
       } else {

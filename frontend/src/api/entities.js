@@ -1,8 +1,8 @@
 import { base44 } from './base44Client';
-import { Song as LocalSong } from './localClient';
-
+import { Song as LocalSong, AdminTimeSlot as LocalAdminTimeSlot } from './localClient';
 
 export const Song = LocalSong;
+export const AdminTimeSlot = LocalAdminTimeSlot;
 
 //Change this soon. All below is based off base44 APIs
 //Temporary: Stub entities to remove Base44 auth requirement
@@ -43,7 +43,6 @@ export const Configuration = createStubEntity('Configuration');
 export const TimeSlot = createStubEntity('TimeSlot');
 export const AdminSession = createStubEntity('AdminSession');
 export const AdminSongSelection = createStubEntity('AdminSongSelection');
-export const AdminTimeSlot = createStubEntity('AdminTimeSlot');
 export const QueueEntry = createStubEntity('QueueEntry');
 
 export const User = {
@@ -70,4 +69,4 @@ export const User = {
 
 
 // auth sdk:
-// export const User = base44.auth;
+// export const User = base44.auth;uu789yyuiu

@@ -38,7 +38,14 @@ class SongAPI {
             params.append('sort_by', sortBy === 'title' ? 'title' : sortBy);
         }
         const query = params.toString() ? `?${params.toString()}`: '';
-        return this.client.request(`/api/songs${query}`);
+        const songs = await this.client.request(`/api/songs${query}`);
+        // Normalize database column names to frontend expectations
+        return songs.map(song => ({
+            id: song.Id || song.id,
+            title: song.Song || song.title,
+            artist: song.Artist || song.artist,
+            genre: song.Genre || song.genre
+        }));
     }
 
     async get(id){
@@ -83,5 +90,57 @@ class SongAPI {
     }
 }
 
+class AdminTimeSlotAPI{
+    constructor(client){
+        this.client=client
+    }
+
+    async list(filters = {}, sortBy = null){
+        const params = new URLSearchParams();
+        if(filters.admin_username) params.append('admin_username', filters.admin_username);
+        if(filters.is_taken !== undefined) params.append('is_taken', filters.is_taken);
+        if(sortBy) params.append('sort_by', sortBy);
+
+        const query = params.toString() ? `?${params.toString()}` : '';
+        return this.client.request(`/api/admin-time-slots${query}`);
+    }
+
+    async filter(filters, sortBy = null){
+        return this.list(filters, sortBy);
+    }
+
+    async get(id) {
+        return this.client.request(`/api/admin-time-slots/${id}`);
+    }
+
+    async create(data) {
+        return this.client.request('/api/admin-time-slots', {
+            method: 'POST',
+            body: JSON.stringify(data)
+        });
+    }
+
+    async bulkCreate(slotsArray){
+        return this.client.request(`/api/admin-time-slots/bulk`,{
+            method: 'POST',
+            body: JSON.stringify(slotsArray)
+        });
+    }
+    async update(id, data) {
+        return this.client.request(`/api/admin-time-slots/${id}`,{
+            method: 'PUT',
+            body: JSON.stringify(data)
+        });
+    }
+
+    async delete(id) {
+        return this.client.request(`/api/admin-time-slots/${id}`,{
+            method: "DELETE"
+        });
+    }
+
+}
+
 const apiClient = new APIClient(API_BASE_URL);
 export const Song = new SongAPI(apiClient);
+export const AdminTimeSlot = new AdminTimeSlotAPI(apiClient);
