@@ -6,11 +6,14 @@ import models
 import schemas
 from database import get_db
 
+# define the api's route
 router = APIRouter(
     prefix="/api/songs",
     tags=["songs"]
 )
 
+#-----------------------------------------
+# returns all songs with filters
 @router.get("/", response_model=List[schemas.SongResponse])
 def get_songs(
     sort_by: Optional[str] = Query(None, description="Field to sort by (i.e., 'title', '-title' for desc)"),
@@ -19,6 +22,8 @@ def get_songs(
     db: Session = Depends(get_db)
 ):
     """Get all songs with optional filtering and sorting"""
+
+    # query all the songs
     query=db.query(models.Songs)
 
     #Apply filters
@@ -48,32 +53,51 @@ def get_songs(
                 query = query.order_by(asc(models.Songs.Genre))
     songs = query.all()
     return songs
+#-----------------------------------------
 
+#-----------------------------------------
+# returns a specific song based off its id
 @router.get("/{song_id}", response_model=schemas.SongResponse)
 def get_song(song_id: int, db: Session = Depends(get_db)):
     """Get a single song by Id"""
+
+    # query the Songs table based off the id
     song = db.query(models.Songs).filter(models.Songs.Id == song_id).first()
+    # throw an error if the song id doesnt exist
     if not song:
         raise HTTPException(status_code=404, detail="Song not found")
     return song
+#-----------------------------------------
 
+#-----------------------------------------
+# Create a new song (user side)
 @router.post("/", response_model=schemas.SongResponse)
 def create_song(song: schemas.SongCreate, db: Session = Depends(get_db)):
     """Create a new song"""
+
+    # define the new song object
     new_song = models.Songs(
         Song=song.title, #Map 'title' from frontend to 'Song' in DB
         Artist=song.artist,
         Genre=song.genre
     )
+
+    # add song to table
     db.add(new_song)
     db.commit()
     db.refresh(new_song)
     return new_song
+#-----------------------------------------
 
+#-----------------------------------------
+# bulk inserts new songs (user side)
 @router.post("/bulk", response_model=List[schemas.SongResponse], status_code=201)
 def bulk_create_songs(songs: List[schemas.SongCreate], db: Session = Depends(get_db)):
     """Bulk create multiple songs"""
+
+    #initialize our new songs list
     new_songs = []
+    #loop through the incoming songs and add them to our list
     for song in songs:
         new_song = models.Songs(
             Song=song.title,
@@ -81,6 +105,8 @@ def bulk_create_songs(songs: List[schemas.SongCreate], db: Session = Depends(get
             Genre=song.genre
         )
         new_songs.append(new_song)
+
+    # insert the list into the Songs table
     db.add_all(new_songs)
     db.commit()
 
@@ -89,37 +115,55 @@ def bulk_create_songs(songs: List[schemas.SongCreate], db: Session = Depends(get
         db.refresh(song)
 
     return new_songs
+#-----------------------------------------
 
+#-----------------------------------------
+# Update a songs settings
 @router.put("/{song_id}", response_model=schemas.SongResponse)
 def update_song(song_id: int, song: schemas.SongUpdate, db: Session = Depends(get_db)):
     """Update an existing song"""
+
+    # query the Songs table for a specific song Id
     db_song = db.query(models.Songs).filter(models.Songs.Id == song_id).first()
+    # throw an error if the song id doesnt exist
     if not db_song:
         raise HTTPException(status_code=404, detail="Song not found")
     
+    # parse out the song info
     update_data = song.model_dump(exclude_unset=True)
 
-    #Map frontend field names to DB field names
+    # Map frontend field names to DB field names
     field_mapping = {
         'title': 'Song',
         'artist': 'Artist',
         'genre': 'Genre'
     }
 
+    # loop through the list of songs and set them to their objects
     for field, value in update_data.items():
         db_field = field_mapping.get(field, field)
         setattr(db_song, db_field, value)
 
+    # commit update
     db.commit()
     db.refresh(db_song)
     return db_song
+#-----------------------------------------
 
+#-----------------------------------------
+# delete a specific song by its Id
 @router.delete("/{song_id}", status_code=204)
 def delete_song(song_id: int, db: Session = Depends(get_db)):
     """Delete a song"""
+
+    # query the database for the song to be deleted
     song = db.query(models.Songs).filter(models.Songs.Id == song_id).first()
+
+    # throw an error if the song doesnt exist
     if not song:
         raise HTTPException(status_code=404, detail="Song not found")
+
+    # delete the song
     db.delete(song)
     db.commit()
     return None

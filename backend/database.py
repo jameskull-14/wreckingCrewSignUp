@@ -6,6 +6,8 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+# the database url that is defined in .env
+# MOVE TO GITHUB SECRETS
 DATABASE_URL = os.getenv("DATABASE_URL")
 
 engine = create_engine(DATABASE_URL)

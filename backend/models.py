@@ -2,6 +2,7 @@ from sqlalchemy import Column, Integer, String, Text, Boolean, ARRAY, DateTime
 from sqlalchemy.sql import func
 from database import Base
 
+# this table holds the songs, artists, and optionally the genre 
 class Songs(Base):
     __tablename__ = "Songs"
     __table_args__ = {'schema': 'public'}
@@ -11,6 +12,7 @@ class Songs(Base):
     Artist = Column(String(100))
     Genre = Column(String(100))
 
+# this table is intended to hold the live session info
 class AdminSession(Base):
     __tablename__ = "AdminSession"
     __table_args__ = {'schema': 'public'}
@@ -30,6 +32,7 @@ class AdminSession(Base):
     created_date = Column(DateTime(timezone=True), server_default=func.now())
     updated_date = Column(DateTime(timezone=True), onupdate=func.now())
 
+# this table is the settings for specific time slots during the karaoke session for a specific admin
 class AdminTimeSlot(Base):
     __tablename__ = "AdminTimeSlot"
     __table_args__ = {'schema': 'public'}
@@ -45,6 +48,7 @@ class AdminTimeSlot(Base):
     custom_instrument = Column(String(100))
     singing_along = Column(Boolean, default=False)
 
+# this table is the settings which songs are still available for a user to select
 class AdminSongSelection(Base):
     __tablename__ = "AdminSongSelection"
     __table_args__ = {'schema': 'public'}
@@ -54,6 +58,7 @@ class AdminSongSelection(Base):
     song_id = Column(Integer, nullable=False)
     is_available = Column(Boolean, default=True)
 
+# this table is the list of users in the queue and their settings
 class QueueEntry(Base):
     __tablename__ = "QueueEntry"
     __table_args__ = {'schema': 'public'}

@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from database import engine, Base
 import models
-from routers import songs, admin_time_slots
+from routers import songs, admin_time_slots, public
 
 # Create database tables
 Base.metadata.create_all(bind=engine)
@@ -21,6 +21,7 @@ app.add_middleware(
 # Include routers
 app.include_router(songs.router)
 app.include_router(admin_time_slots.router)
+app.include_router(public.router)
 
 # Root endpoint
 @app.get("/")
