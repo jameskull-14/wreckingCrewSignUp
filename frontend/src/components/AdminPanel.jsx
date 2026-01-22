@@ -57,13 +57,11 @@ export default function AdminPanel({
   }, [activeSession, loadSelectedSongs]);
 
   const handleSaveTitle = async () => {
-    if (activeSession && eventTitle.trim()) {
-      try {
-        await AdminSession.update(activeSession.id, { title: eventTitle });
-        onLoadData();
-      } catch (error) {
-        console.error('Error updating title:', error);
-      }
+    try {
+      await AdminSession.update(activeSession.id, { title: eventTitle });
+      onLoadData();
+    } catch (error) {
+      console.error('Error updating title:', error);
     }
   };
 
@@ -92,8 +90,6 @@ export default function AdminPanel({
   };
 
   const handleLaunchSession = async () => {
-    if (!activeSession) return;
-
     try {
       const allActiveSessions = await AdminSession.filter({ is_active: true });
       for (const session of allActiveSessions) {

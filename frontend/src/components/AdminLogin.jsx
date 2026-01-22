@@ -21,6 +21,8 @@ export default function AdminLogin({ isOpen, onClose, onAdminLogin }) {
   const handleLogin = async () => {
     setIsLogging(true);
     setError('');
+
+    
     
     // Authenticate admin credentials
     if ((username === 'j.kullengineering@gmail.com' && password === '#13Tpdnm') ||
@@ -28,8 +30,6 @@ export default function AdminLogin({ isOpen, onClose, onAdminLogin }) {
       onAdminLogin(username);
       setUsername('');
       setPassword('');
-      // Optionally close the dialog on successful login, if onAdminLogin doesn't handle it
-      // onClose(); 
     } else {
       setError('Invalid admin credentials');
     }

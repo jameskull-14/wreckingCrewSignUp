@@ -2,7 +2,23 @@ from sqlalchemy import Column, Integer, String, Text, Boolean, ARRAY, DateTime
 from sqlalchemy.sql import func
 from database import Base
 
-# this table holds the songs, artists, and optionally the genre 
+# this table holds the admin users with authentication
+class AdminUser(Base):
+    __tablename__ = "AdminUser"
+    __table_args__ = {'schema': 'public'}
+
+    id = Column(Integer, primary_key=True, index=True)
+    email = Column(String(255), unique=True, nullable=False, index=True)
+    password_hash = Column(String(255), nullable=False)
+    first_name = Column(String(50))
+    last_name = Column(String(50))
+    is_active = Column(Boolean, default=True)
+    created_on = Column(DateTime(timezone=True), server_default=func.now())
+    last_login = Column(DateTime(timezone=True))
+    failed_login_attempts = Column(Integer, default=0)
+    account_locked_until = Column(DateTime(timezone=True))
+
+# this table holds the songs, artists, and optionally the genre
 class Songs(Base):
     __tablename__ = "Songs"
     __table_args__ = {'schema': 'public'}

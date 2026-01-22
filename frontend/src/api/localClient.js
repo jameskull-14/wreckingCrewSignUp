@@ -141,6 +141,14 @@ class AdminTimeSlotAPI{
 
 }
 
+class AdminSession{
+    async update(id){
+        return this.client.request(`/api/admin-sessions/${id}`, {
+            method: 'PUT'
+        } )
+    }
+}
+
 const apiClient = new APIClient(API_BASE_URL);
 export const Song = new SongAPI(apiClient);
 export const AdminTimeSlot = new AdminTimeSlotAPI(apiClient);

@@ -1,7 +1,7 @@
 import Layout from "./Layout.jsx";
-
 import Karaoke from "./Karaoke";
 import ApiTest from "./ApiTest";
+import PublicKaraoke from "./PublicKaraoke.jsx"
 
 import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router-dom';
 
@@ -9,6 +9,7 @@ const PAGES = {
 
     Karaoke: Karaoke,
     ApiTest: ApiTest,
+    PublicKaraoke: PublicKaraoke
 
 }
 
@@ -40,6 +41,8 @@ function PagesContent() {
                 <Route path="/Karaoke" element={<Karaoke />} />
 
                 <Route path="/ApiTest" element={<ApiTest />} />
+
+                <Route path="/PublicKaraoke" element={<PublicKaraoke/>} />
 
             </Routes>
         </Layout>

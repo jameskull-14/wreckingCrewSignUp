@@ -62,6 +62,7 @@ export default function KaraokePage() {
   const [addSongInfo, setAddSongInfo] = useState(null);
 
   const initializeTimeSlots = useCallback(async (adminUsername) => {
+    console.log('START initializeTimeSlots for:', adminUsername);
     const slots = [];
     for (let hour = 19; hour < 24; hour++) {
       for (let min = 0; min < 60; min += 15) {
@@ -75,23 +76,31 @@ export default function KaraokePage() {
       }
     }
 
+    console.log('Creating bulk time slots, count:', slots.length);
     const createdSlots = await AdminTimeSlot.bulkCreate(slots);
     const sortedCreated = createdSlots.sort((a, b) => timeToSortable(a.time) - timeToSortable(b.time));
     setTimeSlots(sortedCreated);
+    console.log('END initializeTimeSlots - slots created:', sortedCreated.length);
     return sortedCreated;
   }, []);
 
   const loadAdminData = useCallback(async (username) => {
+    console.log('START loadAdminData for:', username);
     setIsLoading(true);
     try {
+      console.log('Fetching songs...');
       const songs = await Song.list('title');
+      console.log('Songs fetched:', songs.length);
       setAllSongs(songs);
       setAvailableSongs(songs);
 
+      console.log('Fetching admin sessions...');
       const sessions = await AdminSession.filter({ admin_username: username });
+      console.log('Sessions found:', sessions.length);
       let adminSession = sessions.length > 0 ? sessions[0] : null;
 
       if (!adminSession) {
+        console.log('No session found, creating new session...');
         adminSession = await AdminSession.create({
           admin_username: username,
           title: `${username}'s Karaoke Night`,
@@ -102,85 +111,118 @@ export default function KaraokePage() {
           end_time: '23:00',
           time_increment: 15
         });
+        console.log('New session created:', adminSession);
       }
       setActiveSession(adminSession);
+      console.log('Active session set, mode:', adminSession.session_mode);
 
       if (adminSession.session_mode === 'time_slot') {
+        console.log('Loading time slots...');
         let adminSlots = await AdminTimeSlot.filter({ admin_username: username }, 'time');
+        console.log('Time slots found:', adminSlots.length);
         if (adminSlots.length === 0) {
+          console.log('No slots found, initializing...');
           adminSlots = await initializeTimeSlots(username);
         }
         setTimeSlots(adminSlots.sort((a, b) => timeToSortable(a.time) - timeToSortable(b.time)));
         setQueueEntries([]);
+        console.log('Time slots set');
       } else {
+        console.log('Loading queue entries...');
         const queue = await QueueEntry.filter({ admin_username: username }, 'queue_position');
+        console.log('Queue entries found:', queue.length);
         setQueueEntries(queue);
         setTimeSlots([]);
+        console.log('Queue entries set');
       }
 
+      console.log('END loadAdminData - SUCCESS');
     } catch (error) {
-      console.error('Error loading admin data:', error);
+      console.error('ERROR in loadAdminData:', error);
     } finally {
+      console.log('Setting isLoading to false');
       setIsLoading(false);
     }
   }, [initializeTimeSlots]);
 
   const loadData = useCallback(async () => {
+    console.log('START loadData (public mode), isAdminMode:', isAdminMode);
     setIsLoading(true);
-    setCurrentUser(null); 
+    setCurrentUser(null);
 
     try {
+      console.log('Fetching songs...');
       const songs = await Song.list('title');
+      console.log('Songs fetched:', songs.length);
       setAllSongs(songs);
       setAvailableSongs(songs);
 
+      console.log('Fetching active sessions...');
       const activeSessions = await AdminSession.filter({ is_active: true }, '-updated_date', 1);
+      console.log('Active sessions found:', activeSessions.length);
       const publicActiveSession = activeSessions.length > 0 ? activeSessions[0] : null;
 
       if (!isAdminMode) {
+        console.log('Setting active session for public view:', publicActiveSession);
         setActiveSession(publicActiveSession);
       }
 
       if (publicActiveSession) {
+        console.log('Public active session mode:', publicActiveSession.session_mode);
         if (publicActiveSession.session_mode === 'time_slot') {
+          console.log('Loading time slots for public view...');
           const adminSlots = await AdminTimeSlot.filter(
             { admin_username: publicActiveSession.admin_username },
             'time'
           );
+          console.log('Time slots loaded:', adminSlots.length);
           const sortedAdminSlots = adminSlots.sort((a, b) => timeToSortable(a.time) - timeToSortable(b.time));
           setTimeSlots(sortedAdminSlots);
           setQueueEntries([]);
+          console.log('Time slots set for public view');
         } else {
+          console.log('Loading queue for public view...');
           const queue = await QueueEntry.filter({ admin_username: publicActiveSession.admin_username }, 'queue_position');
+          console.log('Queue entries loaded:', queue.length);
           setQueueEntries(queue);
           setTimeSlots([]);
+          console.log('Queue set for public view');
         }
       } else {
+        console.log('No active session - clearing all data');
         setTimeSlots([]);
         setAvailableSongs([]);
         setQueueEntries([]);
       }
 
+      console.log('END loadData - SUCCESS');
     } catch (error) {
-      console.error('Error loading data:', error);
+      console.error('ERROR in loadData:', error);
     }finally{
+      console.log('Setting isLoading to false');
       setIsLoading(false);
     }
   }, [isAdminMode]);
 
   useEffect(() => {
+    console.log('useEffect triggered - isAdminMode:', isAdminMode);
     if (!isAdminMode) {
+      console.log('Calling loadData from useEffect...');
       loadData();
+    } else {
+      console.log('Skipping loadData (admin mode active)');
     }
   }, [loadData, isAdminMode]);
 
   const handleSlotClick = (slot) => {
+    console.log('handleSlotClick called for slot:', slot);
     setAddSongInfo(null);
     setSelectedSlot(slot);
     setShowSongModal(true);
   };
 
   const handleOpenAddSongModal = (slot) => {
+    console.log('handleOpenAddSongModal called, isAdminMode:', isAdminMode);
     if (!isAdminMode) return;
     setSelectedSlot(null);
     setAddSongInfo({ slot });
@@ -188,12 +230,16 @@ export default function KaraokePage() {
   };
 
   const handleAdminLogin = async (username) => {
+    console.log('START handleAdminLogin for:', username);
     setIsAdminMode(true);
     setCurrentAdminUsername(username);
     setShowAdminLogin(false);
 
+    console.log('Checking for existing sessions...');
     const existingSessions = await AdminSession.filter({ admin_username: username });
+    console.log('Existing sessions found:', existingSessions.length);
     if (existingSessions.length === 0) {
+      console.log('Creating new admin session...');
       await AdminSession.create({
         admin_username: username,
         title: `${username}'s Karaoke Night`,
@@ -204,23 +250,31 @@ export default function KaraokePage() {
         end_time: '23:00',
         time_increment: 15
       });
+      console.log('New admin session created');
     }
 
+    console.log('Calling loadAdminData...');
     await loadAdminData(username);
+    console.log('END handleAdminLogin');
   };
 
   const handleAdminLogout = () => {
+    console.log('START handleAdminLogout');
     setIsAdminMode(false);
     setCurrentAdminUsername('');
+    console.log('Calling loadData...');
     loadData();
+    console.log('END handleAdminLogout');
   };
 
   const handleConfirmSignup = async (slot, userName, songs, instrumentData = {}) => {
+    console.log('START handleConfirmSignup for:', userName, 'slot:', slot.id);
     try {
       setShowSongModal(false);
       setSelectedSlot(null);
-      
+
       const songIds = songs.map(s => s.id);
+      console.log('Updating time slot with song IDs:', songIds);
       await AdminTimeSlot.update(slot.id, {
         user_name: userName,
         song_ids: songIds,
@@ -230,27 +284,32 @@ export default function KaraokePage() {
         custom_instrument: instrumentData.custom_instrument || '',
         singing_along: instrumentData.singing_along || false
       });
+      console.log('Time slot updated successfully');
 
       if (isAdminMode) {
+        console.log('Reloading admin data...');
         loadAdminData(currentAdminUsername);
       } else {
+        console.log('Reloading public data...');
         loadData();
       }
+      console.log('END handleConfirmSignup');
     } catch (error) {
-      console.error('Error confirming signup:', error);
+      console.error('ERROR in handleConfirmSignup:', error);
     }
   };
 
   const handleConfirmAddSong = async (songs) => {
+    console.log('START handleConfirmAddSong, songs:', songs.length);
     if (!addSongInfo || songs.length === 0) return;
     const { slot } = addSongInfo;
-    
+
     try {
       setShowSongModal(false);
       setAddSongInfo(null);
-      
+
       const newSongIds = [...(slot.song_ids || [])];
-      
+
       const emptyIndex = newSongIds.findIndex(id => !id);
       if (emptyIndex !== -1) {
         newSongIds[emptyIndex] = songs[0].id;
@@ -258,41 +317,50 @@ export default function KaraokePage() {
         newSongIds.push(songs[0].id);
       }
 
+      console.log('Updating slot with new song IDs:', newSongIds);
       await AdminTimeSlot.update(slot.id, {
         song_ids: newSongIds,
         song_id: newSongIds[0] || null
       });
 
       if (isAdminMode) {
+        console.log('Reloading admin data...');
         loadAdminData(currentAdminUsername);
       } else {
+        console.log('Reloading public data...');
         loadData();
       }
+      console.log('END handleConfirmAddSong');
     } catch (error) {
-      console.error('Error adding song to slot:', error);
+      console.error('ERROR in handleConfirmAddSong:', error);
     }
   };
 
   const handleAddToQueue = () => {
+    console.log('handleAddToQueue called');
     setSelectedSlot(null);
     setAddSongInfo(null);
     setShowSongModal(true);
   };
 
   const handleConfirmQueueSignup = async (userName, songs, instrumentData = {}) => {
+    console.log('START handleConfirmQueueSignup for:', userName);
     try {
       setShowSongModal(false);
       setSelectedSlot(null);
-      
+
       if (!activeSession || activeSession.session_mode !== 'order') {
         console.error('Cannot add to queue: not in order mode or no active session.');
         return;
       }
+      console.log('Fetching existing queue...');
       const existingQueue = await QueueEntry.filter({ admin_username: activeSession.admin_username }, 'queue_position');
       const nextPosition = existingQueue.length > 0 ? Math.max(...existingQueue.map(e => e.queue_position)) + 1 : 1;
-      
+      console.log('Next queue position:', nextPosition);
+
       const songIds = songs.map(s => s.id);
 
+      console.log('Creating queue entry...');
       await QueueEntry.create({
         admin_username: activeSession.admin_username,
         user_name: userName,
@@ -304,22 +372,28 @@ export default function KaraokePage() {
         custom_instrument: instrumentData.custom_instrument || '',
         singing_along: instrumentData.singing_along || false
       });
+      console.log('Queue entry created');
 
       if (isAdminMode) {
+        console.log('Reloading admin data...');
         loadAdminData(currentAdminUsername);
       } else {
+        console.log('Reloading public data...');
         loadData();
       }
+      console.log('END handleConfirmQueueSignup');
     } catch (error) {
-      console.error('Error adding to queue:', error);
+      console.error('ERROR in handleConfirmQueueSignup:', error);
     }
   };
 
   const handleUpdateQueueStatus = async (entry, newStatus) => {
+    console.log('START handleUpdateQueueStatus, entry:', entry.id, 'newStatus:', newStatus);
     try {
       await QueueEntry.update(entry.id, { status: newStatus });
 
       if (newStatus === 'done' || newStatus === 'performing') {
+        console.log('Reordering queue positions...');
         const currentQueue = await QueueEntry.filter({
           admin_username: activeSession.admin_username,
           status: 'waiting'
@@ -330,19 +404,24 @@ export default function KaraokePage() {
             await QueueEntry.update(currentQueue[i].id, { queue_position: i + 1 });
           }
         }
+        console.log('Queue reordered');
       }
 
       if (isAdminMode) {
+        console.log('Reloading admin data...');
         loadAdminData(currentAdminUsername);
       } else {
+        console.log('Reloading public data...');
         loadData();
       }
+      console.log('END handleUpdateQueueStatus');
     } catch (error) {
-      console.error('Error updating queue status:', error);
+      console.error('ERROR in handleUpdateQueueStatus:', error);
     }
   };
 
   const handleMoveInQueue = async (entry, direction) => {
+    console.log('START handleMoveInQueue, entry:', entry.id, 'direction:', direction);
     try {
       const queue = await QueueEntry.filter({
         admin_username: activeSession.admin_username,
@@ -358,19 +437,25 @@ export default function KaraokePage() {
       const entryToMove = queue[currentIndex];
       const otherEntry = queue[swapIndex];
 
+      console.log('Swapping positions...');
       await QueueEntry.update(entryToMove.id, { queue_position: otherEntry.queue_position });
       await QueueEntry.update(otherEntry.id, { queue_position: entryToMove.queue_position });
 
+      console.log('Reloading admin data...');
       loadAdminData(currentAdminUsername);
+      console.log('END handleMoveInQueue');
     } catch (error) {
-      console.error('Error moving in queue:', error);
+      console.error('ERROR in handleMoveInQueue:', error);
     }
   };
 
   const handleRemoveFromQueue = async (entry) => {
+    console.log('START handleRemoveFromQueue, entry:', entry.id);
     try {
       await QueueEntry.delete(entry.id);
+      console.log('Entry deleted');
 
+      console.log('Reordering remaining queue...');
       const remainingQueue = await QueueEntry.filter({
         admin_username: activeSession.admin_username,
         status: 'waiting'
@@ -381,18 +466,23 @@ export default function KaraokePage() {
           await QueueEntry.update(remainingQueue[i].id, { queue_position: i + 1 });
         }
       }
+      console.log('Queue reordered');
 
       if (isAdminMode) {
+        console.log('Reloading admin data...');
         loadAdminData(currentAdminUsername);
       } else {
+        console.log('Reloading public data...');
         loadData();
       }
+      console.log('END handleRemoveFromQueue');
     } catch (error) {
-      console.error('Error removing from queue:', error);
+      console.error('ERROR in handleRemoveFromQueue:', error);
     }
   };
 
   const handleRemoveSong = async (slot, songIndex) => {
+    console.log('START handleRemoveSong, slot:', slot.id, 'songIndex:', songIndex);
     if (!isAdminMode) return;
 
     try {
@@ -401,14 +491,17 @@ export default function KaraokePage() {
 
       updatedSongIds.splice(songIndex, 1);
 
+      console.log('Updating slot with removed song...');
       await AdminTimeSlot.update(slot.id, {
         song_ids: updatedSongIds,
         song_id: updatedSongIds[0] || null
       });
 
+      console.log('Reloading admin data...');
       loadAdminData(currentAdminUsername);
+      console.log('END handleRemoveSong');
     } catch (error) {
-      console.error('Error removing song:', error);
+      console.error('ERROR in handleRemoveSong:', error);
     }
   };
 

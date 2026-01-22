@@ -4,9 +4,11 @@ from database import engine, Base
 import models
 from routers import songs, admin_time_slots, public
 
+
 # Create database tables
 Base.metadata.create_all(bind=engine)
 
+# start the fastAPI 
 app = FastAPI(title="My FastAPI Backend")
 
 # CORS - Allow React frontend to connect
