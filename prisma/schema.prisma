@@ -1,0 +1,96 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model AdminSession {
+  id                   Int       @id @default(autoincrement())
+  admin_username       String    @db.VarChar(100)
+  title                String?   @db.VarChar(200)
+  is_active            Boolean?
+  use_all_songs        Boolean?
+  allow_song_reuse     Boolean?
+  session_mode         String?   @db.VarChar(50)
+  start_time           String?   @db.VarChar(10)
+  end_time             String?   @db.VarChar(10)
+  time_increment       Int?
+  changeover_time      Int?
+  performer_song_limit Int?
+  created_date         DateTime? @default(now()) @db.Timestamptz(6)
+  updated_date         DateTime? @db.Timestamptz(6)
+
+  @@index([admin_username], map: "ix_public_AdminSession_admin_username")
+  @@index([id], map: "ix_public_AdminSession_id")
+}
+
+model AdminSongSelection {
+  id             Int      @id @default(autoincrement())
+  admin_username String   @db.VarChar(100)
+  song_id        Int
+  is_available   Boolean?
+
+  @@index([admin_username], map: "ix_public_AdminSongSelection_admin_username")
+  @@index([id], map: "ix_public_AdminSongSelection_id")
+}
+
+model AdminTimeSlot {
+  id                Int      @id @default(autoincrement())
+  admin_username    String   @db.VarChar(100)
+  time              String   @db.VarChar(20)
+  user_name         String?  @db.VarChar(100)
+  song_id           Int?
+  song_ids          Int[]
+  is_taken          Boolean?
+  instruments       String[] @db.VarChar
+  custom_instrument String?  @db.VarChar(100)
+  singing_along     Boolean?
+
+  @@index([admin_username], map: "ix_public_AdminTimeSlot_admin_username")
+  @@index([id], map: "ix_public_AdminTimeSlot_id")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model AdminUser {
+  id                    Int       @id @default(autoincrement())
+  email                 String    @unique @db.VarChar(255)
+  password_hash         String    @db.VarChar(255)
+  first_name            String?   @db.VarChar(50)
+  last_name             String?   @db.VarChar(50)
+  is_active             Boolean?  @default(true)
+  created_on            DateTime? @default(now()) @db.Timestamptz(6)
+  last_login            DateTime? @db.Timestamptz(6)
+  failed_login_attempts Int?      @default(0)
+  account_locked_until  DateTime? @db.Timestamptz(6)
+
+  @@index([is_active], map: "idx_admin_user_active")
+  @@index([email], map: "idx_admin_user_email")
+}
+
+model QueueEntry {
+  id                Int       @id @default(autoincrement())
+  admin_username    String    @db.VarChar(100)
+  user_name         String    @db.VarChar(100)
+  song_id           Int?
+  song_ids          Int[]
+  queue_position    Int
+  status            String?   @db.VarChar(20)
+  instruments       String[]  @db.VarChar
+  custom_instrument String?   @db.VarChar(100)
+  singing_along     Boolean?
+  created_date      DateTime? @default(now()) @db.Timestamptz(6)
+
+  @@index([admin_username], map: "ix_public_QueueEntry_admin_username")
+  @@index([id], map: "ix_public_QueueEntry_id")
+}
+
+model Songs {
+  Id     Int     @id @default(autoincrement()) @db.SmallInt
+  Song   String  @db.VarChar
+  Artist String  @db.VarChar
+  Genre  String? @db.VarChar
+}
