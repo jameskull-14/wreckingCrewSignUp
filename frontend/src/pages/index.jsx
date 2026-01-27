@@ -1,6 +1,6 @@
 import Layout from "./Layout.jsx";
-import Karaoke from "./Karaoke";
-import ApiTest from "./ApiTest";
+import Karaoke from "./Karaoke.jsx";
+import ApiTest from "./ApiTest.jsx";
 import PublicKaraoke from "./PublicKaraoke.jsx"
 
 import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router-dom';

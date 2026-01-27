@@ -1,0 +1,9 @@
+return
+<div>
+    <OverviewPanel>
+    </OverviewPanel>
+    <EventSettingsPanel>
+    </EventSettingsPanel>
+    <SongDataBasePanel>
+    </SongDataBasePanel>
+</div>
