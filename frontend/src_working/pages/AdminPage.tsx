@@ -5,10 +5,8 @@ import { motion } from "framer-motion"
 
 export default function AdminPage () {
     
-    const [currentAdminUsername, setCurrentAdminUsername] = useState('');
-
     const displayTitle = "Live Karaoke Night";
-    setCurrentAdminUsername("username");
+
     return(
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
         <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=1600')] bg-cover bg-center opacity-5" />
@@ -37,7 +35,7 @@ export default function AdminPage () {
 
                         <div className="flex justify-center items-center gap-4 flex-wrap">
                             <div className="flex items-center gap-3">
-                                <span className="text-amber-300 font-semibold">Admin: {currentAdminUsername}</span>
+                                <span className="text-amber-300 font-semibold">Admin: James</span>
                             </div>
                         </div>
                     </motion.div>

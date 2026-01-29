@@ -1,7 +1,8 @@
 import React from "react";
-import SessionHeader from "./header/SessionHeader";
-import { Card, CardHeader, CardTitle } from "../shared/Card";
+import { Card, CardHeader, CardTitle } from "../shared/Card.js";
 import { Settings } from "lucide-react";
+import ExportCSV from "./header/ExportCSV.js";
+import LaunchKaraokeSession from "./header/LaunchKaraokeSession.js";
 
 export default function AdminControlPanel({}){
     return(
@@ -16,7 +17,8 @@ export default function AdminControlPanel({}){
                         Admin Control Panel
                         </CardTitle>
                     </div>
-                    <SessionHeader/>
+                    <ExportCSV/>
+                    <LaunchKaraokeSession is_session_active={false}/>
                 </div>
             </CardHeader>
         </Card>
