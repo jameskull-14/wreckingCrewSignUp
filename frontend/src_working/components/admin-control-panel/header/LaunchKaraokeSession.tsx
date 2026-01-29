@@ -1,10 +1,14 @@
 import React from "react";
-import { Button } from "../../shared/Button";
+import { Button } from "../../shared/Button.js";
 import { PowerOff, Rocket } from "lucide-react";
+
+interface LaunchKaraokeSessionProps {
+    is_session_active: boolean;
+}
 
 export default function LaunchKaraokeSession({
     is_session_active
-})
+}: LaunchKaraokeSessionProps)
 {
 
     const handleEndSession = async () => {

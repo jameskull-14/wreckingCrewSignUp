@@ -1,5 +1,5 @@
 import React, { useState } from "react"
-import AdminControlPanel from "../components/admin-control-panel/AdminControlPanel"
+import AdminControlPanel from "../components/admin-control-panel/AdminControlPanel.js"
 import { Music, Sparkles } from "lucide-react"
 import { motion } from "framer-motion"
 

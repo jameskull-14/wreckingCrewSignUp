@@ -1,8 +1,22 @@
 import React from "react";
-import { Card, CardContent } from "../../../shared/Card";
+import { Card, CardContent } from "../../../shared/Card.js";
 import { Clock, Music, Users } from "lucide-react";
+import { TabsContent } from "../../../shared/Tabs.js";
 
 export default function OverviewPanel(){
+
+  const takenSlots = () => {
+
+  }
+
+  const timeSlots = () => {
+
+  }
+
+  const allSongs = () => {
+    
+  }
+
     return(
         <TabsContent value="overview" className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -47,28 +61,6 @@ export default function OverviewPanel(){
                   </div>
                 </CardContent>
               </Card>
-              
-              <Dialog key="qr-code">
-                <DialogTrigger asChild>
-                    <Button variant="outline" className="w-full h-full text-lg bg-gray-800/50 border-amber-400/20 hover:bg-gray-700/50 text-amber-300 hover:text-amber-200" disabled={!activeSession.is_active}>
-                        <QrCode className="w-6 h-6 mr-3"/>
-                        Show QR Code
-                    </Button>
-                </DialogTrigger>
-                <DialogContent className="bg-white">
-                    <DialogHeader>
-                        <DialogTitle className="text-gray-900">Scan to Join!</DialogTitle>
-                    </DialogHeader>
-                    {qrCodeUrl ? (
-                        <div className="flex items-center justify-center p-4">
-                            <img src={qrCodeUrl} alt="Karaoke Session QR Code" />
-                        </div>
-                    ) : (
-                        <p className="text-gray-600">Session is not live. Launch the session to generate a QR code.</p>
-                    )}
-                </DialogContent>
-              </Dialog>
-
             </div>
           </TabsContent>
     );
