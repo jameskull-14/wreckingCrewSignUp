@@ -3,6 +3,7 @@ import { Card, CardHeader, CardTitle } from "../shared/Card.js";
 import { Settings } from "lucide-react";
 import ExportCSV from "./header/ExportCSV.js";
 import LaunchKaraokeSession from "./header/LaunchKaraokeSession.js";
+import NavigationContent from "./navigation/NavigationContent.js";
 
 export default function AdminControlPanel({}){
     return(
@@ -17,8 +18,11 @@ export default function AdminControlPanel({}){
                         Admin Control Panel
                         </CardTitle>
                     </div>
-                    <ExportCSV/>
-                    <LaunchKaraokeSession is_session_active={false}/>
+                    <div className="flex flex-col sm:flex-row gap-3">
+                        <ExportCSV/>
+                        <LaunchKaraokeSession is_session_active={false}/>
+                    </div>
+                    <NavigationContent/>
                 </div>
             </CardHeader>
         </Card>

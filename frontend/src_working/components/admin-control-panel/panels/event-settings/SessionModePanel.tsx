@@ -1,9 +1,13 @@
-return
-<div>
-    //when timeslot is selected 
-    <TimeSlotPanel>
-    </TimeSlotPanel>
+import QueueSlotPanel from "./session-mode/QueueSlotPanel.js";
+import TimeSlotPanel from "./session-mode/TimeSlotPanel.js";
 
-    // when order is select
-    <QueueSlotPanel></QueueSlotPanel>
-</div>
+export default function SessionModePanel()
+{
+    return(
+        <div>
+            <TimeSlotPanel/>
+            <QueueSlotPanel/>
+        </div>
+    )
+}
+
