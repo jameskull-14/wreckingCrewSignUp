@@ -1,3 +1,4 @@
+import React from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../shared/Tabs.js";
 import EventSettingsPanel from "../panels/event-settings/EventSettingsPanel.js";
 import OverviewPanel from "../panels/overview/OverviewPanel.js";

@@ -2,6 +2,7 @@ import { Card, CardContent } from "../../../shared/Card.js";
 import { Clock, Music, Users } from "lucide-react";
 import { useParticipants } from "../../../../context/ParticipantsContext.js";
 import { useSongs } from "../../../../context/SongsContext.js";
+import React from "react";
 
 export default function OverviewPanel() {
   // Grab only what you need from each context
