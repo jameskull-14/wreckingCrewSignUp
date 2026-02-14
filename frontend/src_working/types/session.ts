@@ -1,0 +1,45 @@
+// Session types matching backend schemas
+
+export interface Session {
+    session_id: number;
+    admin_user_id: number;
+    session_title: string;
+    use_all_songs: boolean;
+    all_song_reuse: boolean;
+    session_mode: string;
+    songs_per_performer: number;
+    time_start?: string;
+    end_time?: string;
+    changeover_time?: number;
+    performance_time?: number;
+    status: string;
+    created_date: string;
+    updated_date: string;
+}
+
+export interface SessionCreate {
+    admin_user_id: number;
+    session_title?: string;
+    use_all_songs?: boolean;
+    all_song_reuse?: boolean;
+    session_mode: string;
+    songs_per_performer?: number;
+    time_start?: string;
+    end_time?: string;
+    changeover_time?: number;
+    performance_time?: number;
+    status?: string;
+}
+
+export interface SessionUpdate {
+    session_title?: string;
+    use_all_songs?: boolean;
+    all_song_reuse?: boolean;
+    session_mode?: string;
+    songs_per_performer?: number;
+    time_start?: string;
+    end_time?: string;
+    changeover_time?: number;
+    performance_time?: number;
+    status?: string;
+}

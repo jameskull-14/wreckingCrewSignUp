@@ -1,0 +1,42 @@
+// Admin User Setting types matching backend schemas
+
+export interface AdminUserSetting {
+    admin_setting_id: number;
+    admin_user_id: number;
+    session_title: string;
+    use_all_songs: boolean;
+    all_song_reuse: boolean;
+    session_mode: string;
+    songs_per_performer: number;
+    time_start?: string;
+    end_time?: string;
+    changeover_time?: number;
+    performance_time?: number;
+    created_date: string;
+    updated_date: string;
+}
+
+export interface AdminUserSettingCreate {
+    admin_user_id: number;
+    session_title?: string;
+    use_all_songs?: boolean;
+    all_song_reuse?: boolean;
+    session_mode: string;
+    songs_per_performer?: number;
+    time_start?: string;
+    end_time?: string;
+    changeover_time?: number;
+    performance_time?: number;
+}
+
+export interface AdminUserSettingUpdate {
+    session_title?: string;
+    use_all_songs?: boolean;
+    all_song_reuse?: boolean;
+    session_mode?: string;
+    songs_per_performer?: number;
+    time_start?: string;
+    end_time?: string;
+    changeover_time?: number;
+    performance_time?: number;
+}

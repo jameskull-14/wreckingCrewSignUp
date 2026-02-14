@@ -1,0 +1,11 @@
+// Admin Allowed Song types matching backend schemas
+
+export interface AdminAllowedSong {
+    admin_user_id: number;
+    song_id: number;
+}
+
+export interface AdminAllowedSongCreate {
+    admin_user_id: number;
+    song_id: number;
+}
