@@ -1,22 +1,16 @@
 import React from "react";
 import SessionModePanel from "./SessionModePanel.js";
+import { AdminControlPanelProps } from "../../../../types/componentTypes/AdminControlPanelProps.js";
 
 export default function EventSettingsPanel({
-    activeSession
-})
+    adminSettings,
+    onUpdateAdminSettings
+}: AdminControlPanelProps)
 {
-    const hadnleUpdateSession = async(updates) => {
-        try{
-            await 
-        }
-    }
+    
     return(
         <div>
-            <SessionModePanel
-                activeSession = {activeSession}
-                onUpdateSession={handleUpdateSession}
-            />
-
+            <SessionModePanel onUpdateAdminSettings = {onUpdateAdminSettings}/>
         </div>
 );
 }

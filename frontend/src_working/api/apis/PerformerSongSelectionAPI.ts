@@ -1,4 +1,4 @@
-import { PerformerSongSelectionCreate, PerformerSongSelectionUpdate } from "../../types/performerSongSelection";
+import { PerformerSongSelectionCreate, PerformerSongSelectionUpdate } from "../../types/apiTypes/performerSongSelection";
 import { apiClient } from "./APIClient";
 
 export class PerformerSongSelectionAPI {

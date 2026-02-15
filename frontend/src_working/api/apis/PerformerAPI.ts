@@ -1,4 +1,4 @@
-import { PerformerCreate, PerformerUpdate } from "../../types/performer";
+import { PerformerCreate, PerformerUpdate } from "../../types/apiTypes/performer";
 import { apiClient } from "./APIClient";
 
 export class PerformerAPI {

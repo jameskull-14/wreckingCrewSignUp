@@ -1,4 +1,4 @@
-import { AdminAllowedSongCreate } from "../../types/adminAllowedSong";
+import { AdminAllowedSongCreate } from "../../types/apiTypes/adminAllowedSong";
 import { apiClient } from "./APIClient";
 
 export class AdminAllowedSongAPI {

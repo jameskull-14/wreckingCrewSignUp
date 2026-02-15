@@ -1,4 +1,4 @@
-import { SongCreate, SongUpdate } from "../../types/song";
+import { SongCreate, SongUpdate } from "../../types/apiTypes/song";
 import { apiClient } from "./APIClient";
 
 export class SongAPI {

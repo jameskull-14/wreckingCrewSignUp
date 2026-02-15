@@ -1,11 +1,16 @@
-import React from "react";
 import { Card, CardHeader, CardTitle } from "../shared/Card.js";
 import { Settings } from "lucide-react";
 import ExportCSV from "./header/ExportCSV.js";
 import LaunchKaraokeSession from "./header/LaunchKaraokeSession.js";
 import NavigationContent from "./navigation/NavigationContent.js";
+import {AdminControlPanelProps} from "../../types/componentTypes/AdminControlPanelProps.js"
 
-export default function AdminControlPanel({}){
+
+export default function AdminControlPanel({
+    adminSettings,
+    onUpdateAdminSettings
+}: AdminControlPanelProps) {
+    
     return(
         <Card className="bg-gradient-to-br from-gray-900 to-gray-800 border-amber-400/30">
             <CardHeader className="border-b border-amber-400/20">
@@ -22,7 +27,10 @@ export default function AdminControlPanel({}){
                         <ExportCSV/>
                         <LaunchKaraokeSession is_session_active={false}/>
                     </div>
-                    <NavigationContent/>
+                    <NavigationContent
+                        adminSettings = {adminSettings}
+                        onUpdateAdminSettings = {onUpdateAdminSettings}
+                    />
                 </div>
             </CardHeader>
         </Card>

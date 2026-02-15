@@ -1,4 +1,4 @@
-import { SessionCreate, SessionUpdate } from "../../types/session";
+import { SessionCreate, SessionUpdate } from "../../types/apiTypes/session";
 import { apiClient } from "./APIClient";
 
 export class SessionAPI {

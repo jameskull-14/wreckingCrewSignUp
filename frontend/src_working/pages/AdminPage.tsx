@@ -1,10 +1,29 @@
-import React, { useState } from "react"
+import React, { useEffect, useState } from "react"
 import AdminControlPanel from "../components/admin-control-panel/AdminControlPanel.js"
 import { Music, Sparkles } from "lucide-react"
 import { motion } from "framer-motion"
+import { AdminUser } from "../types/apiTypes/adminUser.js";
+import { AdminUserSettingUpdate } from "../types/apiTypes/adminUserSetting.js";
 
 export default function AdminPage () {
-    
+    const [adminSettings, setAdminSettings] = useState<AdminUserSettingUpdate | null>(null);
+
+    useEffect(() => {
+        // get admin user settings
+        fetch('api/admin/settings')
+        .then(res => res.json())
+        .then(data => setAdminSettings(data))
+    },[])
+
+    const updateAdminSettings = async(newSettings: AdminUserSettingUpdate) => {
+        await fetch('api/admin/settings', {
+            method: 'PUT',
+            body: JSON.stringify(newSettings)
+        });
+        setAdminSettings(newSettings);
+    }
+
+
     const displayTitle = "Live Karaoke Night";
 
     return(
@@ -39,7 +58,10 @@ export default function AdminPage () {
                             </div>
                         </div>
                     </motion.div>
-                    <AdminControlPanel/>
+                    <AdminControlPanel 
+                        adminSettings = {adminSettings}
+                        onUpdateAdminSettings={updateAdminSettings}
+                    />
                 </div>
             </div>
         </div>

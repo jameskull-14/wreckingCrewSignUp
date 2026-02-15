@@ -1,4 +1,4 @@
-import { AdminUserSettingCreate, AdminUserSettingUpdate } from "../../types/adminUserSetting";
+import { AdminUserSettingCreate, AdminUserSettingUpdate } from "../../types/apiTypes/adminUserSetting";
 import { apiClient } from "./APIClient";
 
 export class AdminUserSettingAPI {

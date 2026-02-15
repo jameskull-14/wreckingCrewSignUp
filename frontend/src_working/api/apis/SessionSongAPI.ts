@@ -1,4 +1,4 @@
-import { SessionSongCreate } from "../../types/sessionSong";
+import { SessionSongCreate } from "../../types/apiTypes/sessionSong";
 import { apiClient } from "./APIClient";
 
 export class SessionSongAPI {
