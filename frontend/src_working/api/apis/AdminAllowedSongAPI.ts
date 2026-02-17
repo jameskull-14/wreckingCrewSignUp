@@ -14,7 +14,9 @@ export class AdminAllowedSongAPI {
         if (song_id) params.append('song_id', song_id.toString());
 
         const query = params.toString() ? `?${params.toString()}` : '';
-        return this.client.request(`/api/admin-allowed-songs${query}`);
+        return this.client.request(`/api/admin-allowed-songs${query}`, {
+            method: 'GET'
+        });
     }
 
     async create(data: AdminAllowedSongCreate){

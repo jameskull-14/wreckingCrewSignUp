@@ -95,7 +95,7 @@ def create_admin_user_setting(
         admin_user_id=setting.admin_user_id,
         session_title=setting.session_title,
         use_all_songs=setting.use_all_songs,
-        all_song_reuse=setting.all_song_reuse,
+        allow_song_reuse=setting.allow_song_reuse,
         session_mode=setting.session_mode,
         songs_per_performer=setting.songs_per_performer,
         time_start=setting.time_start,

@@ -8,7 +8,13 @@ const srcDir = process.env.USE_WORKING ? './src_working' : './src'
 export default defineConfig({
   plugins: [react()],
   server: {
-    allowedHosts: true
+    allowedHosts: true,
+    proxy: {
+      '/api': {
+        target: 'http://localhost:8000',
+        changeOrigin: true
+      }
+    }
   },
   resolve: {
     alias: {

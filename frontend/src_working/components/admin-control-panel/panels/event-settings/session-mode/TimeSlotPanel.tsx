@@ -35,7 +35,8 @@ const convertTo24Hour = (hour: number, minute: number, period: 'AM' | 'PM'): str
 
 export default function TimeSlotPanel({
     adminSettings,
-    onUpdateAdminSettings
+    onUpdateAdminSettings,
+    adminInfo
 }: AdminControlPanelProps) {
 
     const [startHour, setStartHour] = useState(() => {
@@ -63,20 +64,28 @@ export default function TimeSlotPanel({
         return time.period;
     });
     const [changeoverMinute, setChangeoverMinute] = useState(() => {
-        const time = convertFrom24Hour(adminSettings?.changeover_time || '00:05')
-        return time.minute.toString().padStart(2, '0')
+        const [hours, minutes] =
+    (adminSettings?.changeover_time ||
+    '00:05').split(':');
+        return minutes;
     })
     const [changeoverHour, setChangeoverHour] = useState(() => {
-        const time = convertFrom24Hour(adminSettings?.changeover_time || '00:05')
-        return time.hour.toString().padStart(2, '0')
+        const [hours, minutes] =
+    (adminSettings?.changeover_time ||
+    '00:05').split(':');
+        return hours;
     })
     const [performanceMinute, setPerformanceMinute] = useState(() => {
-        const time = convertFrom24Hour(adminSettings?.performance_time || '15:00')
-        return time.minute.toString().padStart(2, '0')
+        const [hours, minutes] =
+    (adminSettings?.performance_time ||
+    '00:15').split(':');
+        return minutes;
     })
     const [performanceHour, setPerformanceHour] = useState(() => {
-        const time = convertFrom24Hour(adminSettings?.performance_time || '15:00')
-        return time.hour.toString().padStart(2, '0')
+        const [hours, minutes] =
+    (adminSettings?.performance_time ||
+    '00:15').split(':');
+        return hours;
     })
 
     const [showToast, setShowToast] = useState(false);
@@ -109,8 +118,8 @@ export default function TimeSlotPanel({
       const endMinuteNum = parseInt(endMinute) || 0;
       const changeoverMinuteNum = parseInt(changeoverMinute) || 5;
       const changeoverHourNum = parseInt(changeoverHour) || 0
-      const performanceMinuteNum = parseInt(changeoverMinute) || 15;
-      const performanceHourNum = parseInt(changeoverHour) || 0
+      const performanceMinuteNum = parseInt(performanceMinute) || 15;
+      const performanceHourNum = parseInt(performanceHour) || 0
 
       const start24 = convertTo24Hour(
         Math.max(1, Math.min(12, startHourNum)),
@@ -123,17 +132,15 @@ export default function TimeSlotPanel({
         endPeriod
       );
 
-      const changeoverFinal = convertTo24Hour(
-        Math.max(1, Math.min(12, changeoverMinuteNum)),
-        Math.max(0, Math.min(59, changeoverHourNum)),
-        endPeriod
-      );
+      const changeoverFinal =
+      `${changeoverHourNum.toString().padStart(2, '0')
+      }:${changeoverMinuteNum.toString().padStart(2, 
+      '0')}`;
 
-      const performanceFinal = convertTo24Hour(
-        Math.max(1, Math.min(12, performanceMinuteNum)),
-        Math.max(0, Math.min(59, performanceHourNum)),
-        endPeriod
-      );
+      const performanceFinal =
+      `${performanceHourNum.toString().padStart(2, '0'
+      )}:${performanceMinuteNum.toString().padStart(2,
+      '0')}`;
 
       // Update admin settings with all time fields
       onUpdateAdminSettings({
@@ -297,10 +304,10 @@ export default function TimeSlotPanel({
                       }
                     }}
                     onFocus={(e) => e.target.select()}
-                    style={{ width: '160px' }}
+                    style={{ width: '80px' }}
                     className="bg-gray-900/50 border-amber-400/30 text-white text-sm"
                   />
-                  <span className="text-white text-sm">:</span>
+                  <span className="text-white text-sm">Hours</span>
                   <Input
                     type="number"
                     min="0"
@@ -314,9 +321,10 @@ export default function TimeSlotPanel({
                       }
                     }}
                     onFocus={(e) => e.target.select()}
-                    style={{ width: '160px' }}
+                    style={{ width: '80px' }}
                     className="bg-gray-900/50 border-amber-400/30 text-white text-sm"
                   />
+                  <span className="text-white text-sm">Minutes</span>
                 </div>
               </div>
               
@@ -336,10 +344,10 @@ export default function TimeSlotPanel({
                       }
                     }}
                     onFocus={(e) => e.target.select()}
-                    style={{ width: '160px' }}
+                    style={{ width: '80px' }}
                     className="bg-gray-900/50 border-amber-400/30 text-white text-sm"
                   />
-                  <span className="text-white text-sm">:</span>
+                  <span className="text-white text-sm">Hours</span>
                   <Input
                     type="number"
                     min="0"
@@ -353,28 +361,13 @@ export default function TimeSlotPanel({
                       }
                     }}
                     onFocus={(e) => e.target.select()}
-                    style={{ width: '160px' }}
+                    style={{ width: '80px' }}
                     className="bg-gray-900/50 border-amber-400/30 text-white text-sm"
                   />
+                  <span className="text-white text-sm">Minutes</span>
                 </div>
               </div>
             </div>
-            
-            {/* <div className="bg-gray-900/30 rounded-lg p-4">
-              <div className="text-sm text-gray-300 mb-2">
-                <strong>Example:</strong> Performance Time: {activeSession?.time_increment || 15}min, 
-                Changeover: {activeSession?.changeover_time || 0}min
-              </div>
-              <div className="text-xs text-gray-400">
-                Total slot spacing: {(activeSession?.time_increment || 15) + (activeSession?.changeover_time || 0)} minutes
-                {activeSession?.changeover_time > 0 && (
-                  <span className="block mt-1">
-                    Each slot includes {activeSession?.time_increment || 15} minutes performance + {activeSession?.changeover_time} minutes changeover
-                  </span>
-                )}
-              </div>
-            </div> */}
-            
             <Button
               onClick={handleGenerateSlots}
               className="w-full bg-gradient-to-r from-blue-500 to-sky-500 hover:from-blue-600 hover:to-sky-600 text-white"

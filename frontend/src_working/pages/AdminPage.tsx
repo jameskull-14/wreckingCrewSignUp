@@ -1,30 +1,57 @@
-import React, { useEffect, useState } from "react"
+import { useEffect, useState } from "react"
 import AdminControlPanel from "../components/admin-control-panel/AdminControlPanel.js"
 import { Music, Sparkles } from "lucide-react"
 import { motion } from "framer-motion"
 import { AdminUser } from "../types/apiTypes/adminUser.js";
-import { AdminUserSettingUpdate } from "../types/apiTypes/adminUserSetting.js";
+import { AdminUserSetting, AdminUserSettingUpdate } from "../types/apiTypes/adminUserSetting.js";
 
-export default function AdminPage () {
-    const [adminSettings, setAdminSettings] = useState<AdminUserSettingUpdate | null>(null);
+export default function AdminPage ({ adminInfo }: { adminInfo: AdminUser }) {
+    const [adminSettings, setAdminSettings] = useState<AdminUserSetting | null>(null);
+    const [adminData, setAdminData] = useState<AdminUser | null>(null);
 
     useEffect(() => {
-        // get admin user settings
-        fetch('api/admin/settings')
-        .then(res => res.json())
-        .then(data => setAdminSettings(data))
-    },[])
+        const loadData = async () => {
+            try{
+                const settingsRes = await fetch(`api/admin-user-settings?admin_user_id=${adminInfo.admin_user_id}`);
+                const settings = await settingsRes.json();
+
+                console.log('Settings response:', settings);
+                console.log('Is array?', Array.isArray(settings));
+                console.log('First element:', settings[0]);
+
+                // API returns array, take first element
+                const adminSetting = Array.isArray(settings) && settings.length > 0 ? settings[0] : null;
+                console.log('Setting adminSettings to:', adminSetting);
+                setAdminSettings(adminSetting);
+                setAdminData(adminInfo);
+            }
+            catch(error){
+                console.error('Failed to load Admin data: ', error);
+            }
+        };
+        loadData();
+    }, [adminInfo.admin_user_id])
 
     const updateAdminSettings = async(newSettings: AdminUserSettingUpdate) => {
-        await fetch('api/admin/settings', {
+        if (!adminSettings?.admin_setting_id) {
+            console.error('No admin_setting_id found');
+            return;
+        }
+
+        await fetch(`api/admin-user-settings/${adminSettings.admin_setting_id}`, {
             method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
             body: JSON.stringify(newSettings)
         });
-        setAdminSettings(newSettings);
+
+        // Merge the update with existing settings
+        setAdminSettings(prev => prev ? { ...prev, ...newSettings } : null);
     }
 
 
-    const displayTitle = "Live Karaoke Night";
+    const displayTitle = "Karaoke Live";
 
     return(
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
@@ -54,13 +81,14 @@ export default function AdminPage () {
 
                         <div className="flex justify-center items-center gap-4 flex-wrap">
                             <div className="flex items-center gap-3">
-                                <span className="text-amber-300 font-semibold">Admin: James</span>
+                                <span className="text-amber-300 font-semibold">Admin: {adminData?.first_name || "Unkown User"}</span>
                             </div>
                         </div>
                     </motion.div>
                     <AdminControlPanel 
                         adminSettings = {adminSettings}
                         onUpdateAdminSettings={updateAdminSettings}
+                        adminInfo = {adminInfo}
                     />
                 </div>
             </div>

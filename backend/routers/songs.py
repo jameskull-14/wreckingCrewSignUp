@@ -140,7 +140,7 @@ def create_song(song: schemas.SongCreate, db: Session = Depends(get_db)):
     new_song = models.SongModel(
         song_title=song.title,
         artist=song.artist,
-        genre=song.genre,
+        genre=song.genre if song.genre and song.genre.strip() else None,
         year_released=song.year_released
     )
 
@@ -192,7 +192,7 @@ def bulk_create_songs(songs: List[schemas.SongCreate], db: Session = Depends(get
         models.SongModel(
             song_title=song.title,
             artist=song.artist,
-            genre=song.genre,
+            genre=song.genre if song.genre and song.genre.strip() else None,
             year_released=song.year_released
         )
         for song in songs_to_create

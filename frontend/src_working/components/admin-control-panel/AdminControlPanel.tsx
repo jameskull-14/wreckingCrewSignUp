@@ -1,14 +1,14 @@
 import { Card, CardHeader, CardTitle } from "../shared/Card.js";
 import { Settings } from "lucide-react";
-import ExportCSV from "./header/ExportCSV.js";
 import LaunchKaraokeSession from "./header/LaunchKaraokeSession.js";
 import NavigationContent from "./navigation/NavigationContent.js";
-import {AdminControlPanelProps} from "../../types/componentTypes/AdminControlPanelProps.js"
+import {AdminControlPanelProps} from "../../types/componentTypes/adminControlPanelProps.js"
 
 
 export default function AdminControlPanel({
     adminSettings,
-    onUpdateAdminSettings
+    onUpdateAdminSettings, 
+    adminInfo
 }: AdminControlPanelProps) {
     
     return(
@@ -24,12 +24,12 @@ export default function AdminControlPanel({
                         </CardTitle>
                     </div>
                     <div className="flex flex-col sm:flex-row gap-3">
-                        <ExportCSV/>
                         <LaunchKaraokeSession is_session_active={false}/>
                     </div>
                     <NavigationContent
                         adminSettings = {adminSettings}
                         onUpdateAdminSettings = {onUpdateAdminSettings}
+                        adminInfo = {adminInfo}
                     />
                 </div>
             </CardHeader>

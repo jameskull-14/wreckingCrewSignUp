@@ -13,7 +13,7 @@ class SessionModel(Base):
     status = Column(String(50), default="Active", nullable=False, index=True)
     session_title = Column(String(255), default="Karaoke", nullable=False)
     use_all_songs = Column(Boolean, default=True, nullable=False)
-    all_song_reuse = Column(Boolean, default=False, nullable=False)
+    allow_song_reuse = Column(Boolean, default=False, nullable=False)
     session_mode = Column(String(50), nullable=False)
     songs_per_performer = Column(Integer, default=1, nullable=False)
     start_time = Column(String(5), nullable=True)

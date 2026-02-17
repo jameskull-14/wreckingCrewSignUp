@@ -7,7 +7,7 @@ import { ParticipantsProvider } from './context/ParticipantsContext.js'
 // import { Toaster } from "@/components/ui/toaster.js"  // TODO: copy to src_working when needed
 
 // Pages - add more as you create them
-import AdminPage from "./pages/AdminPage.js"
+import AdminLoginPage from './pages/AdminLoginPage.js'
 // import Layout from "@/pages/Layout.js"
 // import Karaoke from "@/pages/Karaoke.js"
 // import ApiTest from "@/pages/ApiTest.js"
@@ -22,7 +22,7 @@ function App(): React.ReactElement {
           <SessionProvider>
             <SongsProvider>
               <ParticipantsProvider>
-                <AdminPage />
+                <AdminLoginPage />
               </ParticipantsProvider>
             </SongsProvider>
           </SessionProvider>
@@ -31,7 +31,7 @@ function App(): React.ReactElement {
           <SessionProvider>
             <SongsProvider>
               <ParticipantsProvider>
-                <AdminPage />
+                <AdminLoginPage />
               </ParticipantsProvider>
             </SongsProvider>
           </SessionProvider>

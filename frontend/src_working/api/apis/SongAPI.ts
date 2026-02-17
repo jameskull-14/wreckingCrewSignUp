@@ -9,7 +9,21 @@ export class SongAPI {
     }
 
     async get(song_id: number){
-        return this.client.request(`/api/songs/${song_id}`);
+        return this.client.request(`/api/songs/${song_id}`, {
+            method: 'GET'
+        });
+    }
+
+    async search(params?: { song_title?: string; artist?: string; genre?: string }){
+        const queryParams = new URLSearchParams();
+        if (params?.song_title) queryParams.append('song_title', params.song_title);
+        if (params?.artist) queryParams.append('artist', params.artist);
+        if (params?.genre) queryParams.append('genre', params.genre);
+
+        const queryString = queryParams.toString();
+        return this.client.request(`/api/songs${queryString ? `?${queryString}` : ''}`, {
+            method: 'GET'
+        });
     }
 
     async create(song_data: SongCreate){

@@ -3,12 +3,14 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../shared/Tabs.js";
 import EventSettingsPanel from "../panels/event-settings/EventSettingsPanel.js";
 import OverviewPanel from "../panels/overview/OverviewPanel.js";
 import SongDatabasePanel from "../panels/song-database/SongDatabasePanel.js";
-import { AdminControlPanelProps } from "../../../types/componentTypes/AdminControlPanelProps.js";
+import { AdminControlPanelProps } from "../../../types/componentTypes/adminControlPanelProps.js";
+import ExportPanel from "../panels/export/export-panel.js";
 
 
 export default function NavigationContent({
     adminSettings,
-    onUpdateAdminSettings
+    onUpdateAdminSettings,
+    adminInfo
 }: AdminControlPanelProps) {
 
     return (
@@ -17,6 +19,7 @@ export default function NavigationContent({
                 <TabsTrigger value="overview">Overview</TabsTrigger>
                 <TabsTrigger value="settings">Event Settings</TabsTrigger>
                 <TabsTrigger value="database">Song Database</TabsTrigger>
+                <TabsTrigger value="export">Export</TabsTrigger>
             </TabsList>
 
             <TabsContent value="overview">
@@ -27,11 +30,16 @@ export default function NavigationContent({
                 <EventSettingsPanel 
                     adminSettings = {adminSettings}
                     onUpdateAdminSettings = {onUpdateAdminSettings}
+                    adminInfo = {adminInfo}
                 />
             </TabsContent>
 
             <TabsContent value="database">
                 <SongDatabasePanel />
+            </TabsContent>
+
+            <TabsContent value="export">
+                <ExportPanel />
             </TabsContent>
         </Tabs>
     );
