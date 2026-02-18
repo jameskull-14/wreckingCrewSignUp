@@ -4,13 +4,16 @@ import { PowerOff, Rocket } from "lucide-react";
 
 interface LaunchKaraokeSessionProps {
     onUpdateSession: (session: boolean) => void;
+    adminId: number;
 }
 
-export default function LaunchKaraokeSession({onUpdateSession}: LaunchKaraokeSessionProps)
+export default function LaunchKaraokeSession({onUpdateSession, adminId}: LaunchKaraokeSessionProps)
 {
 
     const handleLaunchSession = async () => {
+      localStorage.setItem(`karaoke_session_${adminId}`, 'active')
       onUpdateSession(true)
+      window.open(`/public/${adminId}`, '_blank')
     }
 
     return(

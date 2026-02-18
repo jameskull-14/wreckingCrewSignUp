@@ -37,12 +37,14 @@ export default function AdminControlPanel({
                         <div className="flex flex-col sm:flex-row gap-3">
                             <LaunchKaraokeSession
                                 onUpdateSession = {onUpdateSession}
+                                adminId = {adminInfo.admin_user_id}
                             />
                         </div>
                     ) : (
                         <div className="flex flex-col sm:flex-row gap-3">
                             <EndKaraokeSession
                                 onUpdateSession = {onUpdateSession}
+                                adminId = {adminInfo.admin_user_id}
                             />
                         </div>
                     )}

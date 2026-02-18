@@ -3,11 +3,13 @@ import { Button } from "../../shared/Button";
 
 interface EndKaraokeSessionProps {
     onUpdateSession: (session: boolean) => void;
+    adminId: number;
 }
 
-export default function EndKaraokeSession({onUpdateSession}: EndKaraokeSessionProps){
+export default function EndKaraokeSession({onUpdateSession, adminId}: EndKaraokeSessionProps){
 
     const handleEndSession = async () => {
+      localStorage.removeItem(`karaoke_session_${adminId}`)
       onUpdateSession(false)
     }
 
