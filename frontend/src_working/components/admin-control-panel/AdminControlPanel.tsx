@@ -3,6 +3,8 @@ import { Settings } from "lucide-react";
 import LaunchKaraokeSession from "./header/LaunchKaraokeSession.js";
 import NavigationContent from "./navigation/NavigationContent.js";
 import {AdminControlPanelProps} from "../../types/componentTypes/adminControlPanelProps.js"
+import { useState } from "react";
+import EndKaraokeSession from "./header/EndKaraokeSession.js";
 
 
 export default function AdminControlPanel({
@@ -10,6 +12,14 @@ export default function AdminControlPanel({
     onUpdateAdminSettings, 
     adminInfo
 }: AdminControlPanelProps) {
+
+    const [activeSession, setActiveSession] = useState(false);
+
+    const onUpdateSession = async (session: boolean) => {
+        const isSessionActive = session ? true : false;
+        setActiveSession(isSessionActive)
+    }
+    
     
     return(
         <Card className="bg-gradient-to-br from-gray-900 to-gray-800 border-amber-400/30">
@@ -23,9 +33,20 @@ export default function AdminControlPanel({
                         Admin Control Panel
                         </CardTitle>
                     </div>
-                    <div className="flex flex-col sm:flex-row gap-3">
-                        <LaunchKaraokeSession is_session_active={false}/>
-                    </div>
+                    {!activeSession ? (
+                        <div className="flex flex-col sm:flex-row gap-3">
+                            <LaunchKaraokeSession
+                                onUpdateSession = {onUpdateSession}
+                            />
+                        </div>
+                    ) : (
+                        <div className="flex flex-col sm:flex-row gap-3">
+                            <EndKaraokeSession
+                                onUpdateSession = {onUpdateSession}
+                            />
+                        </div>
+                    )}
+
                     <NavigationContent
                         adminSettings = {adminSettings}
                         onUpdateAdminSettings = {onUpdateAdminSettings}
