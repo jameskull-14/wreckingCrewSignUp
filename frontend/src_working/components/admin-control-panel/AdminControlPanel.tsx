@@ -3,22 +3,45 @@ import { Settings } from "lucide-react";
 import LaunchKaraokeSession from "./header/LaunchKaraokeSession.js";
 import NavigationContent from "./navigation/NavigationContent.js";
 import {AdminControlPanelProps} from "../../types/componentTypes/adminControlPanelProps.js"
-import { useState } from "react";
+import { useState, useRef } from "react";
 import EndKaraokeSession from "./header/EndKaraokeSession.js";
+import AdminQRCode from "./header/AdminQRCode.js";
 
 
 export default function AdminControlPanel({
     adminSettings,
-    onUpdateAdminSettings, 
+    onUpdateAdminSettings,
     adminInfo
 }: AdminControlPanelProps) {
 
     const [activeSession, setActiveSession] = useState(false);
+    const publicWindowRef = useRef<Window | null>(null);
+    const qrWindowRef = useRef<Window | null>(null);
 
     const onUpdateSession = async (session: boolean) => {
         const isSessionActive = session ? true : false;
-        setActiveSession(isSessionActive)
-    }
+        setActiveSession(isSessionActive);
+
+        // Close all windows when ending session
+        if (!isSessionActive) {
+            if (publicWindowRef.current && !publicWindowRef.current.closed) {
+                publicWindowRef.current.close();
+            }
+            if (qrWindowRef.current && !qrWindowRef.current.closed) {
+                qrWindowRef.current.close();
+            }
+            publicWindowRef.current = null;
+            qrWindowRef.current = null;
+        }
+    };
+
+    const handlePublicWindowOpen = (win: Window) => {
+        publicWindowRef.current = win;
+    };
+
+    const handleQRWindowOpen = (win: Window) => {
+        qrWindowRef.current = win;
+    };
     
     
     return(
@@ -36,15 +59,22 @@ export default function AdminControlPanel({
                     {!activeSession ? (
                         <div className="flex flex-col sm:flex-row gap-3">
                             <LaunchKaraokeSession
-                                onUpdateSession = {onUpdateSession}
-                                adminId = {adminInfo.admin_user_id}
+                                onUpdateSession={onUpdateSession}
+                                adminId={adminInfo.admin_user_id}
+                                onOpenPublicWindow={handlePublicWindowOpen}
                             />
                         </div>
                     ) : (
-                        <div className="flex flex-col sm:flex-row gap-3">
-                            <EndKaraokeSession
-                                onUpdateSession = {onUpdateSession}
-                                adminId = {adminInfo.admin_user_id}
+                        <div className="space-y-4">
+                            <div className="flex flex-col sm:flex-row gap-3">
+                                <EndKaraokeSession
+                                    onUpdateSession={onUpdateSession}
+                                    adminId={adminInfo.admin_user_id}
+                                />
+                            </div>
+                            <AdminQRCode
+                                adminId={adminInfo.admin_user_id}
+                                onOpenFullPage={handleQRWindowOpen}
                             />
                         </div>
                     )}

@@ -9,6 +9,7 @@ import { ParticipantsProvider } from './context/ParticipantsContext.js'
 // Pages - add more as you create them
 import AdminLoginPage from './pages/AdminLoginPage.js'
 import PublicKaraokePage from './pages/PublicKaraokePage.js'
+import QRCodeFullPage from './pages/QRCodeFullPage.js'
 // import Layout from "@/pages/Layout.js"
 // import Karaoke from "@/pages/Karaoke.js"
 // import ApiTest from "@/pages/ApiTest.js"
@@ -38,6 +39,7 @@ function App(): React.ReactElement {
           </SessionProvider>
         } />
         <Route path="/public/:adminId" element={<PublicKaraokePage />} />
+        <Route path="/qr/:adminId" element={<QRCodeFullPage />} />
 
       </Routes>
       {/* <Toaster /> */}
