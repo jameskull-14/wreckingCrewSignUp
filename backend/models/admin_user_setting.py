@@ -11,6 +11,7 @@ class AdminUserSettingModel(Base):
     admin_setting_id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     admin_user_id = Column(Integer, ForeignKey('public.admin_user.admin_user_id', ondelete='CASCADE'), unique=True, nullable=False)
     session_title = Column(String(255), default="Karaoke", nullable=False)
+    session_host = Column(String(255), nullable=True)
     use_all_songs = Column(Boolean, default=True, nullable=False)
     allow_song_reuse = Column(Boolean, default=False, nullable=False)
     session_mode = Column(String(50), nullable=False)

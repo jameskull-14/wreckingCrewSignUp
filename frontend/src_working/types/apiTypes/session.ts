@@ -4,6 +4,7 @@ export interface Session {
     session_id: number;
     admin_user_id: number;
     session_title: string;
+    session_host?: string;
     use_all_songs: boolean;
     allow_song_reuse: boolean;
     session_mode: string;
@@ -20,6 +21,7 @@ export interface Session {
 export interface SessionCreate {
     admin_user_id: number;
     session_title?: string;
+    session_host?: string;
     use_all_songs?: boolean;
     allow_song_reuse?: boolean;
     session_mode: string;
@@ -33,6 +35,7 @@ export interface SessionCreate {
 
 export interface SessionUpdate {
     session_title?: string;
+    session_host?: string;
     use_all_songs?: boolean;
     allow_song_reuse?: boolean;
     session_mode?: string;

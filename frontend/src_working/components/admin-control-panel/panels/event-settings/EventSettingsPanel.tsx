@@ -1,18 +1,34 @@
 import SessionModePanel from "./SessionModePanel.js";
-import { AdminControlPanelProps } from "../../../../types/componentTypes/adminControlPanelProps.js";
+import { SettingsPanelBaseProps } from "../../../../types/componentTypes/navigationContentProps.js";
 import { Database, RefreshCw, Users } from "lucide-react";
 import { Switch } from "../../../shared/Switch.js";
 import { Label } from "../../../shared/Label.js";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../../shared/Select.js";
 import SongSettingsPanel from "./SongSettingsPanel.js";
+import { useState, useEffect } from "react";
+import { isSession } from "react-router-dom";
+import { Card, CardContent } from "../../../shared/Card.js";
+import { Input } from "../../../shared/Input.js";
+import { Button } from "../../../shared/Button.js";
 
 export default function EventSettingsPanel({
     adminSettings,
     onUpdateAdminSettings,
     adminInfo
-}: AdminControlPanelProps)
+}: SettingsPanelBaseProps)
 {
-    
+    const [newTitle, setNewTitle] = useState(adminSettings?.session_title || '');
+    const [newHost, setNewHost] = useState(adminSettings?.session_host || '');
+
+    useEffect(() => {
+        if (adminSettings?.session_title) {
+            setNewTitle(adminSettings.session_title);
+        }
+        if (adminSettings?.session_host !== undefined) {
+            setNewHost(adminSettings.session_host || '');
+        }
+    }, [adminSettings?.session_title, adminSettings?.session_host]);
+
     const handleUpdateSession = async (field: 'use_all_songs' | 'allow_song_reuse', value: boolean) => {
         onUpdateAdminSettings({
             ...adminSettings,
@@ -26,9 +42,47 @@ export default function EventSettingsPanel({
             songs_per_performer: songsPerPerformer
         })
     }
+
+    const handleSaveChanges = () => {
+        onUpdateAdminSettings({
+            ...adminSettings,
+            session_title: newTitle,
+            session_host: newHost
+        });
+    }
+
     
     return(
         <div>
+            <CardContent className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                        <div className="font-semibold text-white">Session Title</div>
+                        <Input
+                            value={newTitle}
+                            placeholder="Enter session title"
+                            onChange={(e) => setNewTitle(e.target.value)}
+                            className="bg-gray-800/50 border-amber-400/30 text-white"
+                        />
+                    </div>
+                    <div className="space-y-2">
+                        <div className="font-semibold text-white">Hosted By</div>
+                        <Input
+                            value={newHost}
+                            placeholder="Enter host name"
+                            onChange={(e) => setNewHost(e.target.value)}
+                            className="bg-gray-800/50 border-amber-400/30 text-white"
+                        />
+                    </div>
+                </div>
+                <Button
+                    onClick={handleSaveChanges}
+                    style={{ backgroundColor: '#10b981', color: 'white', border: '1px solid #34d399' }}
+                    className="hover:!bg-emerald-600 shadow"
+                >
+                    Save
+                </Button>
+            </CardContent>
             <SessionModePanel 
                 onUpdateAdminSettings = {onUpdateAdminSettings}
                 adminSettings={adminSettings}

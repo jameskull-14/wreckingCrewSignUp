@@ -6,6 +6,7 @@ import re
 
 class AdminUserSettingBase(BaseModel):
     session_title: str = "Karaoke"
+    session_host: Optional[str] = None
     use_all_songs: bool = True
     allow_song_reuse: bool = False
     session_mode: str
@@ -29,6 +30,7 @@ class AdminUserSettingCreate(AdminUserSettingBase):
 
 class AdminUserSettingUpdate(BaseModel):
     session_title: Optional[str] = None
+    session_host: Optional[str] = None
     use_all_songs: Optional[bool] = None
     allow_song_reuse: Optional[bool] = None
     session_mode: Optional[str] = None

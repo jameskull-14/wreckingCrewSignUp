@@ -4,6 +4,7 @@ from typing import List, Optional
 import models
 import schemas
 from database import get_db
+from routers.websockets import manager
 
 router = APIRouter(
     prefix="/api/sessions",
@@ -69,11 +70,11 @@ def get_session(session_id: int, db: Session = Depends(get_db)):
 
 
 @router.post("/", response_model=schemas.SessionResponse)
-def create_session(session: schemas.SessionCreate, db: Session = Depends(get_db)):
+async def create_session(session: schemas.SessionCreate, db: Session = Depends(get_db)):
     """
     Create a new session.
 
-    Adds a new session to the database.
+    Adds a new session to the database and broadcasts to all connected clients.
 
     Args:
         session: Session data to create
@@ -99,7 +100,7 @@ def create_session(session: schemas.SessionCreate, db: Session = Depends(get_db)
         allow_song_reuse=session.allow_song_reuse,
         session_mode=session.session_mode,
         songs_per_performer=session.songs_per_performer,
-        time_start=session.time_start,
+        start_time=session.start_time,
         end_time=session.end_time,
         changeover_time=session.changeover_time,
         performance_time=session.performance_time,
@@ -109,11 +110,25 @@ def create_session(session: schemas.SessionCreate, db: Session = Depends(get_db)
     db.add(new_session)
     db.commit()
     db.refresh(new_session)
+
+    # Broadcast session started event to all connected clients (non-blocking)
+    try:
+        await manager.broadcast(
+            new_session.admin_user_id,
+            {
+                "type": "session_started",
+                "data": schemas.SessionResponse.model_validate(new_session).model_dump()
+            }
+        )
+    except Exception as e:
+        # Log the error but don't fail the request
+        print(f"WebSocket broadcast error: {e}")
+
     return new_session
 
 
 @router.put("/{session_id}", response_model=schemas.SessionResponse)
-def update_session(
+async def update_session(
     session_id: int,
     session: schemas.SessionUpdate,
     db: Session = Depends(get_db)
@@ -123,6 +138,8 @@ def update_session(
 
     Updates one or more fields of an existing session. Only the fields provided
     in the request will be updated; omitted fields remain unchanged.
+
+    Broadcasts the updated session to all connected clients.
 
     Args:
         session_id: The unique identifier of the session to update
@@ -149,6 +166,30 @@ def update_session(
 
     db.commit()
     db.refresh(db_session)
+
+    # Broadcast session updated event (non-blocking, errors won't crash the endpoint)
+    try:
+        await manager.broadcast(
+            db_session.admin_user_id,
+            {
+                "type": "session_updated",
+                "data": schemas.SessionResponse.model_validate(db_session).model_dump()
+            }
+        )
+
+        # If session ended, also broadcast session_ended event
+        if db_session.status in ["Completed", "Ended", "Inactive"]:
+            await manager.broadcast(
+                db_session.admin_user_id,
+                {
+                    "type": "session_ended",
+                    "data": {"session_id": session_id}
+                }
+            )
+    except Exception as e:
+        # Log the error but don't fail the request
+        print(f"WebSocket broadcast error: {e}")
+
     return db_session
 
 

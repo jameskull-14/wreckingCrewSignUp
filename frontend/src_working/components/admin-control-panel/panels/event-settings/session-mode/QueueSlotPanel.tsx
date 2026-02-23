@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { AdminControlPanelProps } from "../../../../../types/componentTypes/adminControlPanelProps";
+import { SettingsPanelBaseProps } from "../../../../../types/componentTypes/navigationContentProps";
 import { Card, CardContent, CardHeader, CardTitle } from "../../../../shared/Card";
 import { Plus, Timer } from "lucide-react";
 import { Label } from "../../../../shared/Label";
@@ -37,7 +37,7 @@ export default function QueueSlotPanel({
     adminSettings,
     onUpdateAdminSettings,
     adminInfo
-}: AdminControlPanelProps){
+}: SettingsPanelBaseProps){
     const [includeStartEndTime, setIncludeStartEndTime] = useState(false);
 
     const [startHour, setStartHour] = useState(() => {

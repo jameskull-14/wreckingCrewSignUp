@@ -1,4 +1,4 @@
-import { AdminControlPanelProps } from "../../../../types/componentTypes/adminControlPanelProps";
+import { SettingsPanelBaseProps } from "../../../../types/componentTypes/navigationContentProps";
 import { Card, CardContent, CardHeader, CardTitle } from "../../../shared/Card";
 import { Input } from "../../../shared/Input";
 import { Label } from "../../../shared/Label";
@@ -17,7 +17,7 @@ export default function SongSettingsPanel({
     adminSettings,
     onUpdateAdminSettings,
     adminInfo
-}: AdminControlPanelProps)
+}: SettingsPanelBaseProps)
 {
     const [selectedTheme, setSelectedTheme] = useState<string>("");
     const [searchTerm, setSearchTerm] = useState<string>("");

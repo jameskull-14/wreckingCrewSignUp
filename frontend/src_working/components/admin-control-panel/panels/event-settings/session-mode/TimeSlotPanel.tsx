@@ -5,7 +5,7 @@ import { Input } from "../../../../shared/Input";
 import { Label } from "../../../../shared/Label";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "../../../../shared/Select";
 import { Button } from "../../../../shared/Button";
-import { AdminControlPanelProps } from "../../../../../types/componentTypes/adminControlPanelProps";
+import { SettingsPanelBaseProps } from "../../../../../types/componentTypes/navigationContentProps";
 
 // Helper functions outside component
 const convertFrom24Hour = (time24: string): { hour: number; minute: number; period: 'AM' | 'PM' } => {
@@ -37,7 +37,7 @@ export default function TimeSlotPanel({
     adminSettings,
     onUpdateAdminSettings,
     adminInfo
-}: AdminControlPanelProps) {
+}: SettingsPanelBaseProps) {
 
     const [startHour, setStartHour] = useState(() => {
         const time = convertFrom24Hour(adminSettings?.start_time || '19:00');

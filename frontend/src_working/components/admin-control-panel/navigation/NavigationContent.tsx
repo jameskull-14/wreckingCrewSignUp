@@ -3,7 +3,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../shared/Tabs.js";
 import EventSettingsPanel from "../panels/event-settings/EventSettingsPanel.js";
 import OverviewPanel from "../panels/overview/OverviewPanel.js";
 import SongDatabasePanel from "../panels/song-database/SongDatabasePanel.js";
-import { AdminControlPanelProps } from "../../../types/componentTypes/adminControlPanelProps.js";
+import { NavigationContentProps } from "../../../types/componentTypes/navigationContentProps.js";
 import ExportPanel from "../panels/export/export-panel.js";
 
 
@@ -11,7 +11,7 @@ export default function NavigationContent({
     adminSettings,
     onUpdateAdminSettings,
     adminInfo
-}: AdminControlPanelProps) {
+}: NavigationContentProps) {
 
     return (
         <Tabs defaultValue="overview" className="space-y-6">

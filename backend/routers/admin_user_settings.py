@@ -4,6 +4,7 @@ from typing import List, Optional
 import models
 import schemas
 from database import get_db
+from routers.websockets import manager
 
 router = APIRouter(
     prefix="/api/admin-user-settings",
@@ -94,6 +95,7 @@ def create_admin_user_setting(
     new_setting = models.AdminUserSettingModel(
         admin_user_id=setting.admin_user_id,
         session_title=setting.session_title,
+        session_host = setting.session_host,
         use_all_songs=setting.use_all_songs,
         allow_song_reuse=setting.allow_song_reuse,
         session_mode=setting.session_mode,
@@ -111,7 +113,7 @@ def create_admin_user_setting(
 
 
 @router.put("/{setting_id}", response_model=schemas.AdminUserSettingResponse)
-def update_admin_user_setting(
+async def update_admin_user_setting(
     setting_id: int,
     setting: schemas.AdminUserSettingUpdate,
     db: Session = Depends(get_db)
@@ -121,6 +123,8 @@ def update_admin_user_setting(
 
     Updates one or more fields of an existing admin user setting. Only the fields
     provided in the request will be updated; omitted fields remain unchanged.
+
+    Broadcasts the updated settings to all connected WebSocket clients for this admin.
 
     Args:
         setting_id: The unique identifier of the setting to update
@@ -147,6 +151,16 @@ def update_admin_user_setting(
 
     db.commit()
     db.refresh(db_setting)
+
+    # Broadcast updated settings to all connected WebSocket clients
+    await manager.broadcast(
+        db_setting.admin_user_id,
+        {
+            "type": "settings_updated",
+            "data": schemas.AdminUserSettingResponse.model_validate(db_setting).model_dump()
+        }
+    )
+
     return db_setting
 
 

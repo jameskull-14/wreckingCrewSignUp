@@ -2,8 +2,9 @@ import { Card, CardHeader, CardTitle } from "../shared/Card.js";
 import { Settings } from "lucide-react";
 import LaunchKaraokeSession from "./header/LaunchKaraokeSession.js";
 import NavigationContent from "./navigation/NavigationContent.js";
-import {AdminControlPanelProps} from "../../types/componentTypes/adminControlPanelProps.js"
-import { useState, useRef } from "react";
+import { AdminControlPanelProps } from "../../types/componentTypes/adminControlPanelProps.js";
+import { Session } from "../../types/apiTypes/session.js";
+import { useRef } from "react";
 import EndKaraokeSession from "./header/EndKaraokeSession.js";
 import AdminQRCode from "./header/AdminQRCode.js";
 
@@ -11,19 +12,19 @@ import AdminQRCode from "./header/AdminQRCode.js";
 export default function AdminControlPanel({
     adminSettings,
     onUpdateAdminSettings,
-    adminInfo
+    adminInfo,
+    activeSession,
+    setActiveSession
 }: AdminControlPanelProps) {
 
-    const [activeSession, setActiveSession] = useState(false);
     const publicWindowRef = useRef<Window | null>(null);
     const qrWindowRef = useRef<Window | null>(null);
 
-    const onUpdateSession = async (session: boolean) => {
-        const isSessionActive = session ? true : false;
-        setActiveSession(isSessionActive);
+    const onUpdateSession = async (session: Session | null) => {
+        setActiveSession(session);
 
         // Close all windows when ending session
-        if (!isSessionActive) {
+        if (!session) {
             if (publicWindowRef.current && !publicWindowRef.current.closed) {
                 publicWindowRef.current.close();
             }
@@ -62,6 +63,7 @@ export default function AdminControlPanel({
                                 onUpdateSession={onUpdateSession}
                                 adminId={adminInfo.admin_user_id}
                                 onOpenPublicWindow={handlePublicWindowOpen}
+                                adminSettings = {adminSettings}
                             />
                         </div>
                     ) : (
@@ -70,6 +72,7 @@ export default function AdminControlPanel({
                                 <EndKaraokeSession
                                     onUpdateSession={onUpdateSession}
                                     adminId={adminInfo.admin_user_id}
+                                    activeSession={activeSession}
                                 />
                             </div>
                             <AdminQRCode

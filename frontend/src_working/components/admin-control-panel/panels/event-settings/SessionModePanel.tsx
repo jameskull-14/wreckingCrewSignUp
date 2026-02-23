@@ -2,13 +2,13 @@ import QueueSlotPanel from "./session-mode/QueueSlotPanel.js";
 import TimeSlotPanel from "./session-mode/TimeSlotPanel.js";
 import { CardContent } from "../../../shared/Card.js";
 import { Clock, List } from "lucide-react";
-import { AdminControlPanelProps } from "../../../../types/componentTypes/adminControlPanelProps.js";
+import { SettingsPanelBaseProps } from "../../../../types/componentTypes/navigationContentProps.js";
 
 export default function SessionModePanel({
   adminSettings,
   onUpdateAdminSettings,
   adminInfo
-}: AdminControlPanelProps)
+}: SettingsPanelBaseProps)
 {
 
   const handleModeChange = (mode: string) =>{

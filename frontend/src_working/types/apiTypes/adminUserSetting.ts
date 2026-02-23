@@ -4,6 +4,7 @@ export interface AdminUserSetting {
     admin_setting_id: number;
     admin_user_id: number;
     session_title: string;
+    session_host?: string;
     use_all_songs: boolean;
     allow_song_reuse: boolean;
     session_mode: string;
@@ -19,6 +20,7 @@ export interface AdminUserSetting {
 export interface AdminUserSettingCreate {
     admin_user_id: number;
     session_title?: string;
+    session_host?: string;
     use_all_songs?: boolean;
     allow_song_reuse?: boolean;
     session_mode: string;
@@ -31,6 +33,7 @@ export interface AdminUserSettingCreate {
 
 export interface AdminUserSettingUpdate {
     session_title?: string;
+    session_host?: string;
     use_all_songs?: boolean;
     allow_song_reuse?: boolean;
     session_mode?: string;

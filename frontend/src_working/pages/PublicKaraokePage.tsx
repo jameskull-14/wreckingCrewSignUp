@@ -3,27 +3,62 @@ import { useParams } from "react-router-dom";
 import { Music, Sparkles, PowerOff } from "lucide-react";
 import { motion } from "framer-motion";
 import { AdminUser } from "../types/apiTypes/adminUser.js";
+import { AdminUserSetting } from "../types/apiTypes/adminUserSetting.js";
+import SessionViewPanel from "../components/session/SessionViewPanel.js";
+import { WebSocketProvider, useWebSocket } from "../context/WebSocketContext.js";
 
-export default function PublicKaraokePage() {
+function PublicKaraokePageContent() {
     const { adminId } = useParams<{ adminId: string }>();
+    const { subscribe } = useWebSocket();
     const [adminInfo, setAdminInfo] = useState<AdminUser | null>(null);
+    const [adminSettings, setAdminSettings] = useState<AdminUserSetting | null>(null);
     const [sessionActive, setSessionActive] = useState(() =>
         localStorage.getItem(`karaoke_session_${adminId}`) === 'active'
     );
 
     useEffect(() => {
-        const loadAdmin = async () => {
+        const loadData = async () => {
             try {
-                const response = await fetch(`/api/admin-users/${adminId}`);
-                if (!response.ok) return;
-                const data = await response.json();
-                setAdminInfo(data);
+                // Fetch admin info and settings in parallel for better performance
+                const [adminRes, settingsRes] = await Promise.all([
+                    fetch(`/api/admin-users/${adminId}`),
+                    fetch(`/api/admin-user-settings?admin_user_id=${adminId}`)
+                ]);
+
+                if (adminRes.ok) {
+                    const adminData = await adminRes.json();
+                    setAdminInfo(adminData);
+                }
+
+                if (settingsRes.ok) {
+                    const settingsData = await settingsRes.json();
+                    // API returns an array, get the first item
+                    if (settingsData && settingsData.length > 0) {
+                        setAdminSettings(settingsData[0]);
+                    }
+                }
             } catch (error) {
-                console.error("Failed to load admin info:", error);
+                console.error("Failed to load admin data:", error);
             }
         };
-        if (adminId) loadAdmin();
+
+        if (adminId) loadData();
     }, [adminId]);
+
+    // Subscribe to WebSocket updates for real-time setting changes
+    useEffect(() => {
+        const unsubscribe = subscribe((message) => {
+            if (message.type === 'settings_updated') {
+                // Update settings when admin changes them
+                setAdminSettings(message.data);
+            } else if (message.type === 'session_ended') {
+                // End session when admin ends it
+                setSessionActive(false);
+            }
+        });
+
+        return unsubscribe;
+    }, [subscribe]);
 
     useEffect(() => {
         const handleStorageChange = (e: StorageEvent) => {
@@ -82,13 +117,31 @@ export default function PublicKaraokePage() {
                         {adminInfo && (
                             <div className="flex justify-center items-center gap-4 flex-wrap">
                                 <span className="text-amber-300 font-semibold">
-                                    Hosted by {adminInfo.first_name}{adminInfo.last_name ? ` ${adminInfo.last_name}` : ""}
+                                    Hosted by {adminSettings?.session_host ? adminSettings.session_host : adminInfo.first_name}
                                 </span>
                             </div>
                         )}
                     </motion.div>
                 </div>
+                {/* <SessionViewPanel
+                    pageView="Public"
+                    adminSettings={adminSettings}
+                ></SessionViewPanel> */}
             </div>
         </div>
+    );
+}
+
+export default function PublicKaraokePage() {
+    const { adminId } = useParams<{ adminId: string }>();
+
+    if (!adminId) {
+        return <div>Invalid session</div>;
+    }
+
+    return (
+        <WebSocketProvider adminId={adminId}>
+            <PublicKaraokePageContent />
+        </WebSocketProvider>
     );
 }

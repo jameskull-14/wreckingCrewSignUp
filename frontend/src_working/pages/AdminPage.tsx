@@ -4,26 +4,39 @@ import { Music, Sparkles } from "lucide-react"
 import { motion } from "framer-motion"
 import { AdminUser } from "../types/apiTypes/adminUser.js";
 import { AdminUserSetting, AdminUserSettingUpdate } from "../types/apiTypes/adminUserSetting.js";
+import { Session } from "../types/apiTypes/session.js";
 
 export default function AdminPage ({ adminInfo }: { adminInfo: AdminUser }) {
     const [adminSettings, setAdminSettings] = useState<AdminUserSetting | null>(null);
     const [adminData, setAdminData] = useState<AdminUser | null>(null);
+    const [activeSession, setActiveSession] = useState<Session | null>(null);
 
     useEffect(() => {
         const loadData = async () => {
             try{
-                const settingsRes = await fetch(`api/admin-user-settings?admin_user_id=${adminInfo.admin_user_id}`);
-                const settings = await settingsRes.json();
+                // Load settings and active session in parallel
+                const [settingsRes, sessionRes] = await Promise.all([
+                    fetch(`api/admin-user-settings?admin_user_id=${adminInfo.admin_user_id}`),
+                    fetch(`api/sessions?admin_user_id=${adminInfo.admin_user_id}&status=Active`)
+                ]);
 
-                console.log('Settings response:', settings);
-                console.log('Is array?', Array.isArray(settings));
-                console.log('First element:', settings[0]);
+                const settings = await settingsRes.json();
+                const sessions = await sessionRes.json();
 
                 // API returns array, take first element
                 const adminSetting = Array.isArray(settings) && settings.length > 0 ? settings[0] : null;
-                console.log('Setting adminSettings to:', adminSetting);
                 setAdminSettings(adminSetting);
                 setAdminData(adminInfo);
+
+                // Set active session if one exists
+                if (Array.isArray(sessions) && sessions.length > 0) {
+                    setActiveSession(sessions[0]);
+                    // Sync localStorage for backward compatibility
+                    localStorage.setItem(`karaoke_session_${adminInfo.admin_user_id}`, 'active');
+                } else {
+                    setActiveSession(null);
+                    localStorage.removeItem(`karaoke_session_${adminInfo.admin_user_id}`);
+                }
             }
             catch(error){
                 console.error('Failed to load Admin data: ', error);
@@ -38,6 +51,7 @@ export default function AdminPage ({ adminInfo }: { adminInfo: AdminUser }) {
             return;
         }
 
+        // Update admin settings (this broadcasts via WebSocket automatically)
         await fetch(`api/admin-user-settings/${adminSettings.admin_setting_id}`, {
             method: 'PUT',
             headers: {
@@ -46,12 +60,21 @@ export default function AdminPage ({ adminInfo }: { adminInfo: AdminUser }) {
             body: JSON.stringify(newSettings)
         });
 
+        // If there's an active session, update it too
+        if (activeSession) {
+            await fetch(`api/sessions/${activeSession.session_id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(newSettings)
+            });
+        }
+
         // Merge the update with existing settings
         setAdminSettings(prev => prev ? { ...prev, ...newSettings } : null);
     }
 
-
-    const displayTitle = "Karaoke Live";
 
     return(
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
@@ -69,7 +92,7 @@ export default function AdminPage ({ adminInfo }: { adminInfo: AdminUser }) {
                         </div>
                         <div>
                             <h1 className="text-4xl md:text-6xl font-bold bg-gradient-to-r from-amber-400 via-orange-400 to-red-400 bg-clip-text text-transparent">
-                            {displayTitle}
+                            {adminSettings?.session_title}
                             </h1>
                             <div className="flex items-center justify-center gap-2 mt-2">
                             <Sparkles className="w-5 h-5 text-amber-400" />
@@ -85,10 +108,12 @@ export default function AdminPage ({ adminInfo }: { adminInfo: AdminUser }) {
                             </div>
                         </div>
                     </motion.div>
-                    <AdminControlPanel 
-                        adminSettings = {adminSettings}
+                    <AdminControlPanel
+                        adminSettings={adminSettings}
                         onUpdateAdminSettings={updateAdminSettings}
-                        adminInfo = {adminInfo}
+                        adminInfo={adminInfo}
+                        activeSession={activeSession}
+                        setActiveSession={setActiveSession}
                     />
                 </div>
             </div>
