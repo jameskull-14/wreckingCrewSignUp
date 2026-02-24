@@ -1,7 +1,8 @@
-from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey
+from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey, Enum
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from database import Base
+from models.performer import PerformerStatus
 
 
 class PerformerSongSelectionModel(Base):
@@ -14,7 +15,7 @@ class PerformerSongSelectionModel(Base):
     selection_order = Column(String(10), nullable=False, index=True)
     is_singing = Column(Boolean, nullable=False)
     instrument = Column(String(100), nullable=True)
-    status = Column(String(50), nullable=False, index=True)
+    status = Column(Enum(PerformerStatus), nullable=False, index=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     # Relationships

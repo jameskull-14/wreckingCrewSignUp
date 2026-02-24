@@ -3,8 +3,9 @@ import { Button } from "../shared/Button";
 import { Card, CardHeader, CardTitle } from "../shared/Card";
 
 export default function QueuePanel({
-    pageView, 
-    adminSettings
+    isAdmin, 
+    adminSettings,
+    performer
 }: QueuePanelInterface){
     return(
         <Card className="bg-gradient-to-br from-gray-900 to-gray-800 border-amber-400/30">
@@ -12,7 +13,7 @@ export default function QueuePanel({
                 <CardTitle className="text-2xl font-bold text-white">
                     Performer
                 </CardTitle>
-                {pageView.toLocaleLowerCase() === 'admin' && (
+                {isAdmin && (
                     <Button>
                      My Button
                     </Button>

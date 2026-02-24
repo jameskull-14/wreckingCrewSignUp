@@ -1,13 +1,14 @@
 from pydantic import BaseModel, ConfigDict
 from typing import Optional
 from datetime import datetime
+from models.performer import PerformerStatus
 
 
 class PerformerSongSelectionBase(BaseModel):
     selection_order: str
     is_singing: bool
     instrument: Optional[str] = None
-    status: str
+    status: PerformerStatus
 
 
 class PerformerSongSelectionCreate(PerformerSongSelectionBase):
@@ -19,7 +20,7 @@ class PerformerSongSelectionUpdate(BaseModel):
     selection_order: Optional[str] = None
     is_singing: Optional[bool] = None
     instrument: Optional[str] = None
-    status: Optional[str] = None
+    status: Optional[PerformerStatus] = None
 
 
 class PerformerSongSelectionResponse(PerformerSongSelectionBase):

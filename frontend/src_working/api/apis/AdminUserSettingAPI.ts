@@ -41,7 +41,7 @@ export class AdminUserSettingAPI {
     }
 }
 
-export const AdminUserSetting = new AdminUserSettingAPI(apiClient);
+export const AdminUserSettingClient = new AdminUserSettingAPI(apiClient);
 
 interface ClientOptions{
     request: any

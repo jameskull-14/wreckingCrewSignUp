@@ -33,7 +33,7 @@ export class AdminAllowedSongAPI {
     }
 }
 
-export const AdminAllowedSong = new AdminAllowedSongAPI(apiClient);
+export const AdminAllowedSongClient = new AdminAllowedSongAPI(apiClient);
 
 interface ClientOptions{
     request: any

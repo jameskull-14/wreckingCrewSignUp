@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Input } from "../../../shared/Input";
 import { Button } from "../../../shared/Button";
 import { Plus } from "lucide-react";
-import { Song } from '../../../../api/frontendClient';
+import { SongClient } from '../../../../api/frontendClient';
 
 export default function AddNewASongPanel(){
   const [newSong, setNewSong] = useState({ title: '', artist: '', genre: '' });
@@ -13,7 +13,7 @@ export default function AddNewASongPanel(){
   const handleAddSong = async () => {
     if (newSong.title.trim() && newSong.artist.trim()) {
       try {
-        await Song.create(newSong);
+        await SongClient.create(newSong);
 
         // Success - clear form and show success message
         setSongSuccess('Song successfully added!');

@@ -1,6 +1,14 @@
-from sqlalchemy import Column, Integer, String, ForeignKey
+from sqlalchemy import Column, Integer, String, ForeignKey, Enum
 from sqlalchemy.orm import relationship
 from database import Base
+import enum
+
+
+class PerformerStatus(enum.Enum):
+    WAITING = "waiting"
+    PERFORMING = "performing"
+    COMPLETED = "completed"
+    SKIPPED = "skipped"
 
 
 class PerformerModel(Base):
@@ -12,7 +20,7 @@ class PerformerModel(Base):
     performer_name = Column(String(255), nullable=False)
     performer_username = Column(String(255), default="Guest", nullable=False)
     queue_number = Column(Integer, nullable=False, index=True)
-    status = Column(String(50), nullable=False, index=True)
+    status = Column(Enum(PerformerStatus), nullable=False, index=True)
 
     # Relationships
     session = relationship("SessionModel", back_populates="performers")

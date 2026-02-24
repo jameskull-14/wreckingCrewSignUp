@@ -124,7 +124,7 @@ function PublicKaraokePageContent() {
                     </motion.div>
                 </div>
                 <SessionViewPanel
-                    pageView="Public"
+                    isAdmin={false}
                     adminSettings={adminSettings}
                 ></SessionViewPanel>
             </div>

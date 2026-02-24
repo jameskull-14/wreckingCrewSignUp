@@ -31,7 +31,7 @@ export class SessionSongAPI {
     }
 }
 
-export const SessionSong = new SessionSongAPI(apiClient);
+export const SessionSongClient = new SessionSongAPI(apiClient);
 
 interface ClientOptions{
     request: any

@@ -33,7 +33,7 @@ export class PerformerSongSelectionAPI {
     }
 }
 
-export const PerformerSongSelection = new PerformerSongSelectionAPI(apiClient);
+export const PerformerSongSelectionClient = new PerformerSongSelectionAPI(apiClient);
 
 interface ClientOptions{
     request: any

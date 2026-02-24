@@ -1,19 +1,19 @@
-import { Song } from './apis/SongAPI'
-import { Performer } from './apis/PerformerAPI'
-import { PerformerSongSelection } from './apis/PerformerSongSelectionAPI'
-import { AdminAllowedSong } from './apis/AdminAllowedSongAPI'
-import { AdminUser } from './apis/AdminUserAPI'
-import { AdminUserSetting } from './apis/AdminUserSettingAPI'
-import { Session } from './apis/SessionAPI'
-import { SessionSong } from './apis/SessionSongAPI'
+import { SongClient } from './apis/SongAPI'
+import { PerformerClient } from './apis/PerformerAPI'
+import { PerformerSongSelectionClient } from './apis/PerformerSongSelectionAPI'
+import { AdminAllowedSongClient } from './apis/AdminAllowedSongAPI'
+import { AdminUserClient } from './apis/AdminUserAPI'
+import { AdminUserSettingClient } from './apis/AdminUserSettingAPI'
+import { SessionClient } from './apis/SessionAPI'
+import { SessionSongClient } from './apis/SessionSongAPI'
 
 export {
-    Song,
-    Performer,
-    PerformerSongSelection,
-    AdminAllowedSong,
-    AdminUser,
-    AdminUserSetting,
-    Session,
-    SessionSong
+    SongClient,
+    PerformerClient,
+    PerformerSongSelectionClient,
+    AdminAllowedSongClient,
+    AdminUserClient,
+    AdminUserSettingClient,
+    SessionClient,
+    SessionSongClient
 }

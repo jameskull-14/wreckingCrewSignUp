@@ -42,7 +42,7 @@ export class PerformerAPI {
     }
 }
 
-export const Performer = new PerformerAPI(apiClient);
+export const PerformerClient = new PerformerAPI(apiClient);
 
 interface ClientOptions{
     request: any

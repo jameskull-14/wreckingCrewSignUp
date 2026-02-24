@@ -1,12 +1,13 @@
 from pydantic import BaseModel, ConfigDict
 from typing import Optional
+from models.performer import PerformerStatus
 
 
 class PerformerBase(BaseModel):
     performer_name: str
     performer_username: str = "Guest"
     queue_number: int
-    status: str
+    status: PerformerStatus
 
 
 class PerformerCreate(PerformerBase):
@@ -17,7 +18,7 @@ class PerformerUpdate(BaseModel):
     performer_name: Optional[str] = None
     performer_username: Optional[str] = None
     queue_number: Optional[int] = None
-    status: Optional[str] = None
+    status: Optional[PerformerStatus] = None
 
 
 class PerformerResponse(PerformerBase):

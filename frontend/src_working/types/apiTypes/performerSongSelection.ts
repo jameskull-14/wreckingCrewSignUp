@@ -1,4 +1,5 @@
 // Performer Song Selection types matching backend schemas
+import { PerformerStatus } from './performer';
 
 export interface PerformerSongSelection {
     performer_selection_id: number;
@@ -7,7 +8,7 @@ export interface PerformerSongSelection {
     selection_order: string;
     is_singing: boolean;
     instrument?: string;
-    status: string;
+    status: PerformerStatus;
     created_at: string;
 }
 
@@ -17,12 +18,12 @@ export interface PerformerSongSelectionCreate {
     selection_order: string;
     is_singing: boolean;
     instrument?: string;
-    status: string;
+    status: PerformerStatus;
 }
 
 export interface PerformerSongSelectionUpdate {
     selection_order?: string;
     is_singing?: boolean;
     instrument?: string;
-    status?: string;
+    status?: PerformerStatus;
 }

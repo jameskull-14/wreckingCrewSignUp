@@ -4,7 +4,7 @@ import { Input } from "../../../shared/Input";
 import { Label } from "../../../shared/Label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../../shared/Select";
 import { useState, useEffect } from "react";
-import { Song, AdminAllowedSong } from "../../../../api/frontendClient";
+import { SongClient, AdminAllowedSongClient } from "../../../../api/frontendClient";
 
 interface SongResult {
     id: number;
@@ -31,7 +31,7 @@ export default function SongSettingsPanel({
             if (!adminInfo?.admin_user_id) return;
 
             try {
-                const results = await AdminAllowedSong.list(adminInfo.admin_user_id);
+                const results = await AdminAllowedSongClient.list(adminInfo.admin_user_id);
                 const songIds = new Set(
                     Array.isArray(results)
                         ? results.map((item: any) => item.song_id)
@@ -59,8 +59,8 @@ export default function SongSettingsPanel({
                 // Search by title and artist separately, then combine results
                 // Backend already does case-insensitive partial matching with ilike
                 const [titleResults, artistResults] = await Promise.all([
-                    Song.search({ song_title: searchTerm }),
-                    Song.search({ artist: searchTerm })
+                    SongClient.search({ song_title: searchTerm }),
+                    SongClient.search({ artist: searchTerm })
                 ]);
 
                 console.log('Title results:', titleResults);
@@ -105,7 +105,7 @@ export default function SongSettingsPanel({
             if (isAdded) {
                 // Remove song
                 console.log('Removing song:', { admin_user_id: adminInfo.admin_user_id, song_id: songId });
-                await AdminAllowedSong.delete(adminInfo.admin_user_id, songId);
+                await AdminAllowedSongClient.delete(adminInfo.admin_user_id, songId);
                 console.log('Song removed successfully');
 
                 // Update local state
@@ -115,7 +115,7 @@ export default function SongSettingsPanel({
             } else {
                 // Add song
                 console.log('Adding song:', { admin_user_id: adminInfo.admin_user_id, song_id: songId });
-                const result = await AdminAllowedSong.create({
+                const result = await AdminAllowedSongClient.create({
                     admin_user_id: adminInfo.admin_user_id,
                     song_id: songId
                 });

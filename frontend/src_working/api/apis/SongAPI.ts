@@ -54,7 +54,7 @@ export class SongAPI {
     }
 }
 
-export const Song = new SongAPI(apiClient);
+export const SongClient = new SongAPI(apiClient);
 
 interface ClientOptions{
     request: any

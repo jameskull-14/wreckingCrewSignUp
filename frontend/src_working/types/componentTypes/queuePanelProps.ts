@@ -1,6 +1,8 @@
 import { AdminUserSetting } from "../apiTypes/adminUserSetting";
+import { Performer } from "../apiTypes/performer";
 
 export interface QueuePanelInterface{
-    pageView: string,
+    isAdmin: boolean,
     adminSettings: AdminUserSetting | null
+    performer: Performer
 }

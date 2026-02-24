@@ -42,7 +42,7 @@ export class SessionAPI {
     }
 }
 
-export const Session = new SessionAPI(apiClient);
+export const SessionClient = new SessionAPI(apiClient);
 
 interface ClientOptions{
     request: any
