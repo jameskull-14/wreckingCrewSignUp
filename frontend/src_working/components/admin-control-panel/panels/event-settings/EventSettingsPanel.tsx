@@ -6,8 +6,7 @@ import { Label } from "../../../shared/Label.js";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../../shared/Select.js";
 import SongSettingsPanel from "./SongSettingsPanel.js";
 import { useState, useEffect } from "react";
-import { isSession } from "react-router-dom";
-import { Card, CardContent } from "../../../shared/Card.js";
+import { CardContent } from "../../../shared/Card.js";
 import { Input } from "../../../shared/Input.js";
 import { Button } from "../../../shared/Button.js";
 

@@ -123,10 +123,10 @@ function PublicKaraokePageContent() {
                         )}
                     </motion.div>
                 </div>
-                {/* <SessionViewPanel
+                <SessionViewPanel
                     pageView="Public"
                     adminSettings={adminSettings}
-                ></SessionViewPanel> */}
+                ></SessionViewPanel>
             </div>
         </div>
     );
