@@ -1,7 +1,19 @@
-from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey
+from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey, Enum
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from database import Base
+import enum
+
+
+class SessionStatus(enum.Enum):
+    ACTIVE = "Active"
+    COMPLETED = "Completed"
+    PAUSED = "Paused"
+
+
+class SessionMode(enum.Enum):
+    TIME = "Time"
+    ORDER = "Order"
 
 
 class SessionModel(Base):
@@ -10,12 +22,12 @@ class SessionModel(Base):
 
     session_id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     admin_user_id = Column(Integer, ForeignKey('public.admin_user.admin_user_id', ondelete='CASCADE'), nullable=False, index=True)
-    status = Column(String(50), default="Active", nullable=False, index=True)
+    status = Column(Enum(SessionStatus, name='session_status'), default=SessionStatus.ACTIVE, nullable=False, index=True)
     session_title = Column(String(255), default="Karaoke", nullable=False)
     session_host = Column(String(255), nullable=True)
     use_all_songs = Column(Boolean, default=True, nullable=False)
     allow_song_reuse = Column(Boolean, default=False, nullable=False)
-    session_mode = Column(String(50), nullable=False)
+    session_mode = Column(Enum(SessionMode, name='session_mode'), nullable=False)
     songs_per_performer = Column(Integer, default=1, nullable=False)
     start_time = Column(String(5), nullable=True)
     end_time = Column(String(5), nullable=True)

@@ -1,7 +1,8 @@
-from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey
+from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey, Enum
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from database import Base
+from models.session import SessionMode
 
 
 class AdminUserSettingModel(Base):
@@ -14,7 +15,7 @@ class AdminUserSettingModel(Base):
     session_host = Column(String(255), nullable=True)
     use_all_songs = Column(Boolean, default=True, nullable=False)
     allow_song_reuse = Column(Boolean, default=False, nullable=False)
-    session_mode = Column(String(50), nullable=False)
+    session_mode = Column(Enum(SessionMode, name='session_mode'), nullable=False)
     songs_per_performer = Column(Integer, default=1, nullable=False)
     start_time= Column(String(5), nullable=True)
     end_time = Column(String(5), nullable=True)

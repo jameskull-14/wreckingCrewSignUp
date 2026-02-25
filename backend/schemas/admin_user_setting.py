@@ -2,6 +2,7 @@ from pydantic import BaseModel, ConfigDict, field_validator
 from typing import Optional
 from datetime import datetime
 import re
+from models.session import SessionMode
 
 
 class AdminUserSettingBase(BaseModel):
@@ -9,7 +10,7 @@ class AdminUserSettingBase(BaseModel):
     session_host: Optional[str] = None
     use_all_songs: bool = True
     allow_song_reuse: bool = False
-    session_mode: str
+    session_mode: SessionMode
     songs_per_performer: int = 1
     start_time: Optional[str] = None
     end_time: Optional[str] = None
@@ -33,7 +34,7 @@ class AdminUserSettingUpdate(BaseModel):
     session_host: Optional[str] = None
     use_all_songs: Optional[bool] = None
     allow_song_reuse: Optional[bool] = None
-    session_mode: Optional[str] = None
+    session_mode: Optional[SessionMode] = None
     songs_per_performer: Optional[int] = None
     start_time: Optional[str] = None
     end_time: Optional[str] = None

@@ -1,4 +1,5 @@
 // Admin User Setting types matching backend schemas
+import { SessionMode } from "./session";
 
 export interface AdminUserSetting {
     admin_setting_id: number;
@@ -7,7 +8,7 @@ export interface AdminUserSetting {
     session_host?: string;
     use_all_songs: boolean;
     allow_song_reuse: boolean;
-    session_mode: string;
+    session_mode: SessionMode;
     songs_per_performer: number;
     start_time?: string;
     end_time?: string;
@@ -23,7 +24,7 @@ export interface AdminUserSettingCreate {
     session_host?: string;
     use_all_songs?: boolean;
     allow_song_reuse?: boolean;
-    session_mode: string;
+    session_mode: SessionMode;
     songs_per_performer?: number;
     start_time?: string;
     end_time?: string;
@@ -36,7 +37,7 @@ export interface AdminUserSettingUpdate {
     session_host?: string;
     use_all_songs?: boolean;
     allow_song_reuse?: boolean;
-    session_mode?: string;
+    session_mode?: SessionMode;
     songs_per_performer?: number;
     start_time?: string;
     end_time?: string;

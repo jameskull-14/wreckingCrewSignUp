@@ -1,5 +1,16 @@
 // Session types matching backend schemas
 
+export enum SessionStatus {
+    ACTIVE = "Active",
+    COMPLETED = "Completed",
+    PAUSED = "Paused"
+}
+
+export enum SessionMode {
+    TIME = 'Time',
+    ORDER = 'Order'
+}
+
 export interface Session {
     session_id: number;
     admin_user_id: number;
@@ -7,13 +18,13 @@ export interface Session {
     session_host?: string;
     use_all_songs: boolean;
     allow_song_reuse: boolean;
-    session_mode: string;
+    session_mode: SessionMode;
     songs_per_performer: number;
     start_time?: string;
     end_time?: string;
     changeover_time?: string;
     performance_time?: string;
-    status: string;
+    status: SessionStatus;
     created_date: string;
     updated_date: string;
 }
@@ -24,13 +35,13 @@ export interface SessionCreate {
     session_host?: string;
     use_all_songs?: boolean;
     allow_song_reuse?: boolean;
-    session_mode: string;
+    session_mode: SessionMode;
     songs_per_performer?: number;
     start_time?: string;
     end_time?: string;
     changeover_time?: string;
     performance_time?: string;
-    status?: string;
+    status?: SessionStatus;
 }
 
 export interface SessionUpdate {
@@ -38,11 +49,11 @@ export interface SessionUpdate {
     session_host?: string;
     use_all_songs?: boolean;
     allow_song_reuse?: boolean;
-    session_mode?: string;
+    session_mode?: SessionMode;
     songs_per_performer?: number;
     start_time?: string;
     end_time?: string;
     changeover_time?: string;
     performance_time?: string;
-    status?: string;
+    status?: SessionStatus;
 }

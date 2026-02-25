@@ -4,10 +4,10 @@ import QueuePanel from "./QueuePanel";
 import { Button } from "../shared/Button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "../shared/Dialog";
 import { Plus } from "lucide-react";
-import SignUpPanel from "./SignUpPanel";
 import { Session } from "../../types/apiTypes/session";
 import { Performer } from "../../types/apiTypes/performer";
 import { AdminUserSetting } from "../../types/apiTypes/adminUserSetting";
+import SignUpModal from "./SignUpModal";
 
 interface SessionViewInterface{
     isAdmin: boolean,
@@ -85,7 +85,7 @@ export default function SessionViewPanel({
                         <DialogHeader>
                             <DialogTitle className="text-amber-400">Sign Up for Performance</DialogTitle>
                         </DialogHeader>
-                        <SignUpPanel
+                        <SignUpModal
                             adminSettings={adminSettings}
                             session={session}
                             performers={performers}
