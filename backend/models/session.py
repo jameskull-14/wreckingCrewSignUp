@@ -6,14 +6,14 @@ import enum
 
 
 class SessionStatus(enum.Enum):
-    ACTIVE = "Active"
-    COMPLETED = "Completed"
-    PAUSED = "Paused"
+    Active = "Active"
+    Completed = "Completed"
+    Paused = "Paused"
 
 
 class SessionMode(enum.Enum):
-    TIME = "Time"
-    ORDER = "Order"
+    Time = "Time"
+    Order = "Order"
 
 
 class SessionModel(Base):
@@ -22,7 +22,7 @@ class SessionModel(Base):
 
     session_id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     admin_user_id = Column(Integer, ForeignKey('public.admin_user.admin_user_id', ondelete='CASCADE'), nullable=False, index=True)
-    status = Column(Enum(SessionStatus, name='session_status'), default=SessionStatus.ACTIVE, nullable=False, index=True)
+    status = Column(Enum(SessionStatus, name='session_status'), default=SessionStatus.Active, nullable=False, index=True)
     session_title = Column(String(255), default="Karaoke", nullable=False)
     session_host = Column(String(255), nullable=True)
     use_all_songs = Column(Boolean, default=True, nullable=False)

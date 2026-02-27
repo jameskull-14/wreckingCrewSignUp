@@ -1,6 +1,5 @@
-import React from "react";
 import { Button } from "../../shared/Button.js";
-import { PowerOff, Rocket } from "lucide-react";
+import { Rocket } from "lucide-react";
 import { AdminUserSetting } from "../../../types/apiTypes/adminUserSetting.js";
 import { Session, SessionCreate, SessionStatus, SessionMode } from "../../../types/apiTypes/session.js";
 import { SessionClient } from "../../../api/frontendClient.js";
@@ -12,8 +11,10 @@ interface LaunchKaraokeSessionProps {
     adminSettings: AdminUserSetting | null;
 }
 
-export default function LaunchKaraokeSession({onUpdateSession, adminId, onOpenPublicWindow, adminSettings}: LaunchKaraokeSessionProps)
-{
+export default function LaunchKaraokeSession({
+  onUpdateSession, adminId, onOpenPublicWindow, 
+  adminSettings
+}: LaunchKaraokeSessionProps){
 
     const handleLaunchSession = async () => {
       try {
@@ -24,13 +25,13 @@ export default function LaunchKaraokeSession({onUpdateSession, adminId, onOpenPu
           session_host: adminSettings?.session_host,
           use_all_songs: adminSettings?.use_all_songs,
           allow_song_reuse: adminSettings?.allow_song_reuse,
-          session_mode: adminSettings?.session_mode || SessionMode.ORDER,
+          session_mode: adminSettings?.session_mode || SessionMode.Order,
           songs_per_performer: adminSettings?.songs_per_performer,
           start_time: adminSettings?.start_time,
           end_time: adminSettings?.end_time,
           changeover_time: adminSettings?.changeover_time,
           performance_time: adminSettings?.performance_time,
-          status: SessionStatus.ACTIVE
+          status: SessionStatus.Active
         };
 
         const session: Session = await SessionClient.create(sessionData);

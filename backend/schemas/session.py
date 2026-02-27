@@ -16,7 +16,7 @@ class SessionBase(BaseModel):
     end_time: Optional[str] = None
     changeover_time: Optional[str] = None
     performance_time: Optional[str] = None
-    status: SessionStatus = SessionStatus.ACTIVE
+    status: SessionStatus = SessionStatus.Active
 
     @field_validator('start_time', 'end_time', 'changeover_time', 'performance_time')
     @classmethod

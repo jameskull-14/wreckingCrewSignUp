@@ -5,6 +5,8 @@ import { motion } from "framer-motion"
 import { AdminUser } from "../types/apiTypes/adminUser.js";
 import { AdminUserSetting, AdminUserSettingUpdate } from "../types/apiTypes/adminUserSetting.js";
 import { Session } from "../types/apiTypes/session.js";
+import { AdminUserSettingClient } from "../api/apis/AdminUserSettingAPI.js";
+import { SessionClient } from "../api/frontendClient.js";
 
 export default function AdminPage ({ adminInfo }: { adminInfo: AdminUser }) {
     const [adminSettings, setAdminSettings] = useState<AdminUserSetting | null>(null);
@@ -52,23 +54,11 @@ export default function AdminPage ({ adminInfo }: { adminInfo: AdminUser }) {
         }
 
         // Update admin settings (this broadcasts via WebSocket automatically)
-        await fetch(`api/admin-user-settings/${adminSettings.admin_setting_id}`, {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(newSettings)
-        });
+        await AdminUserSettingClient.update(adminSettings.admin_setting_id, newSettings)
 
         // If there's an active session, update it too
         if (activeSession) {
-            await fetch(`api/sessions/${activeSession.session_id}`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(newSettings)
-            });
+            await SessionClient.update(activeSession.session_id,newSettings)
         }
 
         // Merge the update with existing settings

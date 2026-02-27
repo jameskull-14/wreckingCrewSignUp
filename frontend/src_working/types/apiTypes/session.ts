@@ -1,14 +1,14 @@
 // Session types matching backend schemas
 
 export enum SessionStatus {
-    ACTIVE = "Active",
-    COMPLETED = "Completed",
-    PAUSED = "Paused"
+    Active = "Active",
+    Completed = "Completed",
+    Paused = "Paused"
 }
 
 export enum SessionMode {
-    TIME = 'Time',
-    ORDER = 'Order'
+    Time = 'Time',
+    Order = 'Order'
 }
 
 export interface Session {
