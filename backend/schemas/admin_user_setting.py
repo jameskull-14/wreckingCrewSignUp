@@ -12,6 +12,7 @@ class AdminUserSettingBase(BaseModel):
     allow_song_reuse: bool = False
     session_mode: SessionMode
     songs_per_performer: int = 1
+    allow_instrument_use: bool = False
     start_time: Optional[str] = None
     end_time: Optional[str] = None
     changeover_time: Optional[str] = None
@@ -36,6 +37,7 @@ class AdminUserSettingUpdate(BaseModel):
     allow_song_reuse: Optional[bool] = None
     session_mode: Optional[SessionMode] = None
     songs_per_performer: Optional[int] = None
+    allow_instrument_use: Optional[bool] = None
     start_time: Optional[str] = None
     end_time: Optional[str] = None
     changeover_time: Optional[str] = None

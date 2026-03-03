@@ -1,10 +1,10 @@
 // Performer types matching backend schemas
 
 export enum PerformerStatus {
-    WAITING = "waiting",
-    PERFORMING = "performing",
-    COMPLETED = "completed",
-    SKIPPED = "skipped"
+    Waiting = "waiting",
+    Performing = "performing",
+    Completed = "completed",
+    Skipped = "skipped"
 }
 
 export interface Performer {

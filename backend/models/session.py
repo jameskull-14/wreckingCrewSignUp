@@ -29,6 +29,7 @@ class SessionModel(Base):
     allow_song_reuse = Column(Boolean, default=False, nullable=False)
     session_mode = Column(Enum(SessionMode, name='session_mode'), nullable=False)
     songs_per_performer = Column(Integer, default=1, nullable=False)
+    allow_instrument_use = Column(Boolean, default=False, nullable=False)
     start_time = Column(String(5), nullable=True)
     end_time = Column(String(5), nullable=True)
     changeover_time = Column(String(5), nullable=True)

@@ -27,6 +27,7 @@ export default function LaunchKaraokeSession({
           allow_song_reuse: adminSettings?.allow_song_reuse,
           session_mode: adminSettings?.session_mode || SessionMode.Order,
           songs_per_performer: adminSettings?.songs_per_performer,
+          allow_instrument_use: adminSettings?.allow_instrument_use,
           start_time: adminSettings?.start_time,
           end_time: adminSettings?.end_time,
           changeover_time: adminSettings?.changeover_time,

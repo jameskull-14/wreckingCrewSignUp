@@ -20,6 +20,7 @@ export interface Session {
     allow_song_reuse: boolean;
     session_mode: SessionMode;
     songs_per_performer: number;
+    allow_instrument_use: boolean;
     start_time?: string;
     end_time?: string;
     changeover_time?: string;
@@ -37,6 +38,7 @@ export interface SessionCreate {
     allow_song_reuse?: boolean;
     session_mode: SessionMode;
     songs_per_performer?: number;
+    allow_instrument_use?: boolean;
     start_time?: string;
     end_time?: string;
     changeover_time?: string;
@@ -51,6 +53,7 @@ export interface SessionUpdate {
     allow_song_reuse?: boolean;
     session_mode?: SessionMode;
     songs_per_performer?: number;
+    allow_instrument_use?: boolean;
     start_time?: string;
     end_time?: string;
     changeover_time?: string;

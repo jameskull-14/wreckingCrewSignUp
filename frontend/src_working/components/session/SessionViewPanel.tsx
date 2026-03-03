@@ -24,9 +24,13 @@ export default function SessionViewPanel({
 
     useEffect(()=>{
         const fetchSession = async () => {
+            if (!adminSettings?.admin_user_id) return;
+
             try {
-                const response = await fetch(`api/sessions?admin_user_id=${adminSettings?.admin_user_id}&status=Active`);
+                const response = await fetch(`api/sessions?admin_user_id=${adminSettings.admin_user_id}&status=Active`);
+                console.log('Session fetch URL:', `api/sessions?admin_user_id=${adminSettings.admin_user_id}&status=Active`);
                 const data = await response.json();
+                console.log('Session fetch response:', data);
                 setSession(data[0] || null);
             } catch(error) {
                 console.error('Failed to load session data: ', error);
@@ -34,6 +38,10 @@ export default function SessionViewPanel({
         }
 
         fetchSession();
+
+        // Poll for session every 5 seconds to catch newly created sessions
+        const interval = setInterval(fetchSession, 5000);
+        return () => clearInterval(interval);
     }, [adminSettings?.admin_user_id])
 
     useEffect(() => {
@@ -81,10 +89,15 @@ export default function SessionViewPanel({
                             Sign Up
                         </Button>
                     </DialogTrigger>
-                    <DialogContent className="bg-gradient-to-br from-gray-900 to-gray-800 border-amber-400/30">
+                    <DialogContent className="bg-gradient-to-br from-gray-900 to-gray-800 border-amber-400/30 max-w-lg">
                         <DialogHeader>
                             <DialogTitle className="text-amber-400">Sign Up for Performance</DialogTitle>
                         </DialogHeader>
+                        {!session && (
+                            <div className="text-amber-400 text-center mb-4 p-4 bg-amber-400/10 rounded-md border border-amber-400/30">
+                                ⚠️ No active session found. Please launch a karaoke session first.
+                            </div>
+                        )}
                         <SignUpModal
                             adminSettings={adminSettings}
                             session={session}
