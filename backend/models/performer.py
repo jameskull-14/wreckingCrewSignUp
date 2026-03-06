@@ -5,10 +5,10 @@ import enum
 
 
 class PerformerStatus(enum.Enum):
-    Waiting = "waiting",
-    Performing = "performing",
-    Completed = "completed",
-    Skipped = "skipped"
+    waiting = "waiting"
+    performing = "performing"
+    completed = "completed"
+    skipped = "skipped"
 
 
 class PerformerModel(Base):

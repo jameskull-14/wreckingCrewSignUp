@@ -8,8 +8,8 @@ export class PerformerSongSelectionAPI {
         this.client = client;
     }
 
-    async get(selection_id: number){
-        return this.client.request(`/api/performer-song-selections/${selection_id}`);
+    async get(session_id: string){
+        return this.client.request(`/api/performer-song-selections?session_id=${session_id}`, { method: 'GET' });
     }
 
     async create(selection_data: PerformerSongSelectionCreate){

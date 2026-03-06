@@ -1,8 +1,8 @@
 // Song types matching backend schemas
 
 export interface Song {
-    id: number;
-    title: string;
+    song_id: number;
+    song_title: string;
     artist: string;
     genre?: string;
     year_released?: number;

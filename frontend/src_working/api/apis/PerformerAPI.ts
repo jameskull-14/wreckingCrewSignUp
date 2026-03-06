@@ -9,16 +9,16 @@ export class PerformerAPI {
     }
 
     async get(performer_id: number){
-        return this.client.request(`/api/performers/${performer_id}`);
+        return this.client.request(`/api/performers/${performer_id}`, { method: 'GET' });
     }
 
-    async list(session_id?: number, status?: string){
+    async list(session_id?: string, status?: string){
         const params = new URLSearchParams();
-        if (session_id) params.append('session_id', session_id.toString());
+        if (session_id) params.append('session_id', session_id);
         if (status) params.append('status', status);
 
         const query = params.toString() ? `?${params.toString()}` : '';
-        return this.client.request(`/api/performers${query}`);
+        return this.client.request(`/api/performers${query}`, { method: 'GET' });
     }
 
     async create(performer_data: PerformerCreate){

@@ -5,60 +5,47 @@ import { Button } from "../shared/Button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "../shared/Dialog";
 import { Plus } from "lucide-react";
 import { Session } from "../../types/apiTypes/session";
-import { Performer } from "../../types/apiTypes/performer";
+import { Performer, PerformerStatus } from "../../types/apiTypes/performer";
 import { AdminUserSetting } from "../../types/apiTypes/adminUserSetting";
 import SignUpModal from "./SignUpModal";
+import { SessionClient } from "../../api/apis/SessionAPI";
+import { PerformerClient } from "../../api/apis/PerformerAPI";
+import { PerformerSongSelection } from "../../types/apiTypes/performerSongSelection";
+import { PerformerSongSelectionClient } from "../../api/frontendClient";
 
 interface SessionViewInterface{
     isAdmin: boolean,
-    adminSettings: AdminUserSetting | null
+    adminSettings: AdminUserSetting | null,
+    sessionId: string
 }
 
 export default function SessionViewPanel({
     isAdmin,
     adminSettings,
+    sessionId
 }: SessionViewInterface){
     const [queuePanels, setQueuePanels] = useState();
-    const [session, setSession] = useState<Session | null>(null);
     const [performers, setPerformers] = useState<Performer[]>([]);
+    const [performerSongSelections, setPerformerSongSelections] = useState<PerformerSongSelection[]>([]);
 
-    useEffect(()=>{
-        const fetchSession = async () => {
-            if (!adminSettings?.admin_user_id) return;
 
-            try {
-                const response = await fetch(`api/sessions?admin_user_id=${adminSettings.admin_user_id}&status=Active`);
-                console.log('Session fetch URL:', `api/sessions?admin_user_id=${adminSettings.admin_user_id}&status=Active`);
-                const data = await response.json();
-                console.log('Session fetch response:', data);
-                setSession(data[0] || null);
-            } catch(error) {
-                console.error('Failed to load session data: ', error);
-            }
+    const fetchPerformers = async () => {
+        if (!sessionId) return;
+
+        try{
+            const performerData = await PerformerClient.list(sessionId)
+            setPerformers(performerData)
+
+            const songSelectionData = await PerformerSongSelectionClient.get(sessionId)
+            setPerformerSongSelections(songSelectionData);
+        } catch(error){
+            console.error('No Performers for this admin session')
         }
-
-        fetchSession();
-
-        // Poll for session every 5 seconds to catch newly created sessions
-        const interval = setInterval(fetchSession, 5000);
-        return () => clearInterval(interval);
-    }, [adminSettings?.admin_user_id])
+    }
 
     useEffect(() => {
-        const fetchPerformers = async () => {
-            if (!session?.session_id) return;
-
-            try{
-                const response = await fetch(`api/performers?session_id=${session.session_id}`)
-                const data = await response.json();
-                setPerformers(data)
-            } catch(error){
-                console.error('No Performers for this admin session')
-            }
-        }
-
         fetchPerformers();
-    }, [session])
+    }, [sessionId])
 
     return(
         <div>
@@ -67,10 +54,10 @@ export default function SessionViewPanel({
                     <CardContent>
                         {performers.map((performer) => (
                             <QueuePanel
-                                key={performer.performer_id}
                                 isAdmin={isAdmin}
                                 adminSettings={adminSettings}
                                 performer={performer}
+                                performerSongSelections={performerSongSelections}
                             />
                         ))}
                     </CardContent>
@@ -93,15 +80,16 @@ export default function SessionViewPanel({
                         <DialogHeader>
                             <DialogTitle className="text-amber-400">Sign Up for Performance</DialogTitle>
                         </DialogHeader>
-                        {!session && (
+                        {!sessionId && (
                             <div className="text-amber-400 text-center mb-4 p-4 bg-amber-400/10 rounded-md border border-amber-400/30">
                                 ⚠️ No active session found. Please launch a karaoke session first.
                             </div>
                         )}
                         <SignUpModal
                             adminSettings={adminSettings}
-                            session={session}
+                            sessionId={sessionId}
                             performers={performers}
+                            onPerformerCreated={fetchPerformers}
                              />
                     </DialogContent>
                 </Dialog>

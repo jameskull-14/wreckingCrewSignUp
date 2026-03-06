@@ -83,8 +83,8 @@ export default function SongSearch({
                 ];
 
                 allResults.forEach(song => {
-                    if (song && song.id) {
-                        combinedMap.set(song.id, song);
+                    if (song && song.song_id) {
+                        combinedMap.set(song.song_id, song);
                     }
                 });
 
@@ -115,31 +115,31 @@ export default function SongSearch({
             return;
         }
 
-        const isAdded = allowedSongs.has(song.id);
+        const isAdded = allowedSongs.has(song.song_id);
 
         try {
             if (isAdded) {
                 // Remove song
-                console.log('Removing song:', { admin_user_id: adminUserId, song_id: song.id });
-                await AdminAllowedSongClient.delete(adminUserId, song.id);
+                console.log('Removing song:', { admin_user_id: adminUserId, song_id: song.song_id });
+                await AdminAllowedSongClient.delete(adminUserId, song.song_id);
                 console.log('Song removed successfully');
 
                 // Update local state
                 const newAllowedSongs = new Set(allowedSongs);
-                newAllowedSongs.delete(song.id);
+                newAllowedSongs.delete(song.song_id);
                 setAllowedSongs(newAllowedSongs);
             } else {
                 // Add song
-                console.log('Adding song:', { admin_user_id: adminUserId, song_id: song.id });
+                console.log('Adding song:', { admin_user_id: adminUserId, song_id: song.song_id });
                 const result = await AdminAllowedSongClient.create({
                     admin_user_id: adminUserId,
-                    song_id: song.id
+                    song_id: song.song_id
                 });
                 console.log('Song added successfully:', result);
 
                 // Update local state
                 const newAllowedSongs = new Set(allowedSongs);
-                newAllowedSongs.add(song.id);
+                newAllowedSongs.add(song.song_id);
                 setAllowedSongs(newAllowedSongs);
             }
         } catch (error) {
@@ -174,15 +174,15 @@ export default function SongSearch({
                             <Label className="text-white text-sm">Search Results ({searchResults.length})</Label>
                             <div className="max-h-64 overflow-y-auto space-y-2">
                                 {searchResults.map((song) => {
-                                    const isAdded = mode === "toggle" ? allowedSongs.has(song.id) : false;
+                                    const isAdded = mode === "toggle" ? allowedSongs.has(song.song_id) : false;
                                     return (
                                         <div
-                                            key={song.id}
+                                            key={song.song_id}
                                             className="flex items-center justify-between p-3 bg-gray-900/50 rounded-lg border border-gray-700 hover:border-amber-400/50 cursor-pointer transition-colors"
                                             onClick={() => handleSongClick(song)}
                                         >
                                             <div>
-                                                <div className="text-white font-medium">{song.title}</div>
+                                                <div className="text-white font-medium">{song.song_title}</div>
                                                 <div className="text-gray-400 text-sm">{song.artist}</div>
                                             </div>
                                             {mode === "toggle" && (

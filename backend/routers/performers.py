@@ -91,6 +91,8 @@ def create_performer(performer: schemas.PerformerCreate, db: Session = Depends(g
     ).first()
     if not session:
         raise HTTPException(status_code=400, detail="Session not found")
+    
+    print("✅ Frontend reachedcreate_performer endpoint")
 
     new_performer = models.PerformerModel(
         performer_name=performer.performer_name,

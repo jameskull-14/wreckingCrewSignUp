@@ -7,8 +7,16 @@ import { AdminUserSetting } from "../types/apiTypes/adminUserSetting.js";
 import SessionViewPanel from "../components/session/SessionViewPanel.js";
 import { WebSocketProvider, useWebSocket } from "../context/WebSocketContext.js";
 
-function PublicKaraokePageContent() {
-    const { adminId } = useParams<{ adminId: string }>();
+
+interface PublicPageInterface{
+    adminId: string,
+    sessionId: string
+}
+
+function PublicKaraokePageContent({
+    adminId,
+    sessionId
+}: PublicPageInterface) {
     const { subscribe } = useWebSocket();
     const [adminInfo, setAdminInfo] = useState<AdminUser | null>(null);
     const [adminSettings, setAdminSettings] = useState<AdminUserSetting | null>(null);
@@ -126,6 +134,7 @@ function PublicKaraokePageContent() {
                 <SessionViewPanel
                     isAdmin={false}
                     adminSettings={adminSettings}
+                    sessionId = {sessionId}
                 ></SessionViewPanel>
             </div>
         </div>
@@ -133,15 +142,18 @@ function PublicKaraokePageContent() {
 }
 
 export default function PublicKaraokePage() {
-    const { adminId } = useParams<{ adminId: string }>();
+    const { adminId, sessionId} = useParams<{ adminId:string; sessionId: string}>();
 
-    if (!adminId) {
+    if (!adminId || !sessionId) {
         return <div>Invalid session</div>;
     }
 
     return (
         <WebSocketProvider adminId={adminId}>
-            <PublicKaraokePageContent />
+            <PublicKaraokePageContent 
+                adminId={adminId}
+                sessionId={sessionId}
+            />
         </WebSocketProvider>
     );
 }

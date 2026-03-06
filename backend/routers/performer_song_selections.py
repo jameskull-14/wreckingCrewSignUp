@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import asc, desc
 from typing import List, Optional
 import models
@@ -14,10 +14,11 @@ router = APIRouter(
 
 @router.get("/", response_model=List[schemas.PerformerSongSelectionResponse])
 def get_performer_song_selections(
-    performer_id: Optional[int] = Query(None, description="Filter by performer ID"),
-    song_id: Optional[int] = Query(None, description="Filter by song ID"),
+    performer_id: Optional[str] = Query(None, description="Filter by performer ID"),
+    song_id: Optional[str] = Query(None, description="Filter by song ID"),
     selection_order: Optional[str] = Query(None, description="Filter by selection order"),
     status: Optional[str] = Query(None, description="Filter by status"),
+    session_id: Optional[str] = Query(None, description="Filter all songs in a session"),
     db: Session = Depends(get_db)
 ):
     """
@@ -36,7 +37,7 @@ def get_performer_song_selections(
     Returns:
         List of performer song selections matching the filter criteria
     """
-    query = db.query(models.PerformerSongSelectionModel)
+    query = db.query(models.PerformerSongSelectionModel).options(joinedload(models.PerformerSongSelectionModel.song))
 
     # Apply filters
     if performer_id:
@@ -47,9 +48,29 @@ def get_performer_song_selections(
         query = query.filter(models.PerformerSongSelectionModel.selection_order == selection_order)
     if status:
         query = query.filter(models.PerformerSongSelectionModel.status == status)
+    if session_id:
+        query = query.join(models.PerformerModel).filter(models.PerformerModel.session_id == session_id)
 
     selections = query.all()
-    return selections
+
+    # Map song data to response
+    result = []
+    for selection in selections:
+        selection_dict = {
+            "performer_selection_id": selection.performer_selection_id,
+            "performer_id": selection.performer_id,
+            "song_id": selection.song_id,
+            "selection_order": selection.selection_order,
+            "is_singing": selection.is_singing,
+            "instrument": selection.instrument,
+            "status": selection.status,
+            "created_at": selection.created_at,
+            "song_title": selection.song.song_title if selection.song else None,
+            "artist": selection.song.artist if selection.song else None,
+        }
+        result.append(selection_dict)
+
+    return result
 
 
 @router.get("/{selection_id}", response_model=schemas.PerformerSongSelectionResponse)

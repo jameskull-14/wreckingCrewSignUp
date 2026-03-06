@@ -28,8 +28,8 @@ class SongUpdate(BaseModel):
 
 
 class SongResponse(BaseModel):
-    song_id: int = Field(..., alias="id")
-    song_title: str = Field(..., alias="title")
+    song_id: int
+    song_title: str
     artist: str
     genre: Optional[str] = None
     year_released: Optional[int] = None

@@ -12,7 +12,9 @@ interface LaunchKaraokeSessionProps {
 }
 
 export default function LaunchKaraokeSession({
-  onUpdateSession, adminId, onOpenPublicWindow, 
+  onUpdateSession, 
+  adminId, 
+  onOpenPublicWindow, 
   adminSettings
 }: LaunchKaraokeSessionProps){
 
@@ -45,7 +47,7 @@ export default function LaunchKaraokeSession({
         localStorage.setItem(`karaoke_session_${adminId}`, 'active');
 
         // Open public window
-        const publicWindow = window.open(`/public/${adminId}`, '_blank');
+        const publicWindow = window.open(`/public/${adminId}/${session.session_id}`, '_blank');
         if (publicWindow && onOpenPublicWindow) {
           onOpenPublicWindow(publicWindow);
         }

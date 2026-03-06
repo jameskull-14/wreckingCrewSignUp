@@ -10,6 +10,8 @@ export interface PerformerSongSelection {
     instrument?: string;
     status: PerformerStatus;
     created_at: string;
+    song_title?: string;
+    artist?: string;
 }
 
 export interface PerformerSongSelectionCreate {

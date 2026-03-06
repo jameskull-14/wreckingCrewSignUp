@@ -121,7 +121,7 @@ export default function SongImportPanel() {
                       <div className="max-h-32 overflow-y-auto space-y-1">
                         {uploadResults.songs.map((song, index) => (
                           <div key={index} className="text-xs text-gray-300 bg-gray-900/50 rounded px-2 py-1">
-                            {song.title} by {song.artist}
+                            {song.song_title} by {song.artist}
                           </div>
                         ))}
                         {uploadResults.added > uploadResults.songs.length && (

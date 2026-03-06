@@ -27,6 +27,8 @@ class PerformerSongSelectionResponse(PerformerSongSelectionBase):
     performer_selection_id: int
     performer_id: int
     song_id: int
+    song_title: Optional[str] = None
+    artist: Optional[str] = None
     created_at: datetime
 
     model_config = ConfigDict(from_attributes=True)

@@ -4,14 +4,14 @@ import { AdminUserSetting } from "../../types/apiTypes/adminUserSetting";
 import { Performer, PerformerCreate, PerformerStatus } from "../../types/apiTypes/performer";
 import { PerformerSongSelectionCreate } from "../../types/apiTypes/performerSongSelection";
 import { Button } from "../shared/Button";
-import { Session } from "../../types/apiTypes/session";
 import SongSearch from "../SongSearch";
 import { PerformerClient, PerformerSongSelectionClient } from "../../api/frontendClient";
 
 interface SignUpPanelInterface{
     adminSettings: AdminUserSetting | null,
-    session: Session | null,
-    performers: Performer[]
+    sessionId: string,
+    performers: Performer[],
+    onPerformerCreated?: () => void
 }
 
 interface SongSlot {
@@ -22,8 +22,9 @@ interface SongSlot {
 
 export default function SignUpModal({
     adminSettings,
-    session,
-    performers
+    sessionId,
+    performers,
+    onPerformerCreated
 }: SignUpPanelInterface){
     const [performerName, setPerformerName] = useState("");
 
@@ -53,19 +54,24 @@ export default function SignUpModal({
         });
     };
 
-    const handleNewPeformer = async (name: string, session_Id: number) => {
+    const handleNewPeformer = async (name: string, sessionId: string) => {
+        console.log('🎤 handleNewPeformer called:', { name, sessionId, nextQueueNumber });
         try {
+            const session_Id = parseInt(sessionId);
+            console.log('📝 Parsed sessionId:', session_Id);
+
             // Create the performer first
             const performerData: PerformerCreate = {
                 performer_name: name,
                 performer_username: "Guest",
                 queue_number: nextQueueNumber,
-                status: PerformerStatus.Waiting,
-                session_id: session_Id
+                session_id: session_Id,
+                status: PerformerStatus.waiting
             }
+            console.log('📤 Sending performer data:', performerData);
 
             const createdPerformer = await PerformerClient.create(performerData);
-            console.log('Performer created:', createdPerformer);
+            console.log('✅ Performer created:', createdPerformer);
 
             // Create performer_song_selection entries for each song slot that has a song
             let selectionOrder = 1;
@@ -73,15 +79,15 @@ export default function SignUpModal({
                 if (slot.song) {
                     const songSelection: PerformerSongSelectionCreate = {
                         performer_id: createdPerformer.performer_id,
-                        song_id: slot.song.id,
+                        song_id: slot.song.song_id,
                         selection_order: selectionOrder.toString(),
                         is_singing: slot.isSinging,
                         instrument: slot.instrument || undefined,
-                        status: PerformerStatus.Waiting
+                        status: PerformerStatus.waiting
                     };
 
                     await PerformerSongSelectionClient.create(songSelection);
-                    console.log(`Song selection ${selectionOrder} created for song:`, slot.song.title);
+                    console.log(`Song selection ${selectionOrder} created for song:`, slot.song.song_title);
                     selectionOrder++;
                 }
             }
@@ -94,10 +100,14 @@ export default function SignUpModal({
                 instrument: ""
             })));
 
+            // Refresh performers list in parent
+            onPerformerCreated?.();
+
             alert('Successfully signed up!');
         } catch (error) {
-            console.error('Error creating performer or song selections:', error);
-            alert('Failed to sign up. Please try again.');
+            console.error('❌ Error creating performer or song selections:', error);
+            console.error('Error details:', error instanceof Error ? error.message : String(error));
+            alert(`Failed to sign up: ${error instanceof Error ? error.message : 'Unknown error'}`);
         }
     }
 
@@ -131,7 +141,7 @@ export default function SignUpModal({
                         {slot.song ? (
                             <div className="flex items-center justify-between p-2 bg-gray-800 border-2 border-amber-400/30 rounded-md">
                                 <div>
-                                    <p className="text-white font-medium text-sm">{slot.song.title}</p>
+                                    <p className="text-white font-medium text-sm">{slot.song.song_title}</p>
                                     <p className="text-gray-400 text-xs">{slot.song.artist}</p>
                                 </div>
                                 <button
@@ -196,16 +206,16 @@ export default function SignUpModal({
             ))}
 
             <div className="text-white text-xs text-center mb-2">
-                Debug: Name: {performerName ? '✓' : '✗'} | Session: {session?.session_id ? '✓' : '✗'}
+                Debug: Name: {performerName ? '✓' : '✗'} | Session: {sessionId ? '✓' : '✗'}
             </div>
             <Button
                 className="flex items-center gap-2 w-1/2 mx-auto"
                 style={{ backgroundColor: '#16a34a' }}
                 onClick={() => {
-                    if (!session?.session_id || !performerName.trim()) return;
-                    handleNewPeformer(performerName, session.session_id);
+                    if (!sessionId || !performerName.trim()) return;
+                    handleNewPeformer(performerName, sessionId);
                 }}
-                disabled={!performerName.trim() || !session?.session_id}
+                disabled={!performerName.trim() || !sessionId}
                 onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#15803d'}
                 onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#16a34a'}
             >
