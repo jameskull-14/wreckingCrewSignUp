@@ -28,8 +28,12 @@ export default function QueuePanel({
                                     <div key={selection.performer_selection_id} className="text-white">
                                         <span className="text-amber-400">Song {index + 1}:</span>{' '}
                                         {selection.song_title || 'Unknown Song'} - {selection.artist || 'Unknown Artist'}
-                                        {selection.is_singing ? " (Singing)" : " (Instrumental)"}
-                                        {selection.instrument ? ` - ${selection.instrument}` : ""}
+                                        {adminSettings?.allow_instrument_use && (
+                                            <>
+                                                {' '}({selection.is_singing ? " Singing " : ""}
+                                                {selection.instrument ? ` - ${selection.instrument}` : ""})
+                                            </>
+                                        )}
                                     </div>
                                 ))}
                             </div>

@@ -4,14 +4,13 @@ import QueuePanel from "./QueuePanel";
 import { Button } from "../shared/Button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "../shared/Dialog";
 import { Plus } from "lucide-react";
-import { Session } from "../../types/apiTypes/session";
-import { Performer, PerformerStatus } from "../../types/apiTypes/performer";
+import { Performer } from "../../types/apiTypes/performer";
 import { AdminUserSetting } from "../../types/apiTypes/adminUserSetting";
 import SignUpModal from "./SignUpModal";
-import { SessionClient } from "../../api/apis/SessionAPI";
 import { PerformerClient } from "../../api/apis/PerformerAPI";
 import { PerformerSongSelection } from "../../types/apiTypes/performerSongSelection";
 import { PerformerSongSelectionClient } from "../../api/frontendClient";
+import { useWebSocket } from "../../context/WebSocketContext";
 
 interface SessionViewInterface{
     isAdmin: boolean,
@@ -24,6 +23,7 @@ export default function SessionViewPanel({
     adminSettings,
     sessionId
 }: SessionViewInterface){
+    const { subscribe } = useWebSocket();
     const [queuePanels, setQueuePanels] = useState();
     const [performers, setPerformers] = useState<Performer[]>([]);
     const [performerSongSelections, setPerformerSongSelections] = useState<PerformerSongSelection[]>([]);
@@ -47,10 +47,27 @@ export default function SessionViewPanel({
         fetchPerformers();
     }, [sessionId])
 
+    // Subscribe to WebSocket updates for real-time performer changes
+    useEffect(() => {
+        const unsubscribe = subscribe((message) => {
+            console.log('📡 WebSocket message received in SessionViewPanel:', message);
+
+            // When a performer is created, refresh the list
+            if (message.type === 'performer_created') {
+                console.log('🎤 New performer created, refreshing list...');
+                fetchPerformers();
+            }
+        });
+
+        // Cleanup: unsubscribe when component unmounts
+        return unsubscribe;
+    }, [subscribe])
+
     return(
-        <div>
+        <div style={{ maxWidth: '750px', margin: '2rem auto', padding: '0 1rem' }}>
             <Card className="bg-gradient-to-br from-gray-900 to-gray-800 border-amber-400/30">
                 <CardHeader className="border-b border-amber-400/20">
+                    <h2 className="text-3xl font-bold text-amber-400 text-center mb-4">Tonight's Schedule</h2>
                     <CardContent>
                         {performers.map((performer) => (
                             <QueuePanel

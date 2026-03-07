@@ -7,6 +7,7 @@ import { Session } from "../../types/apiTypes/session.js";
 import { useRef } from "react";
 import EndKaraokeSession from "./header/EndKaraokeSession.js";
 import AdminQRCode from "./header/AdminQRCode.js";
+import SessionViewPanel from "../session/SessionViewPanel.js";
 
 
 export default function AdminControlPanel({
@@ -89,6 +90,11 @@ export default function AdminControlPanel({
                     />
                 </div>
             </CardHeader>
+            <SessionViewPanel
+                isAdmin = {true}
+                adminSettings={adminSettings}
+                sessionId='something'
+            />
         </Card>
     );
 }
