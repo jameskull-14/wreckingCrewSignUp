@@ -7,6 +7,6 @@ export interface AdminControlPanelProps {
     onUpdateAdminSettings: (settings: AdminUserSettingUpdate) => void;
     adminInfo: AdminUser;
     activeSession: Session | null;
-    setActiveSession: (session: Session | null) => void;
+    setActiveSession: (session: Session | null) => void; 
 }
 

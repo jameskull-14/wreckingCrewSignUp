@@ -18,3 +18,4 @@ class SongModel(Base):
     admin_allowed_songs = relationship("AdminAllowedSongModel", back_populates="song")
     performer_song_selections = relationship("PerformerSongSelectionModel", back_populates="song")
     session_songs = relationship("SessionSongModel", back_populates="song")
+    song_list_items = relationship("SongListItemModel", back_populates="song")

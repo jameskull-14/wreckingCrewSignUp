@@ -22,3 +22,4 @@ class AdminUserModel(Base):
     admin_allowed_songs = relationship("AdminAllowedSongModel", back_populates="admin_user")
     admin_user_setting = relationship("AdminUserSettingModel", back_populates="admin_user", uselist=False)
     sessions = relationship("SessionModel", back_populates="admin_user")
+    song_lists = relationship("SongListModel", back_populates="admin_user")

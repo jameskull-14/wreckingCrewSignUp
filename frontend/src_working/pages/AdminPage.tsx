@@ -7,12 +7,13 @@ import { AdminUserSetting, AdminUserSettingUpdate } from "../types/apiTypes/admi
 import { Session } from "../types/apiTypes/session.js";
 import { AdminUserSettingClient } from "../api/apis/AdminUserSettingAPI.js";
 import { SessionClient } from "../api/frontendClient.js";
-import { WebSocketProvider } from "../context/WebSocketContext.js";
+import { WebSocketProvider, useWebSocket } from "../context/WebSocketContext.js";
 
 export default function AdminPage ({ adminInfo }: { adminInfo: AdminUser }) {
     const [adminSettings, setAdminSettings] = useState<AdminUserSetting | null>(null);
     const [adminData, setAdminData] = useState<AdminUser | null>(null);
     const [activeSession, setActiveSession] = useState<Session | null>(null);
+    
 
     useEffect(() => {
         const loadData = async () => {
@@ -105,7 +106,7 @@ export default function AdminPage ({ adminInfo }: { adminInfo: AdminUser }) {
                             onUpdateAdminSettings={updateAdminSettings}
                             adminInfo={adminInfo}
                             activeSession={activeSession}
-                            setActiveSession={setActiveSession}
+                            setActiveSession={setActiveSession} 
                         />
                     </div>
                 </div>

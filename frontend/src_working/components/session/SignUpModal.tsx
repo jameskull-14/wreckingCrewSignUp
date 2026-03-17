@@ -100,7 +100,7 @@ export default function SignUpModal({
                 instrument: ""
             })));
 
-            // Refresh performers list in parent
+            // Refresh performers list in parent (now that songs are created too)
             onPerformerCreated?.();
 
             alert('Successfully signed up!');

@@ -10,7 +10,7 @@ interface AdminQRCodeProps {
 }
 
 export default function AdminQRCode({ adminId, onOpenFullPage }: AdminQRCodeProps) {
-    const signupUrl = `${window.location.origin}/public/${adminId}`;
+    const signupUrl = `${window.location.origin}/public_session/${adminId}`;
 
     const handleOpenFullPage = () => {
         const qrWindow = window.open(`/qr/${adminId}`, '_blank');

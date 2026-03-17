@@ -11,7 +11,10 @@ from routers import (
     admin_user_settings,
     sessions,
     session_songs,
-    websockets
+    websockets,
+    song_lists,
+    song_list_items,
+    session_song_lists
 )
 
 
@@ -40,6 +43,9 @@ app.include_router(admin_user_settings.router)
 app.include_router(sessions.router)
 app.include_router(session_songs.router)
 app.include_router(websockets.router)
+app.include_router(song_lists.router)
+app.include_router(song_list_items.router)
+app.include_router(session_song_lists.router)
 
 # Root endpoint
 @app.get("/")

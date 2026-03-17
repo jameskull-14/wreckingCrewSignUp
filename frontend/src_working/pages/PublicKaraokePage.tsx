@@ -6,6 +6,7 @@ import { AdminUser } from "../types/apiTypes/adminUser.js";
 import { AdminUserSetting } from "../types/apiTypes/adminUserSetting.js";
 import SessionViewPanel from "../components/session/SessionViewPanel.js";
 import { WebSocketProvider, useWebSocket } from "../context/WebSocketContext.js";
+import { AdminUserClient, AdminUserSettingClient, SessionClient } from "../api/frontendClient.js";
 
 
 interface PublicPageInterface{
@@ -20,38 +21,41 @@ function PublicKaraokePageContent({
     const { subscribe } = useWebSocket();
     const [adminInfo, setAdminInfo] = useState<AdminUser | null>(null);
     const [adminSettings, setAdminSettings] = useState<AdminUserSetting | null>(null);
-    const [sessionActive, setSessionActive] = useState(() =>
-        localStorage.getItem(`karaoke_session_${adminId}`) === 'active'
-    );
+    const [sessionActive, setSessionActive] = useState(false);
 
     useEffect(() => {
         const loadData = async () => {
             try {
-                // Fetch admin info and settings in parallel for better performance
-                const [adminRes, settingsRes] = await Promise.all([
-                    fetch(`/api/admin-users/${adminId}`),
-                    fetch(`/api/admin-user-settings?admin_user_id=${adminId}`)
+                // Fetch admin info, settings, and verify session status
+                const [adminData, settingsData] = await Promise.all([
+                    AdminUserClient.get(parseInt(adminId)),
+                    AdminUserSettingClient.list(parseInt(adminId))
                 ]);
 
-                if (adminRes.ok) {
-                    const adminData = await adminRes.json();
-                    setAdminInfo(adminData);
+                setAdminInfo(adminData);
+
+                // API returns an array, get the first item
+                if (settingsData && settingsData.length > 0) {
+                    setAdminSettings(settingsData[0]);
                 }
 
-                if (settingsRes.ok) {
-                    const settingsData = await settingsRes.json();
-                    // API returns an array, get the first item
-                    if (settingsData && settingsData.length > 0) {
-                        setAdminSettings(settingsData[0]);
-                    }
+                // Check if THIS specific session is actually active
+                const session = await SessionClient.get(parseInt(sessionId));
+
+                // Only set active if session exists and status is "Active" (not "Complete")
+                if (session && session.status === 'Active') {
+                    setSessionActive(true);
+                } else {
+                    setSessionActive(false);
                 }
             } catch (error) {
                 console.error("Failed to load admin data:", error);
+                setSessionActive(false);
             }
         };
 
-        if (adminId) loadData();
-    }, [adminId]);
+        if (adminId && sessionId) loadData();
+    }, [adminId, sessionId]);
 
     // Subscribe to WebSocket updates for real-time setting changes
     useEffect(() => {

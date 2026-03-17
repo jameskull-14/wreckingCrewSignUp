@@ -9,7 +9,7 @@ export class SessionAPI {
     }
 
     async get(session_id: number){
-        return this.client.request(`/api/sessions/${session_id}`);
+        return this.client.request(`/api/sessions/${session_id}`, { method: 'GET' });
     }
 
     async list(admin_user_id?: number, status?: string){
@@ -18,7 +18,7 @@ export class SessionAPI {
         if (status) params.append('status', status);
 
         const query = params.toString() ? `?${params.toString()}` : '';
-        return this.client.request(`/api/sessions${query}`);
+        return this.client.request(`/api/sessions${query}`, { method: 'GET' });
     }
 
     async create(session_data: SessionCreate){

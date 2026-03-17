@@ -9,7 +9,7 @@ export class AdminUserAPI {
     }
 
     async get(admin_user_id: number){
-        return this.client.request(`/api/admin-users/${admin_user_id}`);
+        return this.client.request(`/api/admin-users/${admin_user_id}`, { method: 'GET' });
     }
 
     async list(email?: string){
@@ -17,7 +17,7 @@ export class AdminUserAPI {
         if (email) params.append('email', email);
 
         const query = params.toString() ? `?${params.toString()}` : '';
-        return this.client.request(`/api/admin-users${query}`);
+        return this.client.request(`/api/admin-users${query}`, { method: 'GET' });
     }
 
     async create(user_data: AdminUserCreate){

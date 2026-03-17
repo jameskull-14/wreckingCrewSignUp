@@ -9,7 +9,7 @@ export class AdminUserSettingAPI {
     }
 
     async get(setting_id: number){
-        return this.client.request(`/api/admin-user-settings/${setting_id}`);
+        return this.client.request(`/api/admin-user-settings/${setting_id}`, { method: 'GET' });
     }
 
     async list(admin_user_id?: number){
@@ -17,7 +17,7 @@ export class AdminUserSettingAPI {
         if (admin_user_id) params.append('admin_user_id', admin_user_id.toString());
 
         const query = params.toString() ? `?${params.toString()}` : '';
-        return this.client.request(`/api/admin-user-settings${query}`);
+        return this.client.request(`/api/admin-user-settings${query}`, { method: 'GET' });
     }
 
     async create(setting_data: AdminUserSettingCreate){

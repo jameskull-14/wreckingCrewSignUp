@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { Card, CardContent, CardHeader } from "../shared/Card";
 import QueuePanel from "./QueuePanel";
 import { Button } from "../shared/Button";
@@ -27,11 +27,16 @@ export default function SessionViewPanel({
     const [queuePanels, setQueuePanels] = useState();
     const [performers, setPerformers] = useState<Performer[]>([]);
     const [performerSongSelections, setPerformerSongSelections] = useState<PerformerSongSelection[]>([]);
+    const [isDialogOpen, setIsDialogOpen] = useState(false);
 
 
-    const fetchPerformers = async () => {
-        if (!sessionId) return;
+    const fetchPerformers = useCallback(async () => {
+        if (!sessionId) {
+            console.log('⚠️ fetchPerformers called but no sessionId');
+            return;
+        }
 
+        console.log('🔄 Fetching performers for session:', sessionId);
         try{
             const performerData = await PerformerClient.list(sessionId)
             setPerformers(performerData)
@@ -41,7 +46,7 @@ export default function SessionViewPanel({
         } catch(error){
             console.error('No Performers for this admin session')
         }
-    }
+    }, [sessionId])
 
     useEffect(() => {
         fetchPerformers();
@@ -55,13 +60,16 @@ export default function SessionViewPanel({
             // When a performer is created, refresh the list
             if (message.type === 'performer_created') {
                 console.log('🎤 New performer created, refreshing list...');
-                fetchPerformers();
+                // Small delay to allow song selections to be created
+                setTimeout(() => {
+                    fetchPerformers();
+                }, 500); // 500ms delay
             }
         });
 
         // Cleanup: unsubscribe when component unmounts
         return unsubscribe;
-    }, [subscribe])
+    }, [subscribe, fetchPerformers])
 
     return(
         <div style={{ maxWidth: '750px', margin: '2rem auto', padding: '0 1rem' }}>
@@ -81,7 +89,7 @@ export default function SessionViewPanel({
                 </CardHeader>
             </Card>
             <div className="flex justify-center mt-4">
-                <Dialog>
+                <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                     <DialogTrigger asChild>
                         <Button
                             className="flex items-center gap-2"
@@ -106,7 +114,10 @@ export default function SessionViewPanel({
                             adminSettings={adminSettings}
                             sessionId={sessionId}
                             performers={performers}
-                            onPerformerCreated={fetchPerformers}
+                            onPerformerCreated={() => {
+                                fetchPerformers();
+                                setIsDialogOpen(false); // Close dialog after successful signup
+                            }}
                              />
                     </DialogContent>
                 </Dialog>

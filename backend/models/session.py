@@ -41,3 +41,4 @@ class SessionModel(Base):
     performers = relationship("PerformerModel", back_populates="session")
     admin_user = relationship("AdminUserModel", back_populates="sessions")
     session_songs = relationship("SessionSongModel", back_populates="session")
+    session_song_lists = relationship("SessionSongListModel", back_populates="session")

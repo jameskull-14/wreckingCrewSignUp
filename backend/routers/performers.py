@@ -70,7 +70,7 @@ def get_performer(performer_id: int, db: Session = Depends(get_db)):
 
 
 @router.post("/", response_model=schemas.PerformerResponse)
-def create_performer(performer: schemas.PerformerCreate, db: Session = Depends(get_db)):
+async def create_performer(performer: schemas.PerformerCreate, db: Session = Depends(get_db)):
     """
     Create a new performer.
 
@@ -86,6 +86,8 @@ def create_performer(performer: schemas.PerformerCreate, db: Session = Depends(g
     Raises:
         HTTPException: 400 error if session doesn't exist
     """
+
+    print("call session")
     # Verify session exists
     session = db.query(models.SessionModel).filter(
         models.SessionModel.session_id == performer.session_id
@@ -111,17 +113,14 @@ def create_performer(performer: schemas.PerformerCreate, db: Session = Depends(g
     admin_id = session.admin_user_id
 
     # Broadcast to all connected clients for this admin
-    import asyncio
-    asyncio.create_task(
-        manager.broadcast(admin_id, {
-            "type": "performer_created",
-            "data": {
-                "performer_id": new_performer.performer_id,
-                "performer_name": new_performer.performer_name,
-                "session_id": new_performer.session_id
-            }
-        })
-    )
+    await manager.broadcast(admin_id, {
+        "type": "performer_created",
+        "data": {
+            "performer_id": new_performer.performer_id,
+            "performer_name": new_performer.performer_name,
+            "session_id": new_performer.session_id
+        }
+    })
 
     return new_performer
 

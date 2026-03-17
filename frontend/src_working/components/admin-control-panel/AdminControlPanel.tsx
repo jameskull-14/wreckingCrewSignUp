@@ -21,6 +21,7 @@ export default function AdminControlPanel({
     const publicWindowRef = useRef<Window | null>(null);
     const qrWindowRef = useRef<Window | null>(null);
 
+
     const onUpdateSession = async (session: Session | null) => {
         setActiveSession(session);
 
@@ -90,11 +91,13 @@ export default function AdminControlPanel({
                     />
                 </div>
             </CardHeader>
-            <SessionViewPanel
-                isAdmin = {true}
-                adminSettings={adminSettings}
-                sessionId='something'
-            />
+            {activeSession && (
+                <SessionViewPanel
+                    isAdmin = {true}
+                    adminSettings={adminSettings}
+                    sessionId={activeSession.session_id.toString()}
+                />
+            )}
         </Card>
     );
 }
