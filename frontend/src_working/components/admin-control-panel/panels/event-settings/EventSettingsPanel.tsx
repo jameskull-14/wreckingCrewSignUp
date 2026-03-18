@@ -5,6 +5,7 @@ import { Switch } from "../../../shared/Switch.js";
 import { Label } from "../../../shared/Label.js";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../../shared/Select.js";
 import SongSettingsPanel from "./SongSettingsPanel.js";
+import ImportSongsPanel from "./ImportSongsPanel.js";
 import { useState, useEffect } from "react";
 import { CardContent } from "../../../shared/Card.js";
 import { Input } from "../../../shared/Input.js";
@@ -82,6 +83,7 @@ export default function EventSettingsPanel({
                     Save
                 </Button>
             </CardContent>
+            <ImportSongsPanel />
             <SessionModePanel 
                 onUpdateAdminSettings = {onUpdateAdminSettings}
                 adminSettings={adminSettings}
