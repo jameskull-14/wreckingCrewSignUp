@@ -1,5 +1,6 @@
 import { AdminUser } from "../apiTypes/adminUser";
 import { AdminUserSetting, AdminUserSettingUpdate } from "../apiTypes/adminUserSetting";
+import { Session } from "../apiTypes/session";
 
 // Base props for components that need admin settings but not session state
 // Used by NavigationContent, EventSettingsPanel, SessionModePanel, etc.
@@ -9,5 +10,8 @@ export interface SettingsPanelBaseProps {
     adminInfo: AdminUser;
 }
 
-// Alias for backward compatibility
-export interface NavigationContentProps extends SettingsPanelBaseProps {}
+// NavigationContent props - includes session launch trigger and active session
+export interface NavigationContentProps extends SettingsPanelBaseProps {
+    sessionLaunchTrigger?: number;
+    activeSession?: Session | null;
+}

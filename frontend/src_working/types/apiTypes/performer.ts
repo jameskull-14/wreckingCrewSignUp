@@ -7,6 +7,11 @@ export enum PerformerStatus {
     skipped = "skipped"
 }
 
+export enum PerformerType {
+    individual = "individual",
+    group = "group"
+}
+
 export interface Performer {
     performer_id: number;
     performer_name: string;
@@ -14,6 +19,7 @@ export interface Performer {
     queue_number: number;
     status: PerformerStatus;
     session_id: number;
+    performer_type: PerformerType;
 }
 
 export interface PerformerCreate {
@@ -22,6 +28,7 @@ export interface PerformerCreate {
     queue_number: number;
     status: PerformerStatus;
     session_id: number;
+    performer_type?: PerformerType;
 }
 
 export interface PerformerUpdate {
@@ -29,4 +36,5 @@ export interface PerformerUpdate {
     performer_username?: string;
     queue_number?: number;
     status?: PerformerStatus;
+    performer_type?: PerformerType;
 }

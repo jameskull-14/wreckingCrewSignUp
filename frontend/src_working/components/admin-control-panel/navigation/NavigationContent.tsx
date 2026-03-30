@@ -10,7 +10,9 @@ import ExportPanel from "../panels/export/export-panel.js";
 export default function NavigationContent({
     adminSettings,
     onUpdateAdminSettings,
-    adminInfo
+    adminInfo,
+    sessionLaunchTrigger,
+    activeSession
 }: NavigationContentProps) {
 
     return (
@@ -18,7 +20,7 @@ export default function NavigationContent({
             <TabsList className="bg-gray-800 border border-amber-400/30">
                 <TabsTrigger value="overview">Overview</TabsTrigger>
                 <TabsTrigger value="settings">Event Settings</TabsTrigger>
-                <TabsTrigger value="database">Song Database</TabsTrigger>
+                <TabsTrigger value="database">Session Songs</TabsTrigger>
                 <TabsTrigger value="export">Export</TabsTrigger>
             </TabsList>
 
@@ -27,7 +29,7 @@ export default function NavigationContent({
             </TabsContent>
 
             <TabsContent value="settings">
-                <EventSettingsPanel 
+                <EventSettingsPanel
                     adminSettings = {adminSettings}
                     onUpdateAdminSettings = {onUpdateAdminSettings}
                     adminInfo = {adminInfo}
@@ -35,7 +37,11 @@ export default function NavigationContent({
             </TabsContent>
 
             <TabsContent value="database">
-                <SongDatabasePanel />
+                <SongDatabasePanel
+                    adminInfo={adminInfo}
+                    sessionLaunchTrigger={sessionLaunchTrigger}
+                    activeSession={activeSession}
+                />
             </TabsContent>
 
             <TabsContent value="export">

@@ -39,6 +39,20 @@ export class SongListAPI {
             method: 'DELETE',
         })
     }
+
+    async uploadCSV(file: File, admin_user_id: number, list_name: string) {
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('admin_user_id', admin_user_id.toString());
+        formData.append('list_name', list_name);
+
+        return this.client.request('/api/song-lists/upload', {
+            method: 'POST',
+            body: formData,
+            // Don't set Content-Type header - browser will set it with boundary
+            headers: {}
+        });
+    }
 }
 
 export const SongListClient = new SongListAPI(apiClient);

@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
+from sqlalchemy import or_
 from typing import List, Optional
 import models
 import schemas
@@ -9,6 +10,71 @@ router = APIRouter(
     prefix="/api/session-songs",
     tags=["session-songs"]
 )
+
+
+@router.get("/search", response_model=List[schemas.SessionSongResponse])
+def search_session_songs(
+    session_id: int = Query(..., description="Session ID to search within"),
+    search_term: str = Query(..., description="Search term for song title or artist"),
+    db: Session = Depends(get_db)
+):
+    """
+    Search for songs within a specific session.
+
+    Searches songs that are part of a session by title or artist.
+    Case-insensitive partial matching.
+
+    Args:
+        session_id: The session ID to search within
+        search_term: The search term to match against song title or artist
+        db: Database session (injected)
+
+    Returns:
+        List of session songs matching the search criteria with song details
+    """
+    print(f"\n🔍 SESSION SONG SEARCH")
+    print(f"  Session ID: {session_id}")
+    print(f"  Search term: '{search_term}'")
+
+    query = db.query(
+        models.SessionSongModel.session_id,
+        models.SessionSongModel.song_id,
+        models.SongModel.song_title,
+        models.SongModel.artist
+    ).join(
+        models.SongModel,
+        models.SessionSongModel.song_id == models.SongModel.song_id
+    ).filter(
+        models.SessionSongModel.session_id == session_id
+    )
+
+    # Search in both song_title and artist (case-insensitive)
+    search_filter = or_(
+        models.SongModel.song_title.ilike(f"%{search_term}%"),
+        models.SongModel.artist.ilike(f"%{search_term}%")
+    )
+    query = query.filter(search_filter)
+
+    session_songs = query.all()
+    print(f"  Found {len(session_songs)} matching songs")
+
+    # Convert to dict format for response
+    results = [
+        {
+            "session_id": song.session_id,
+            "song_id": song.song_id,
+            "song_title": song.song_title,
+            "artist": song.artist
+        }
+        for song in session_songs
+    ]
+
+    if results:
+        print(f"  Returning songs: {[s['song_title'] for s in results]}")
+    else:
+        print(f"  No songs found")
+
+    return results
 
 
 @router.get("/", response_model=List[schemas.SessionSongResponse])
@@ -22,6 +88,7 @@ def get_session_songs(
 
     Retrieves a list of session-song associations from the database with support
     for filtering by session or song. All filter parameters are optional.
+    Includes song details (title, artist).
 
     Args:
         session_id: Filter by exact session ID
@@ -29,9 +96,17 @@ def get_session_songs(
         db: Database session (injected)
 
     Returns:
-        List of session songs matching the filter criteria
+        List of session songs matching the filter criteria with song details
     """
-    query = db.query(models.SessionSongModel)
+    query = db.query(
+        models.SessionSongModel.session_id,
+        models.SessionSongModel.song_id,
+        models.SongModel.song_title,
+        models.SongModel.artist
+    ).join(
+        models.SongModel,
+        models.SessionSongModel.song_id == models.SongModel.song_id
+    )
 
     # Apply filters
     if session_id:
@@ -40,7 +115,17 @@ def get_session_songs(
         query = query.filter(models.SessionSongModel.song_id == song_id)
 
     session_songs = query.all()
-    return session_songs
+
+    # Convert to dict format for response
+    return [
+        {
+            "session_id": song.session_id,
+            "song_id": song.song_id,
+            "song_title": song.song_title,
+            "artist": song.artist
+        }
+        for song in session_songs
+    ]
 
 
 @router.post("/", response_model=schemas.SessionSongResponse)
@@ -94,7 +179,14 @@ def create_session_song(
     db.add(new_session_song)
     db.commit()
     db.refresh(new_session_song)
-    return new_session_song
+
+    # Return with song details
+    return {
+        "session_id": new_session_song.session_id,
+        "song_id": new_session_song.song_id,
+        "song_title": song.song_title,
+        "artist": song.artist
+    }
 
 
 @router.delete("/{session_id}/{song_id}", status_code=204)

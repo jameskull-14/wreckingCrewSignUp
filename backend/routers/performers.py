@@ -102,7 +102,8 @@ async def create_performer(performer: schemas.PerformerCreate, db: Session = Dep
         performer_username=performer.performer_username,
         queue_number=performer.queue_number,
         status=performer.status,
-        session_id=performer.session_id
+        session_id=performer.session_id,
+        performer_type=performer.performer_type
     )
 
     db.add(new_performer)
@@ -126,7 +127,7 @@ async def create_performer(performer: schemas.PerformerCreate, db: Session = Dep
 
 
 @router.put("/{performer_id}", response_model=schemas.PerformerResponse)
-def update_performer(
+async def update_performer(
     performer_id: int,
     performer: schemas.PerformerUpdate,
     db: Session = Depends(get_db)
@@ -162,6 +163,25 @@ def update_performer(
 
     db.commit()
     db.refresh(db_performer)
+
+    # Get admin_id for this session to broadcast the update
+    session = db.query(models.SessionModel).filter(
+        models.SessionModel.session_id == db_performer.session_id
+    ).first()
+
+    if session:
+        admin_id = session.admin_user_id
+
+        # Broadcast to all connected clients for this admin
+        await manager.broadcast(admin_id, {
+            "type": "performer_updated",
+            "data": {
+                "performer_id": db_performer.performer_id,
+                "performer_name": db_performer.performer_name,
+                "session_id": db_performer.session_id
+            }
+        })
+
     return db_performer
 
 

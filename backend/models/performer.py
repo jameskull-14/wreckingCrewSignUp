@@ -11,6 +11,11 @@ class PerformerStatus(enum.Enum):
     skipped = "skipped"
 
 
+class PerformerType(enum.Enum):
+    individual = "individual"
+    group = "group"
+
+
 class PerformerModel(Base):
     __tablename__ = "performer"
     __table_args__ = {'schema': 'public'}
@@ -21,6 +26,7 @@ class PerformerModel(Base):
     performer_username = Column(String(255), default="Guest", nullable=False)
     queue_number = Column(Integer, nullable=False, index=True)
     status = Column(Enum(PerformerStatus), nullable=False, index=True)
+    performer_type = Column(Enum(PerformerType), nullable=False, default=PerformerType.individual, server_default='individual')
 
     # Relationships
     session = relationship("SessionModel", back_populates="performers")

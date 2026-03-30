@@ -29,9 +29,17 @@ def get_admin_allowed_songs(
         db: Database session (injected)
 
     Returns:
-        List of admin allowed songs matching the filter criteria
+        List of admin allowed songs matching the filter criteria with song details
     """
-    query = db.query(models.AdminAllowedSongModel)
+    query = db.query(
+        models.AdminAllowedSongModel.admin_user_id,
+        models.AdminAllowedSongModel.song_id,
+        models.SongModel.song_title,
+        models.SongModel.artist
+    ).join(
+        models.SongModel,
+        models.AdminAllowedSongModel.song_id == models.SongModel.song_id
+    )
 
     # Apply filters
     if admin_user_id:
@@ -40,7 +48,17 @@ def get_admin_allowed_songs(
         query = query.filter(models.AdminAllowedSongModel.song_id == song_id)
 
     allowed_songs = query.all()
-    return allowed_songs
+
+    # Convert to dict format for response
+    return [
+        {
+            "admin_user_id": song.admin_user_id,
+            "song_id": song.song_id,
+            "song_title": song.song_title,
+            "artist": song.artist
+        }
+        for song in allowed_songs
+    ]
 
 
 @router.post("/", response_model=schemas.AdminAllowedSongResponse)
@@ -95,6 +113,81 @@ def create_admin_allowed_song(
     db.commit()
     db.refresh(new_allowed_song)
     return new_allowed_song
+
+
+@router.post("/copy-from-session/{session_id}")
+def copy_songs_from_session(
+    session_id: int,
+    admin_user_id: int = Query(..., description="Admin user ID to copy songs to"),
+    db: Session = Depends(get_db)
+):
+    """
+    Copy all songs from a session to admin_allowed_song table.
+
+    Args:
+        session_id: The session ID to copy songs from
+        admin_user_id: The admin user ID to add songs for
+        db: Database session (injected)
+
+    Returns:
+        Dictionary with counts of added and skipped songs
+
+    Raises:
+        HTTPException: 404 error if session not found
+        HTTPException: 400 error if admin user not found
+    """
+    # Verify session exists
+    session = db.query(models.SessionModel).filter(
+        models.SessionModel.session_id == session_id
+    ).first()
+    if not session:
+        raise HTTPException(status_code=404, detail="Session not found")
+
+    # Verify admin user exists
+    admin_user = db.query(models.AdminUserModel).filter(
+        models.AdminUserModel.admin_user_id == admin_user_id
+    ).first()
+    if not admin_user:
+        raise HTTPException(status_code=400, detail="Admin user not found")
+
+    # Get all songs from session_song for this session
+    session_songs = db.query(models.SessionSongModel).filter(
+        models.SessionSongModel.session_id == session_id
+    ).all()
+
+    if not session_songs:
+        return {"added": 0, "skipped": 0, "total": 0}
+
+    song_ids = {ss.song_id for ss in session_songs}
+
+    # Get existing allowed songs for this admin
+    existing_allowed = db.query(models.AdminAllowedSongModel.song_id).filter(
+        models.AdminAllowedSongModel.admin_user_id == admin_user_id,
+        models.AdminAllowedSongModel.song_id.in_(song_ids)
+    ).all()
+
+    existing_song_ids = {row.song_id for row in existing_allowed}
+
+    # Filter out songs that are already allowed
+    new_song_ids = song_ids - existing_song_ids
+
+    # Create new admin_allowed_song entries
+    added_count = 0
+    for song_id in new_song_ids:
+        admin_allowed_song = models.AdminAllowedSongModel(
+            admin_user_id=admin_user_id,
+            song_id=song_id
+        )
+        db.add(admin_allowed_song)
+        added_count += 1
+
+    db.commit()
+
+    return {
+        "added": added_count,
+        "skipped": len(existing_song_ids),
+        "total": len(song_ids)
+    }
 
 
 @router.delete("/{admin_user_id}/{song_id}", status_code=204)

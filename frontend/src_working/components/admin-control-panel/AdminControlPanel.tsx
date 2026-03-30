@@ -4,7 +4,7 @@ import LaunchKaraokeSession from "./header/LaunchKaraokeSession.js";
 import NavigationContent from "./navigation/NavigationContent.js";
 import { AdminControlPanelProps } from "../../types/componentTypes/adminControlPanelProps.js";
 import { Session } from "../../types/apiTypes/session.js";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import EndKaraokeSession from "./header/EndKaraokeSession.js";
 import AdminQRCode from "./header/AdminQRCode.js";
 import SessionViewPanel from "../session/SessionViewPanel.js";
@@ -20,13 +20,31 @@ export default function AdminControlPanel({
 
     const publicWindowRef = useRef<Window | null>(null);
     const qrWindowRef = useRef<Window | null>(null);
+    const [sessionLaunchTrigger, setSessionLaunchTrigger] = useState(0);
 
 
     const onUpdateSession = async (session: Session | null) => {
+        console.log('\n========================================');
+        console.log('AdminControlPanel: onUpdateSession called');
+        console.log('  Previous activeSession:', activeSession);
+        console.log('  New session:', session);
+        console.log('========================================\n');
+
         setActiveSession(session);
+
+        // Increment trigger when session starts to refresh allowed songs
+        if (session) {
+            console.log('  → Session started, incrementing sessionLaunchTrigger');
+            setSessionLaunchTrigger(prev => {
+                const newValue = prev + 1;
+                console.log('    sessionLaunchTrigger:', prev, '->', newValue);
+                return newValue;
+            });
+        }
 
         // Close all windows when ending session
         if (!session) {
+            console.log('  → Session ended, closing windows');
             if (publicWindowRef.current && !publicWindowRef.current.closed) {
                 publicWindowRef.current.close();
             }
@@ -88,6 +106,8 @@ export default function AdminControlPanel({
                         adminSettings = {adminSettings}
                         onUpdateAdminSettings = {onUpdateAdminSettings}
                         adminInfo = {adminInfo}
+                        sessionLaunchTrigger = {sessionLaunchTrigger}
+                        activeSession = {activeSession}
                     />
                 </div>
             </CardHeader>

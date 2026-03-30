@@ -69,12 +69,62 @@ def get_session(session_id: int, db: Session = Depends(get_db)):
     return session
 
 
+@router.get("/{session_id}/info")
+def get_session_info(session_id: int, db: Session = Depends(get_db)):
+    """
+    Get session information including admin settings and selected songs.
+
+    Returns session details, admin settings (songs_per_performer, allow_song_reuse),
+    and list of song IDs that have already been selected by performers in this session.
+
+    Args:
+        session_id: The unique identifier of the session
+        db: Database session (injected)
+
+    Returns:
+        Dictionary with session info, settings, and selected_song_ids
+
+    Raises:
+        HTTPException: 404 error if session is not found
+    """
+    session = db.query(models.SessionModel).filter(
+        models.SessionModel.session_id == session_id
+    ).first()
+
+    if not session:
+        raise HTTPException(status_code=404, detail="Session not found")
+
+    # Get admin settings
+    admin_settings = db.query(models.AdminUserSettingModel).filter(
+        models.AdminUserSettingModel.admin_user_id == session.admin_user_id
+    ).first()
+
+    # Get all song IDs that have been selected by performers in this session
+    selected_songs = db.query(models.PerformerSongSelectionModel.song_id).join(
+        models.PerformerModel
+    ).filter(
+        models.PerformerModel.session_id == session_id
+    ).distinct().all()
+
+    selected_song_ids = [song_id for (song_id,) in selected_songs]
+
+    return {
+        "session_id": session.session_id,
+        "session_title": session.session_title,
+        "admin_user_id": session.admin_user_id,
+        "songs_per_performer": admin_settings.songs_per_performer if admin_settings else None,
+        "allow_song_reuse": admin_settings.allow_song_reuse if admin_settings else True,
+        "selected_song_ids": selected_song_ids
+    }
+
+
 @router.post("/", response_model=schemas.SessionResponse)
 async def create_session(session: schemas.SessionCreate, db: Session = Depends(get_db)):
     """
     Create a new session.
 
     Adds a new session to the database and broadcasts to all connected clients.
+    Also copies all songs from admin_allowed_song to session_song and clears admin_allowed_song.
 
     Args:
         session: Session data to create
@@ -110,6 +160,55 @@ async def create_session(session: schemas.SessionCreate, db: Session = Depends(g
     db.add(new_session)
     db.commit()
     db.refresh(new_session)
+
+    # Copy songs from admin_allowed_song to session_song
+    allowed_songs = db.query(models.AdminAllowedSongModel).filter(
+        models.AdminAllowedSongModel.admin_user_id == session.admin_user_id
+    ).all()
+
+    print(f"\n{'='*60}")
+    print(f"CREATING SESSION {new_session.session_id}")
+    print(f"{'='*60}")
+    print(f"Admin user ID: {session.admin_user_id}")
+    print(f"Found {len(allowed_songs)} songs in admin_allowed_song to copy")
+
+    songs_copied = 0
+    for allowed_song in allowed_songs:
+        # Check if song already exists in session (avoid duplicates)
+        existing = db.query(models.SessionSongModel).filter(
+            models.SessionSongModel.session_id == new_session.session_id,
+            models.SessionSongModel.song_id == allowed_song.song_id
+        ).first()
+
+        if not existing:
+            session_song = models.SessionSongModel(
+                session_id=new_session.session_id,
+                song_id=allowed_song.song_id
+            )
+            db.add(session_song)
+            songs_copied += 1
+            print(f"  ✓ Copying song_id {allowed_song.song_id} to session {new_session.session_id}")
+        else:
+            print(f"  ⊘ song_id {allowed_song.song_id} already exists in session, skipping")
+
+    print(f"\nTotal songs copied: {songs_copied}")
+
+    # Clear admin_allowed_song for this admin
+    deleted_count = db.query(models.AdminAllowedSongModel).filter(
+        models.AdminAllowedSongModel.admin_user_id == session.admin_user_id
+    ).delete()
+
+    print(f"Deleted {deleted_count} songs from admin_allowed_song for admin {session.admin_user_id}")
+
+    db.commit()
+    print(f"✓ Session {new_session.session_id} committed successfully")
+
+    # Verify songs were actually copied
+    verify_count = db.query(models.SessionSongModel).filter(
+        models.SessionSongModel.session_id == new_session.session_id
+    ).count()
+    print(f"Verification: {verify_count} songs now in session_song for session {new_session.session_id}")
+    print(f"{'='*60}\n")
 
     # Broadcast session started event to all connected clients (non-blocking)
     try:

@@ -7,4 +7,5 @@ export interface QueuePanelInterface{
     adminSettings: AdminUserSetting | null
     performer: Performer
     performerSongSelections: PerformerSongSelection[]
+    onEdit?: () => void
 }

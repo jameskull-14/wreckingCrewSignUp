@@ -12,6 +12,10 @@ export class SessionAPI {
         return this.client.request(`/api/sessions/${session_id}`, { method: 'GET' });
     }
 
+    async getInfo(session_id: number){
+        return this.client.request(`/api/sessions/${session_id}/info`, { method: 'GET' });
+    }
+
     async list(admin_user_id?: number, status?: string){
         const params = new URLSearchParams();
         if (admin_user_id) params.append('admin_user_id', admin_user_id.toString());

@@ -14,7 +14,19 @@ export class SessionSongAPI {
         if (song_id) params.append('song_id', song_id.toString());
 
         const query = params.toString() ? `?${params.toString()}` : '';
-        return this.client.request(`/api/session-songs${query}`);
+        return this.client.request(`/api/session-songs${query}`, {
+            method: 'GET'
+        });
+    }
+
+    async search(session_id: number, search_term: string){
+        const params = new URLSearchParams();
+        params.append('session_id', session_id.toString());
+        params.append('search_term', search_term);
+
+        return this.client.request(`/api/session-songs/search?${params.toString()}`, {
+            method: 'GET'
+        });
     }
 
     async create(data: SessionSongCreate){

@@ -1,11 +1,13 @@
 import { useState, useEffect } from "react";
 import { Input } from "./shared/Input";
 import { Label } from "./shared/Label";
-import { SongClient, AdminAllowedSongClient } from "../api/frontendClient";
+import { Button } from "./shared/Button";
+import { SongClient, AdminAllowedSongClient, SessionSongClient } from "../api/frontendClient";
+import { Session } from "../types/apiTypes/session";
 
 interface SongResult {
-    id: number;
-    title: string;
+    song_id: number;
+    song_title: string;
     artist: string;
     genre?: string;
 }
@@ -14,6 +16,9 @@ interface SongSearchProps {
     adminUserId?: number;
     mode?: "toggle" | "select"; // toggle = add/remove songs, select = just pick a song
     onSongSelect?: (song: SongResult) => void; // Callback when song is selected (select mode)
+    onSongAdded?: () => void; // Callback when song is added to allowed list (toggle mode)
+    refreshTrigger?: number; // External trigger to reload allowed songs
+    activeSession?: Session | null; // If session is active, write to session_song instead
     showLabel?: boolean;
     placeholder?: string;
     inputClassName?: string;
@@ -23,6 +28,9 @@ export default function SongSearch({
     adminUserId,
     mode = "toggle",
     onSongSelect,
+    onSongAdded,
+    refreshTrigger,
+    activeSession,
     showLabel = true,
     placeholder = "Search by title or artist",
     inputClassName = "bg-gray-900/50 border-amber-400/30 text-white text-sm"
@@ -31,29 +39,58 @@ export default function SongSearch({
     const [searchResults, setSearchResults] = useState<SongResult[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [allowedSongs, setAllowedSongs] = useState<Set<number>>(new Set());
+    const [addingSongId, setAddingSongId] = useState<number | null>(null);
 
-    // Load allowed songs on mount (only in toggle mode)
+    // Load allowed songs on mount and when refreshTrigger changes (only in toggle mode)
     useEffect(() => {
         if (mode !== "toggle") return;
 
         const loadAllowedSongs = async () => {
-            if (!adminUserId) return;
+            console.log('\n=== SongSearch: loadAllowedSongs ===');
+            console.log('  - mode:', mode);
+            console.log('  - activeSession:', activeSession);
+            console.log('  - activeSession?.session_id:', activeSession?.session_id);
+            console.log('  - adminUserId:', adminUserId);
+            console.log('  - refreshTrigger:', refreshTrigger);
 
-            try {
-                const results = await AdminAllowedSongClient.list(adminUserId);
-                const songIds = new Set(
-                    Array.isArray(results)
-                        ? results.map((item: any) => item.song_id)
-                        : []
-                );
-                setAllowedSongs(songIds);
-            } catch (error) {
-                console.error('Error loading allowed songs:', error);
+            if (activeSession?.session_id) {
+                // Load from session_song table
+                try {
+                    console.log('  → Loading from SESSION_SONG table for session:', activeSession.session_id);
+                    const results = await SessionSongClient.list(activeSession.session_id);
+                    console.log('  ← Loaded', results?.length || 0, 'songs from session_song');
+                    const songIds = new Set(
+                        Array.isArray(results)
+                            ? results.map((item: any) => item.song_id)
+                            : []
+                    );
+                    console.log('  Song IDs:', Array.from(songIds));
+                    setAllowedSongs(songIds);
+                } catch (error) {
+                    console.error('  ✗ Error loading session songs:', error);
+                }
+            } else if (adminUserId) {
+                // Load from admin_allowed_song table
+                try {
+                    console.log('  → Loading from ADMIN_ALLOWED_SONG table for admin:', adminUserId);
+                    const results = await AdminAllowedSongClient.list(adminUserId);
+                    console.log('  ← Loaded', results?.length || 0, 'songs from admin_allowed_song');
+                    const songIds = new Set(
+                        Array.isArray(results)
+                            ? results.map((item: any) => item.song_id)
+                            : []
+                    );
+                    console.log('  Song IDs:', Array.from(songIds));
+                    setAllowedSongs(songIds);
+                } catch (error) {
+                    console.error('  ✗ Error loading allowed songs:', error);
+                }
             }
+            console.log('=== SongSearch: loadAllowedSongs complete ===\n');
         };
 
         loadAllowedSongs();
-    }, [adminUserId, mode]);
+    }, [adminUserId, mode, refreshTrigger, activeSession?.session_id]);
 
     // Debounced search effect
     useEffect(() => {
@@ -109,44 +146,60 @@ export default function SongSearch({
             return;
         }
 
-        // Toggle mode - add/remove song from allowed list
-        if (!adminUserId) {
-            console.error('No admin_user_id found');
+        // Toggle mode - only allow adding songs (not removing)
+        const isAdded = allowedSongs.has(song.song_id);
+        if (isAdded) {
+            // Song already added, don't do anything
             return;
         }
 
-        const isAdded = allowedSongs.has(song.song_id);
-
+        setAddingSongId(song.song_id);
         try {
-            if (isAdded) {
-                // Remove song
-                console.log('Removing song:', { admin_user_id: adminUserId, song_id: song.song_id });
-                await AdminAllowedSongClient.delete(adminUserId, song.song_id);
-                console.log('Song removed successfully');
+            console.log('\n=== SongSearch: Adding song ===');
+            console.log('  Song:', song);
+            console.log('  activeSession:', activeSession);
+            console.log('  adminUserId:', adminUserId);
 
-                // Update local state
-                const newAllowedSongs = new Set(allowedSongs);
-                newAllowedSongs.delete(song.song_id);
-                setAllowedSongs(newAllowedSongs);
-            } else {
-                // Add song
-                console.log('Adding song:', { admin_user_id: adminUserId, song_id: song.song_id });
+            if (activeSession) {
+                // Add to session_song table
+                console.log('  → Adding to SESSION_SONG table');
+                console.log('  Data:', { session_id: activeSession.session_id, song_id: song.song_id });
+                const result = await SessionSongClient.create({
+                    session_id: activeSession.session_id,
+                    song_id: song.song_id
+                });
+                console.log('  ✓ Song added to session successfully:', result);
+            } else if (adminUserId) {
+                // Add to admin_allowed_song table
+                console.log('  → Adding to ADMIN_ALLOWED_SONG table');
+                console.log('  Data:', { admin_user_id: adminUserId, song_id: song.song_id });
                 const result = await AdminAllowedSongClient.create({
                     admin_user_id: adminUserId,
                     song_id: song.song_id
                 });
-                console.log('Song added successfully:', result);
+                console.log('  ✓ Song added successfully:', result);
+            } else {
+                console.error('  ✗ No admin_user_id or active session found');
+                return;
+            }
 
-                // Update local state
-                const newAllowedSongs = new Set(allowedSongs);
-                newAllowedSongs.add(song.song_id);
-                setAllowedSongs(newAllowedSongs);
-            }
+            // Update local state
+            const newAllowedSongs = new Set(allowedSongs);
+            newAllowedSongs.add(song.song_id);
+            setAllowedSongs(newAllowedSongs);
+            console.log('  Updated local allowedSongs set');
+
+            // Call callback to refresh parent
+            console.log('  Calling onSongAdded callback');
+            onSongAdded?.();
+            console.log('=== SongSearch: Adding song complete ===\n');
         } catch (error) {
-            console.error('Error toggling song:', error);
+            console.error('  ✗ Error adding song:', error);
             if (error && typeof error === 'object' && 'detail' in error) {
-                console.error('Error detail:', error.detail);
+                console.error('  Error detail:', error.detail);
             }
+        } finally {
+            setAddingSongId(null);
         }
     }
 
@@ -178,29 +231,26 @@ export default function SongSearch({
                                     return (
                                         <div
                                             key={song.song_id}
-                                            className="flex items-center justify-between p-3 bg-gray-900/50 rounded-lg border border-gray-700 hover:border-amber-400/50 cursor-pointer transition-colors"
-                                            onClick={() => handleSongClick(song)}
+                                            className="flex items-center justify-between p-3 bg-gray-900/50 rounded-lg border border-gray-700 hover:border-amber-400/50 transition-colors gap-4"
                                         >
-                                            <div>
+                                            <div className="flex-1">
                                                 <div className="text-white font-medium">{song.song_title}</div>
                                                 <div className="text-gray-400 text-sm">{song.artist}</div>
                                             </div>
-                                            {mode === "toggle" && (
-                                                <div
-                                                    className={`w-6 h-6 rounded border-2 flex items-center justify-center transition-all cursor-pointer ${
-                                                        isAdded
-                                                            ? 'border-green-500 bg-green-500'
-                                                            : 'border-amber-400 bg-transparent hover:bg-amber-400/20'
-                                                    }`}
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        handleSongClick(song);
-                                                    }}
+                                            {mode === "toggle" && !isAdded && (
+                                                <Button
+                                                    onClick={() => handleSongClick(song)}
+                                                    disabled={addingSongId === song.song_id}
+                                                    style={{ backgroundColor: '#16a34a' }}
+                                                    className="text-white text-sm whitespace-nowrap"
+                                                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#15803d'}
+                                                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#16a34a'}
                                                 >
-                                                    {isAdded && (
-                                                        <span className="text-white font-bold text-lg">✓</span>
-                                                    )}
-                                                </div>
+                                                    {addingSongId === song.song_id ? 'Adding...' : 'Add Song'}
+                                                </Button>
+                                            )}
+                                            {mode === "toggle" && isAdded && (
+                                                <div className="text-green-400 text-sm font-medium">Added ✓</div>
                                             )}
                                         </div>
                                     );

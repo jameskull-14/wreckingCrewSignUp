@@ -28,6 +28,7 @@ export default function SessionViewPanel({
     const [performers, setPerformers] = useState<Performer[]>([]);
     const [performerSongSelections, setPerformerSongSelections] = useState<PerformerSongSelection[]>([]);
     const [isDialogOpen, setIsDialogOpen] = useState(false);
+    const [editingPerformer, setEditingPerformer] = useState<Performer | null>(null);
 
 
     const fetchPerformers = useCallback(async () => {
@@ -65,31 +66,54 @@ export default function SessionViewPanel({
                     fetchPerformers();
                 }, 500); // 500ms delay
             }
+
+            // When a performer is updated, refresh the list
+            if (message.type === 'performer_updated') {
+                console.log('✏️ Performer updated, refreshing list...');
+                // Small delay to allow song selections to be updated
+                setTimeout(() => {
+                    fetchPerformers();
+                }, 500); // 500ms delay
+            }
         });
 
         // Cleanup: unsubscribe when component unmounts
         return unsubscribe;
     }, [subscribe, fetchPerformers])
 
+    const handleEditPerformer = (performer: Performer) => {
+        setEditingPerformer(performer);
+        setIsDialogOpen(true);
+    }
+
+    const handleDialogChange = (open: boolean) => {
+        setIsDialogOpen(open);
+        if (!open) {
+            setEditingPerformer(null);
+        }
+    }
+
     return(
         <div style={{ maxWidth: '750px', margin: '2rem auto', padding: '0 1rem' }}>
             <Card className="bg-gradient-to-br from-gray-900 to-gray-800 border-amber-400/30">
                 <CardHeader className="border-b border-amber-400/20">
                     <h2 className="text-3xl font-bold text-amber-400 text-center mb-4">Tonight's Schedule</h2>
-                    <CardContent>
+                    <CardContent className="space-y-3">
                         {performers.map((performer) => (
                             <QueuePanel
+                                key={performer.performer_id}
                                 isAdmin={isAdmin}
                                 adminSettings={adminSettings}
                                 performer={performer}
                                 performerSongSelections={performerSongSelections}
+                                onEdit={() => handleEditPerformer(performer)}
                             />
                         ))}
                     </CardContent>
                 </CardHeader>
             </Card>
             <div className="flex justify-center mt-4">
-                <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                <Dialog open={isDialogOpen} onOpenChange={handleDialogChange}>
                     <DialogTrigger asChild>
                         <Button
                             className="flex items-center gap-2"
@@ -101,9 +125,11 @@ export default function SessionViewPanel({
                             Sign Up
                         </Button>
                     </DialogTrigger>
-                    <DialogContent className="bg-gradient-to-br from-gray-900 to-gray-800 border-amber-400/30 max-w-lg">
+                    <DialogContent className="bg-gradient-to-br from-gray-900 to-gray-800 border-amber-400/30 max-w-lg" hideClose>
                         <DialogHeader>
-                            <DialogTitle className="text-amber-400">Sign Up for Performance</DialogTitle>
+                            <DialogTitle className="text-amber-400">
+                                {editingPerformer ? 'Edit Performance' : 'Sign Up for Performance'}
+                            </DialogTitle>
                         </DialogHeader>
                         {!sessionId && (
                             <div className="text-amber-400 text-center mb-4 p-4 bg-amber-400/10 rounded-md border border-amber-400/30">
@@ -116,8 +142,11 @@ export default function SessionViewPanel({
                             performers={performers}
                             onPerformerCreated={() => {
                                 fetchPerformers();
-                                setIsDialogOpen(false); // Close dialog after successful signup
+                                handleDialogChange(false); // Close dialog and reset edit state
                             }}
+                            editMode={!!editingPerformer}
+                            performerToEdit={editingPerformer || undefined}
+                            performerSongSelections={performerSongSelections}
                              />
                     </DialogContent>
                 </Dialog>

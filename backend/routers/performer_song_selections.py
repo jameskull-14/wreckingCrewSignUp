@@ -107,7 +107,9 @@ def create_performer_song_selection(
     """
     Create a new performer song selection.
 
-    Adds a new performer song selection to the database.
+    Adds a new performer song selection to the database with validation for:
+    - songs_per_performer limit from admin settings
+    - allow_song_reuse constraint from admin settings
 
     Args:
         selection: Performer song selection data to create
@@ -118,13 +120,39 @@ def create_performer_song_selection(
 
     Raises:
         HTTPException: 400 error if performer or song doesn't exist
+        HTTPException: 400 error if songs_per_performer limit exceeded
+        HTTPException: 400 error if song reuse not allowed and song already selected
     """
-    # Verify performer exists
+    # Verify performer exists and get session info
     performer = db.query(models.PerformerModel).filter(
         models.PerformerModel.performer_id == selection.performer_id
     ).first()
     if not performer:
         raise HTTPException(status_code=400, detail="Performer not found")
+
+    # Get session and admin info
+    session = db.query(models.SessionModel).filter(
+        models.SessionModel.session_id == performer.session_id
+    ).first()
+    if not session:
+        raise HTTPException(status_code=400, detail="Session not found")
+
+    # Get admin settings
+    admin_settings = db.query(models.AdminUserSettingModel).filter(
+        models.AdminUserSettingModel.admin_user_id == session.admin_user_id
+    ).first()
+
+    # Check songs_per_performer limit
+    if admin_settings and admin_settings.songs_per_performer:
+        existing_selections_count = db.query(models.PerformerSongSelectionModel).filter(
+            models.PerformerSongSelectionModel.performer_id == selection.performer_id
+        ).count()
+
+        if existing_selections_count >= admin_settings.songs_per_performer:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Performer has already selected the maximum of {admin_settings.songs_per_performer} songs"
+            )
 
     # Verify song exists
     song = db.query(models.SongModel).filter(
@@ -132,6 +160,23 @@ def create_performer_song_selection(
     ).first()
     if not song:
         raise HTTPException(status_code=400, detail="Song not found")
+
+    # Check if song reuse is allowed
+    if admin_settings and admin_settings.allow_song_reuse is False:
+        # Check if any other performer in this session has already selected this song
+        existing_selection = db.query(models.PerformerSongSelectionModel).join(
+            models.PerformerModel
+        ).filter(
+            models.PerformerModel.session_id == session.session_id,
+            models.PerformerSongSelectionModel.song_id == selection.song_id,
+            models.PerformerSongSelectionModel.performer_id != selection.performer_id
+        ).first()
+
+        if existing_selection:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Song '{song.song_title}' has already been selected by another performer. Song reuse is not allowed for this session."
+            )
 
     new_selection = models.PerformerSongSelectionModel(
         performer_id=selection.performer_id,

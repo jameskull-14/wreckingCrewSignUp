@@ -1,6 +1,6 @@
 from pydantic import BaseModel, ConfigDict
 from typing import Optional
-from models.performer import PerformerStatus
+from models.performer import PerformerStatus, PerformerType
 
 
 class PerformerBase(BaseModel):
@@ -8,6 +8,7 @@ class PerformerBase(BaseModel):
     performer_username: str = "Guest"
     queue_number: int
     status: PerformerStatus
+    performer_type: PerformerType = PerformerType.individual
 
 
 class PerformerCreate(PerformerBase):
@@ -19,6 +20,7 @@ class PerformerUpdate(BaseModel):
     performer_username: Optional[str] = None
     queue_number: Optional[int] = None
     status: Optional[PerformerStatus] = None
+    performer_type: Optional[PerformerType] = None
 
 
 class PerformerResponse(PerformerBase):

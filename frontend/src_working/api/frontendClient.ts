@@ -6,6 +6,7 @@ import { AdminUserClient } from './apis/AdminUserAPI'
 import { AdminUserSettingClient } from './apis/AdminUserSettingAPI'
 import { SessionClient } from './apis/SessionAPI'
 import { SessionSongClient } from './apis/SessionSongAPI'
+import { SongListClient } from './apis/SongListAPI'
 
 export {
     SongClient,
@@ -15,5 +16,6 @@ export {
     AdminUserClient,
     AdminUserSettingClient,
     SessionClient,
-    SessionSongClient
+    SessionSongClient,
+    SongListClient
 }

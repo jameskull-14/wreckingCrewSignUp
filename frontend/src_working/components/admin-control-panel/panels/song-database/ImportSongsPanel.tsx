@@ -1,14 +1,34 @@
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "../../../shared/Card";
 import { AlertCircle, Check, FileText, RefreshCw, Upload } from "lucide-react";
+import { AdminUser } from "../../../../types/apiTypes/adminUser";
+import { Input } from "../../../shared/Input";
+import { SongListClient } from "../../../../api/frontendClient";
 
-export default function ImportSongsPanel() {
+interface ImportSongsPanelProps {
+    adminInfo: AdminUser;
+    onSongsUploaded?: () => void;
+}
+
+export default function ImportSongsPanel({ adminInfo, onSongsUploaded }: ImportSongsPanelProps) {
     const [isUploading, setIsUploading] = useState(false);
     const [uploadResults, setUploadResults] = useState<any>(null);
+    const [listName, setListName] = useState("");
 
     const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
         if (!file) return;
+
+        // Set default list name from filename if not provided
+        const defaultListName = listName.trim() || file.name.replace(/\.csv$/i, '');
+
+        // Validate list name
+        if (!defaultListName) {
+            setUploadResults({
+                error: 'Please enter a name for this song list.'
+            });
+            return;
+        }
 
         // Validate file type
         if (!file.name.endsWith('.csv')) {
@@ -32,21 +52,32 @@ export default function ImportSongsPanel() {
         setUploadResults(null);
 
         try {
-            const formData = new FormData();
-            formData.append('file', file);
+            const result = await SongListClient.uploadCSV(
+                file,
+                adminInfo.admin_user_id,
+                defaultListName
+            );
 
-            const response = await fetch('/api/songs/bulk-create', {
-                method: 'POST',
-                body: formData
-            });
+            // Format results for display
+            const formattedResults = {
+                total: result.total,
+                processed: result.processed,
+                added: result.added,
+                list_id: result.list_id,
+                errors: result.errors
+            };
 
-            if (!response.ok) {
-                const errorData = await response.json().catch(() => null);
-                throw new Error(errorData?.detail || `Server error: ${response.status}`);
+            setUploadResults(formattedResults);
+
+            // Show warning if there were errors
+            if (result.errors && result.errors.length > 0) {
+                formattedResults.errors = `${result.errors.length} song(s) could not be processed. See details below.`;
             }
 
-            const result = await response.json();
-            setUploadResults(result);
+            setUploadResults(formattedResults);
+
+            // Trigger refresh of allowed songs list
+            onSongsUploaded?.();
         } catch (error: any) {
             setUploadResults({
                 error: error.message || 'An unexpected error occurred',
@@ -64,10 +95,23 @@ export default function ImportSongsPanel() {
             <CardHeader>
                 <CardTitle className="text-lg font-semibold text-amber-400 flex items-center gap-2">
                     <Upload className="w-5 h-5" />
-                    Import Songs from CSV
+                    Add Songs To Session (Upload)
                 </CardTitle>
             </CardHeader>
+            
             <CardContent className="space-y-4">
+            <div className="space-y-2">
+                    <label className="text-gray-300 text-sm font-semibold">
+                        Custom List Name (optional)
+                    </label>
+                    <Input
+                        value={listName}
+                        onChange={(e) => setListName(e.target.value)}
+                        placeholder="Defaults to CSV filename"
+                        className="bg-gray-900/50 border-amber-400/30 text-white"
+                        disabled={isUploading}
+                    />
+                </div>
                 <div className="space-y-2">
                     <p className="text-gray-300 text-sm">
                         Upload a CSV file with exactly 2 columns:
@@ -123,7 +167,7 @@ export default function ImportSongsPanel() {
 
                 {uploadResults && (
                     <div className="space-y-3">
-                        {uploadResults.error ? (
+                        {uploadResults.error && !uploadResults.list_id ? (
                             <div className="p-4 bg-red-900/20 border border-red-400/30 rounded-lg">
                                 <div className="flex items-center gap-2 text-red-200 mb-2">
                                     <AlertCircle className="w-5 h-5" />
@@ -138,57 +182,44 @@ export default function ImportSongsPanel() {
                                 )}
                             </div>
                         ) : (
-                            <div className="p-4 bg-green-900/20 border border-green-400/30 rounded-lg">
-                                <div className="flex items-center gap-2 text-green-200 mb-3">
+                            <div className={`p-4 border rounded-lg ${uploadResults.errors && uploadResults.errors.length > 0 ? 'bg-yellow-900/20 border-yellow-400/30' : 'bg-green-900/20 border-green-400/30'}`}>
+                                <div className={`flex items-center gap-2 mb-3 ${uploadResults.errors && uploadResults.errors.length > 0 ? 'text-yellow-200' : 'text-green-200'}`}>
                                     <Check className="w-5 h-5" />
-                                    Import Complete
+                                    {uploadResults.errors && uploadResults.errors.length > 0 ? 'Import Completed With Warnings' : 'Import Complete'}
                                 </div>
 
-                                <div className="grid grid-cols-2 sm:grid-cols-5 gap-4 mb-3 text-center">
+                                <div className="grid grid-cols-3 gap-4 mb-3 text-center">
                                     <div>
                                         <div className="text-xl font-bold text-white">{uploadResults.total}</div>
-                                        <div className="text-gray-400 text-xs">Rows Found</div>
-                                    </div>
-                                    <div>
-                                        <div className="text-xl font-bold text-blue-400">{uploadResults.processed}</div>
-                                        <div className="text-gray-400 text-xs">Valid Rows</div>
+                                        <div className="text-gray-400 text-xs">Total Rows</div>
                                     </div>
                                     <div>
                                         <div className="text-xl font-bold text-green-400">{uploadResults.added}</div>
-                                        <div className="text-gray-400 text-xs">Added</div>
+                                        <div className="text-gray-400 text-xs">Songs Added</div>
                                     </div>
                                     <div>
-                                        <div className="text-xl font-bold text-yellow-400">{uploadResults.duplicates}</div>
-                                        <div className="text-gray-400 text-xs">Duplicates</div>
-                                    </div>
-                                    <div>
-                                        <div className="text-xl font-bold text-gray-400">{uploadResults.skipped}</div>
-                                        <div className="text-gray-400 text-xs">Skipped</div>
+                                        <div className="text-xl font-bold text-red-400">{uploadResults.errors?.length || 0}</div>
+                                        <div className="text-gray-400 text-xs">Errors</div>
                                     </div>
                                 </div>
 
-                                {uploadResults.added > 0 && uploadResults.songs && (
+                                <div className="text-sm text-gray-300 mb-2">
+                                    <strong>Song List ID:</strong> {uploadResults.list_id}
+                                </div>
+
+                                {uploadResults.errors && uploadResults.errors.length > 0 && (
                                     <div className="mt-3">
-                                        <div className="text-green-200 text-sm mb-2">Sample of newly added songs:</div>
+                                        <div className="text-yellow-200 text-sm mb-2 flex items-center gap-2">
+                                            <AlertCircle className="w-4 h-4" />
+                                            {uploadResults.errors.length} song(s) could not be processed:
+                                        </div>
                                         <div className="max-h-32 overflow-y-auto space-y-1">
-                                            {uploadResults.songs.map((song: any, index: number) => (
-                                                <div key={index} className="text-xs text-gray-300 bg-gray-900/50 rounded px-2 py-1">
-                                                    {song.song_title} by {song.artist}
+                                            {uploadResults.errors.map((error: any, index: number) => (
+                                                <div key={index} className="text-xs text-red-300 bg-red-900/30 rounded px-2 py-1">
+                                                    <strong>Row {error.row}:</strong> {error.title} by {error.artist} - {error.error}
                                                 </div>
                                             ))}
-                                            {uploadResults.added > uploadResults.songs.length && (
-                                                <div className="text-xs text-gray-400 text-center">
-                                                    ... and {uploadResults.added - uploadResults.songs.length} more
-                                                </div>
-                                            )}
                                         </div>
-                                    </div>
-                                )}
-
-                                {uploadResults.skipped > 0 && (
-                                    <div className="text-yellow-200 text-sm flex items-center gap-2 mt-3">
-                                        <AlertCircle className="w-4 h-4" />
-                                        {uploadResults.skipped} rows were skipped (empty data, headers, or errors)
                                     </div>
                                 )}
                             </div>
