@@ -4,7 +4,6 @@ import { Music, Sparkles, PowerOff } from "lucide-react";
 import { motion } from "framer-motion";
 import { AdminUser } from "../types/apiTypes/adminUser.js";
 import { AdminUserSetting } from "../types/apiTypes/adminUserSetting.js";
-import SessionViewPanel from "../components/session/SessionViewPanel.js";
 import { WebSocketProvider, useWebSocket } from "../context/WebSocketContext.js";
 import { AdminUserClient, AdminUserSettingClient, SessionClient } from "../api/frontendClient.js";
 
@@ -146,11 +145,6 @@ function PublicKaraokePageContent({
                         )}
                     </motion.div>
                 </div>
-                <SessionViewPanel
-                    isAdmin={false}
-                    adminSettings={adminSettings}
-                    sessionId = {sessionId}
-                ></SessionViewPanel>
             </div>
         </div>
     );

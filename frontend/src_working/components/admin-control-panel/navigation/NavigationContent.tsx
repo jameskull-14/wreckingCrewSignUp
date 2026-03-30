@@ -25,7 +25,10 @@ export default function NavigationContent({
             </TabsList>
 
             <TabsContent value="overview">
-                <OverviewPanel />
+                <OverviewPanel
+                    adminSettings={adminSettings}
+                    activeSession={activeSession}
+                />
             </TabsContent>
 
             <TabsContent value="settings">
