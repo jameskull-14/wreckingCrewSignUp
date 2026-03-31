@@ -51,5 +51,7 @@ class SessionResponse(SessionBase):
     admin_user_id: int
     created_date: datetime
     updated_date: datetime
+    song_count: Optional[int] = 0
+    performer_count: Optional[int] = 0
 
     model_config = ConfigDict(from_attributes=True)

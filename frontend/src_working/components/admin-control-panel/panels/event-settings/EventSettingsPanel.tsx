@@ -1,10 +1,9 @@
 import SessionModePanel from "./SessionModePanel.js";
 import { SettingsPanelBaseProps } from "../../../../types/componentTypes/navigationContentProps.js";
-import { Database, RefreshCw, Users } from "lucide-react";
+import { Database, RefreshCw, Users, Guitar } from "lucide-react";
 import { Switch } from "../../../shared/Switch.js";
 import { Label } from "../../../shared/Label.js";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../../shared/Select.js";
-import SongSettingsPanel from "./SongSettingsPanel.js";
 import { useState, useEffect } from "react";
 import { CardContent } from "../../../shared/Card.js";
 import { Input } from "../../../shared/Input.js";
@@ -28,7 +27,7 @@ export default function EventSettingsPanel({
         }
     }, [adminSettings?.session_title, adminSettings?.session_host]);
 
-    const handleUpdateSession = async (field: 'use_all_songs' | 'allow_song_reuse', value: boolean) => {
+    const handleUpdateSession = async (field: 'use_all_songs' | 'allow_song_reuse' | 'allow_instrument_use', value: boolean) => {
         onUpdateAdminSettings({
             ...adminSettings,
             [field]: value
@@ -82,13 +81,8 @@ export default function EventSettingsPanel({
                     Save
                 </Button>
             </CardContent>
-            <SessionModePanel 
-                onUpdateAdminSettings = {onUpdateAdminSettings}
-                adminSettings={adminSettings}
-                adminInfo = {adminInfo}
-            />
             <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-amber-400">Queueing</h3>
+                <h3 className="text-lg font-semibold text-amber-400">General</h3>
                 <div key="performer-limit" className="flex items-center justify-between p-4 bg-gray-800/50 rounded-lg border border-gray-600/50">
                     <div className="flex items-center gap-3">
                         <Users className="w-6 h-6 text-cyan-400" />
@@ -129,6 +123,22 @@ export default function EventSettingsPanel({
                         />
                     </div>
                 </div>
+                <div key="allow-instruments" className="flex items-center justify-between p-4 bg-gray-800/50 rounded-lg border border-gray-600/50">
+                    <div className="flex items-center gap-3">
+                        <Guitar className="w-6 h-6 text-purple-400" />
+                        <div>
+                            <Label className="text-white font-semibold">Allow Instrument Use</Label>
+                            <p className="text-gray-400 text-sm">When enabled, performers can specify if they're using an instrument</p>
+                        </div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                        <span className="text-sm text-gray-400">{adminSettings?.allow_instrument_use ?? false ? 'On' : 'Off'}</span>
+                        <Switch
+                            checked={adminSettings?.allow_instrument_use ?? false}
+                            onCheckedChange={() => handleUpdateSession('allow_instrument_use', !adminSettings?.allow_instrument_use)}
+                        />
+                    </div>
+                </div>
                 <div key="use-all-songs" className="flex items-center justify-between p-4 bg-gray-800/50 rounded-lg border border-gray-600/50">
                     <div className="flex items-center gap-3">
                         <Database className="w-6 h-6 text-blue-400" />
@@ -142,16 +152,17 @@ export default function EventSettingsPanel({
                         <Switch checked={adminSettings?.use_all_songs ?? true} onCheckedChange={() =>
                             handleUpdateSession('use_all_songs', !adminSettings?.use_all_songs)} />
                     </div>
-                    
+
                 </div>
-                {adminSettings && !adminSettings.use_all_songs && (
-                    <SongSettingsPanel
-                        adminSettings={adminSettings}
-                        onUpdateAdminSettings={onUpdateAdminSettings}
-                        adminInfo = {adminInfo}
-                    />
-                )}
             </div>
+            <div style={{ marginTop: '32px', marginBottom: '16px' }}>
+                <h3 className="text-lg font-semibold text-amber-400">Queueing</h3>
+            </div>
+            <SessionModePanel
+                onUpdateAdminSettings = {onUpdateAdminSettings}
+                adminSettings={adminSettings}
+                adminInfo = {adminInfo}
+            />
         </div>
 );
 }

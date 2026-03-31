@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
+from sqlalchemy import func
 from typing import List, Optional
 import models
 import schemas
@@ -19,7 +20,7 @@ def get_sessions(
     db: Session = Depends(get_db)
 ):
     """
-    Get all sessions with optional filtering.
+    Get all sessions with optional filtering, including song counts.
 
     Retrieves a list of sessions from the database with support for filtering.
 
@@ -29,9 +30,44 @@ def get_sessions(
         db: Database session (injected)
 
     Returns:
-        List of sessions matching the filter criteria
+        List of sessions matching the filter criteria with song counts
     """
-    query = db.query(models.SessionModel)
+    # Subquery to count performed songs per session (songs selected by performers)
+    song_count_subquery = (
+        db.query(
+            models.PerformerModel.session_id,
+            func.count(models.PerformerSongSelectionModel.performer_selection_id).label('song_count')
+        )
+        .join(
+            models.PerformerSongSelectionModel,
+            models.PerformerModel.performer_id == models.PerformerSongSelectionModel.performer_id
+        )
+        .group_by(models.PerformerModel.session_id)
+        .subquery()
+    )
+
+    # Subquery to count performers per session
+    performer_count_subquery = (
+        db.query(
+            models.PerformerModel.session_id,
+            func.count(models.PerformerModel.performer_id).label('performer_count')
+        )
+        .group_by(models.PerformerModel.session_id)
+        .subquery()
+    )
+
+    # Main query with left joins to include song counts and performer counts
+    query = db.query(
+        models.SessionModel,
+        func.coalesce(song_count_subquery.c.song_count, 0).label('song_count'),
+        func.coalesce(performer_count_subquery.c.performer_count, 0).label('performer_count')
+    ).outerjoin(
+        song_count_subquery,
+        models.SessionModel.session_id == song_count_subquery.c.session_id
+    ).outerjoin(
+        performer_count_subquery,
+        models.SessionModel.session_id == performer_count_subquery.c.session_id
+    )
 
     # Apply filters
     if admin_user_id:
@@ -39,7 +75,16 @@ def get_sessions(
     if status:
         query = query.filter(models.SessionModel.status == status)
 
-    sessions = query.all()
+    results = query.all()
+
+    # Convert to response format
+    sessions = []
+    for session, song_count, performer_count in results:
+        session_dict = session.__dict__.copy()
+        session_dict['song_count'] = song_count
+        session_dict['performer_count'] = performer_count
+        sessions.append(session_dict)
+
     return sessions
 
 

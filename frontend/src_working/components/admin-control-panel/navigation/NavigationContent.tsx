@@ -48,7 +48,7 @@ export default function NavigationContent({
             </TabsContent>
 
             <TabsContent value="export">
-                <ExportPanel />
+                <ExportPanel adminInfo={adminInfo} />
             </TabsContent>
         </Tabs>
     );

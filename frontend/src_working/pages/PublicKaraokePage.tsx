@@ -6,6 +6,7 @@ import { AdminUser } from "../types/apiTypes/adminUser.js";
 import { AdminUserSetting } from "../types/apiTypes/adminUserSetting.js";
 import { WebSocketProvider, useWebSocket } from "../context/WebSocketContext.js";
 import { AdminUserClient, AdminUserSettingClient, SessionClient } from "../api/frontendClient.js";
+import SessionViewPanel from "../components/session/SessionViewPanel.js";
 
 
 interface PublicPageInterface{
@@ -144,6 +145,14 @@ function PublicKaraokePageContent({
                             </div>
                         )}
                     </motion.div>
+
+                    {adminInfo && adminSettings && (
+                        <SessionViewPanel
+                            adminSettings={adminSettings}
+                            sessionId={sessionId}
+                            isAdmin={false}
+                        />
+                    )}
                 </div>
             </div>
         </div>

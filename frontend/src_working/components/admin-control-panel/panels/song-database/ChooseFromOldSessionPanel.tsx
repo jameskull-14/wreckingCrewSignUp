@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "../../../shared/Card";
-import { History, Check } from "lucide-react";
+import { History, Check, Music, Users } from "lucide-react";
 import { AdminUser } from "../../../../types/apiTypes/adminUser";
 import { Button } from "../../../shared/Button";
 import { SessionClient, AdminAllowedSongClient } from "../../../../api/frontendClient";
@@ -10,6 +10,8 @@ interface Session {
     session_title: string;
     created_date: string;
     status: string;
+    song_count?: number;
+    performer_count?: number;
 }
 
 interface ChooseFromOldSessionPanelProps {
@@ -108,8 +110,16 @@ export default function ChooseFromOldSessionPanel({ adminInfo, onSongsCopied }: 
                                 <div className="flex items-center justify-between gap-4">
                                     <div className="flex-1">
                                         <div className="text-white font-medium">{session.session_title}</div>
-                                        <div className="text-gray-400 text-sm">
-                                            {formatDate(session.created_date)} • {session.status}
+                                        <div className="text-gray-400 text-sm flex items-center gap-3">
+                                            <span>{formatDate(session.created_date)} • {session.status}</span>
+                                            <span className="flex items-center gap-1 text-cyan-400">
+                                                <Users className="w-3 h-3" />
+                                                {session.performer_count ?? 0} performers
+                                            </span>
+                                            <span className="flex items-center gap-1 text-amber-400">
+                                                <Music className="w-3 h-3" />
+                                                {session.song_count ?? 0} songs
+                                            </span>
                                         </div>
                                     </div>
                                     <div className="flex items-center gap-2">
