@@ -6,14 +6,15 @@ import { QrCode, Maximize2 } from "lucide-react";
 
 interface AdminQRCodeProps {
     adminId: number;
+    sessionId: number;
     onOpenFullPage?: (window: Window) => void;
 }
 
-export default function AdminQRCode({ adminId, onOpenFullPage }: AdminQRCodeProps) {
-    const signupUrl = `${window.location.origin}/public_session/${adminId}`;
+export default function AdminQRCode({ adminId, sessionId, onOpenFullPage }: AdminQRCodeProps) {
+    const signupUrl = `${window.location.origin}/public_session/${adminId}/${sessionId}`;
 
     const handleOpenFullPage = () => {
-        const qrWindow = window.open(`/qr/${adminId}`, '_blank');
+        const qrWindow = window.open(`/qr/${adminId}/${sessionId}`, '_blank');
         if (qrWindow && onOpenFullPage) {
             onOpenFullPage(qrWindow);
         }

@@ -7,7 +7,8 @@ import { SettingsPanelBaseProps } from "../../../../types/componentTypes/navigat
 export default function SessionModePanel({
   adminSettings,
   onUpdateAdminSettings,
-  adminInfo
+  adminInfo,
+  activeSession
 }: SettingsPanelBaseProps)
 {
 
@@ -64,6 +65,7 @@ export default function SessionModePanel({
                   adminSettings = {adminSettings}
                   onUpdateAdminSettings = {onUpdateAdminSettings}
                   adminInfo = {adminInfo}
+                  activeSession = {activeSession}
                 />
               </div>
             )}

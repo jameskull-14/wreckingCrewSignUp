@@ -32,6 +32,12 @@ export class AdminAllowedSongAPI {
         })
     }
 
+    async clearAll(admin_user_id: number) {
+        return this.client.request(`/api/admin-allowed-songs/clear/${admin_user_id}`, {
+            method: 'DELETE',
+        })
+    }
+
     async copyFromSession(session_id: number, admin_user_id: number) {
         return this.client.request(`/api/admin-allowed-songs/copy-from-session/${session_id}?admin_user_id=${admin_user_id}`, {
             method: 'POST'

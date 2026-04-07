@@ -36,6 +36,7 @@ export default function NavigationContent({
                     adminSettings = {adminSettings}
                     onUpdateAdminSettings = {onUpdateAdminSettings}
                     adminInfo = {adminInfo}
+                    activeSession = {activeSession}
                 />
             </TabsContent>
 

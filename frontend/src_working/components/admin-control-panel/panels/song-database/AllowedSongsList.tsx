@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "../../../shared/Card";
-import { Music, Search } from "lucide-react";
+import { Music, Search, Trash2 } from "lucide-react";
 import { AdminUser } from "../../../../types/apiTypes/adminUser";
 import { AdminAllowedSong } from "../../../../types/apiTypes/adminAllowedSong";
 import { SessionSong } from "../../../../types/apiTypes/sessionSong";
@@ -8,6 +8,7 @@ import { Session } from "../../../../types/apiTypes/session";
 import { Input } from "../../../shared/Input";
 import { Button } from "../../../shared/Button";
 import { AdminAllowedSongClient, SessionSongClient } from "../../../../api/frontendClient";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "../../../shared/Dialog";
 
 interface AllowedSongsListProps {
     adminInfo: AdminUser;
@@ -28,6 +29,8 @@ export default function AllowedSongsList({ adminInfo, refreshTrigger, onSongRemo
     const [searchTerm, setSearchTerm] = useState("");
     const [isLoading, setIsLoading] = useState(true);
     const [removingSongId, setRemovingSongId] = useState<number | null>(null);
+    const [isClearDialogOpen, setIsClearDialogOpen] = useState(false);
+    const [isClearing, setIsClearing] = useState(false);
 
     const fetchAllowedSongs = async () => {
         console.log('\n=== AllowedSongsList: fetchAllowedSongs called ===');
@@ -85,6 +88,23 @@ export default function AllowedSongsList({ adminInfo, refreshTrigger, onSongRemo
         }
     };
 
+    const handleClearAll = async () => {
+        setIsClearing(true);
+        try {
+            await AdminAllowedSongClient.clearAll(adminInfo.admin_user_id);
+            // Refresh the list
+            await fetchAllowedSongs();
+            // Notify parent to refresh other components
+            onSongRemoved?.();
+            // Close the dialog
+            setIsClearDialogOpen(false);
+        } catch (error) {
+            console.error("Error clearing all songs:", error);
+        } finally {
+            setIsClearing(false);
+        }
+    };
+
     useEffect(() => {
         console.log('\n*** AllowedSongsList useEffect triggered ***');
         console.log('  Triggers: admin_user_id =', adminInfo.admin_user_id,
@@ -115,9 +135,58 @@ export default function AllowedSongsList({ adminInfo, refreshTrigger, onSongRemo
                         <Music className="w-5 h-5" />
                         {activeSession ? 'Session Songs' : 'Allowed Songs for Session'}
                     </div>
-                    <span className="text-sm font-normal text-gray-300">
-                        {filteredSongs.length} {filteredSongs.length === allowedSongs.length ? 'total' : `of ${allowedSongs.length}`}
-                    </span>
+                    <div className="flex items-center gap-3">
+                        <span className="text-sm font-normal text-gray-300">
+                            {filteredSongs.length} {filteredSongs.length === allowedSongs.length ? 'total' : `of ${allowedSongs.length}`}
+                        </span>
+                        {!activeSession && allowedSongs.length > 0 && (
+                            <Dialog open={isClearDialogOpen} onOpenChange={setIsClearDialogOpen}>
+                                <DialogTrigger asChild>
+                                    <Button
+                                        style={{ backgroundColor: '#dc2626' }}
+                                        className="text-white text-sm flex items-center gap-2"
+                                        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#b91c1c'}
+                                        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#dc2626'}
+                                    >
+                                        <Trash2 className="w-4 h-4" />
+                                        Clear List
+                                    </Button>
+                                </DialogTrigger>
+                                <DialogContent className="bg-gradient-to-br from-gray-900 to-gray-800 border-amber-400/30">
+                                    <DialogHeader>
+                                        <DialogTitle className="text-amber-400">Clear All Songs?</DialogTitle>
+                                    </DialogHeader>
+                                    <div className="space-y-4">
+                                        <p className="text-white">
+                                            Are you sure you want to remove all {allowedSongs.length} songs from the allowed list? This action cannot be undone.
+                                        </p>
+                                        <div className="flex gap-3 justify-end">
+                                            <Button
+                                                onClick={() => setIsClearDialogOpen(false)}
+                                                disabled={isClearing}
+                                                style={{ backgroundColor: '#6b7280' }}
+                                                className="text-white"
+                                                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#4b5563'}
+                                                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#6b7280'}
+                                            >
+                                                Cancel
+                                            </Button>
+                                            <Button
+                                                onClick={handleClearAll}
+                                                disabled={isClearing}
+                                                style={{ backgroundColor: '#dc2626' }}
+                                                className="text-white"
+                                                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#b91c1c'}
+                                                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#dc2626'}
+                                            >
+                                                {isClearing ? 'Clearing...' : 'Yes, Clear All'}
+                                            </Button>
+                                        </div>
+                                    </div>
+                                </DialogContent>
+                            </Dialog>
+                        )}
+                    </div>
                 </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">

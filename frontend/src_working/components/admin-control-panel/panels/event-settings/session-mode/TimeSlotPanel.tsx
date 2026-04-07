@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "../../../../shared/Card";
-import { Plus, Timer } from "lucide-react";
+import { Timer } from "lucide-react";
 import { Input } from "../../../../shared/Input";
 import { Label } from "../../../../shared/Label";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "../../../../shared/Select";
 import { Button } from "../../../../shared/Button";
 import { SettingsPanelBaseProps } from "../../../../../types/componentTypes/navigationContentProps";
+import { SessionClient } from "../../../../../api/frontendClient";
 
 // Helper functions outside component
 const convertFrom24Hour = (time24: string): { hour: number; minute: number; period: 'AM' | 'PM' } => {
@@ -36,7 +37,8 @@ const convertTo24Hour = (hour: number, minute: number, period: 'AM' | 'PM'): str
 export default function TimeSlotPanel({
     adminSettings,
     onUpdateAdminSettings,
-    adminInfo
+    adminInfo,
+    activeSession
 }: SettingsPanelBaseProps) {
 
     const [startHour, setStartHour] = useState(() => {
@@ -110,7 +112,7 @@ export default function TimeSlotPanel({
       handleTimeIncrementChange(field, newValue);
     };
 
-    const handleGenerateSlots = () => {
+    const handleGenerateSlots = async () => {
       // Validate and convert to 24-hour format
       const startHourNum = parseInt(startHour) || 1;
       const startMinuteNum = parseInt(startMinute) || 0;
@@ -134,7 +136,7 @@ export default function TimeSlotPanel({
 
       const changeoverFinal =
       `${changeoverHourNum.toString().padStart(2, '0')
-      }:${changeoverMinuteNum.toString().padStart(2, 
+      }:${changeoverMinuteNum.toString().padStart(2,
       '0')}`;
 
       const performanceFinal =
@@ -151,6 +153,16 @@ export default function TimeSlotPanel({
         performance_time: performanceFinal,
       });
 
+      // Generate time slots if there's an active session
+      if (activeSession) {
+        try {
+          const result = await SessionClient.generateTimeSlots(activeSession.session_id);
+          console.log('Time slots generated:', result);
+        } catch (error) {
+          console.error('Error generating time slots:', error);
+        }
+      }
+
       // Show toast notification
       setShowToast(true);
       setTimeout(() => setShowToast(false), 3000);
@@ -160,13 +172,17 @@ export default function TimeSlotPanel({
         <>
         {showToast && (
           <div className="fixed top-4 right-4 z-50">
-            <div className="bg-green-600 text-white px-6 py-4 rounded-lg shadow-lg min-w-[300px]">
+            <div
+              className="text-white px-6 py-4 rounded-lg shadow-lg min-w-[300px]"
+              style={{ backgroundColor: '#16a34a' }}
+            >
               <p className="font-semibold mb-2">Your changes have been saved</p>
-              <div className="w-full bg-green-800 h-1 rounded-full overflow-hidden">
+              <div className="w-full h-1 rounded-full overflow-hidden" style={{ backgroundColor: 'rgba(255, 255, 255, 0.3)' }}>
                 <div
-                  className="bg-white h-full transition-all"
+                  className="h-full transition-all"
                   style={{
                     width: '100%',
+                    backgroundColor: '#ffffff',
                     animation: 'shrink 3s linear forwards'
                   }}
                 ></div>
@@ -372,8 +388,7 @@ export default function TimeSlotPanel({
               onClick={handleGenerateSlots}
               className="w-full bg-gradient-to-r from-blue-500 to-sky-500 hover:from-blue-600 hover:to-sky-600 text-white"
             >
-              <Plus className="w-4 h-4 mr-2" />
-              Generate New Time Slots
+              Save Changes
             </Button>
           </CardContent>
         </Card>

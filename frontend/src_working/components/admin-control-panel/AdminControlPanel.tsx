@@ -96,6 +96,7 @@ export default function AdminControlPanel({
                             </div>
                             <AdminQRCode
                                 adminId={adminInfo.admin_user_id}
+                                sessionId={activeSession.session_id}
                                 onOpenFullPage={handleQRWindowOpen}
                             />
                         </div>

@@ -14,7 +14,8 @@ interface SignUpPanelInterface{
     onPerformerCreated?: () => void,
     editMode?: boolean,
     performerToEdit?: Performer,
-    performerSongSelections?: PerformerSongSelection[]
+    performerSongSelections?: PerformerSongSelection[],
+    preselectedQueueNumber?: number
 }
 
 interface SongSlot {
@@ -30,7 +31,8 @@ export default function SignUpModal({
     onPerformerCreated,
     editMode = false,
     performerToEdit,
-    performerSongSelections = []
+    performerSongSelections = [],
+    preselectedQueueNumber
 }: SignUpPanelInterface){
     const songsPerPerformer = adminSettings?.songs_per_performer || 1;
     const allowInstrumentUse = adminSettings?.allow_instrument_use || false;
@@ -112,10 +114,11 @@ export default function SignUpModal({
         }
     }, [showSuccess, onPerformerCreated]);
 
-    const nextQueueNumber =
+    const nextQueueNumber = preselectedQueueNumber || (
         performers.length > 0 ?
         Math.max(...performers.map(p =>p.queue_number)) + 1
-        : 1;
+        : 1
+    );
 
     const updateSongSlot = (index: number, updates: Partial<SongSlot>) => {
         setSongSlots(prev => {
@@ -138,9 +141,29 @@ export default function SignUpModal({
 
     // Get list of already selected song IDs for this performer
     const getUnavailableSongIds = () => {
-        return songSlots
+        // Always include songs selected by this performer in their current slots
+        const currentPerformerSongIds = songSlots
             .filter(slot => slot.song !== null)
             .map(slot => slot.song.song_id);
+
+        // If song reuse is not allowed, also include all songs selected by other performers
+        if (adminSettings && !adminSettings.allow_song_reuse) {
+            const allSelectedSongIds = performerSongSelections
+                .filter(selection => {
+                    // In edit mode, exclude selections from the performer being edited
+                    if (editMode && performerToEdit) {
+                        return selection.performer_id !== performerToEdit.performer_id;
+                    }
+                    // In create mode, include all selections
+                    return true;
+                })
+                .map(selection => selection.song_id);
+
+            // Combine and remove duplicates
+            return [...new Set([...currentPerformerSongIds, ...allSelectedSongIds])];
+        }
+
+        return currentPerformerSongIds;
     };
 
     const handleNewPeformer = async (name: string, sessionId: string) => {

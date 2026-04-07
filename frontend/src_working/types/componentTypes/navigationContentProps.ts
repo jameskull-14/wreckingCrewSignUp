@@ -8,6 +8,7 @@ export interface SettingsPanelBaseProps {
     adminSettings: AdminUserSetting | null;
     onUpdateAdminSettings: (settings: AdminUserSettingUpdate) => void;
     adminInfo: AdminUser;
+    activeSession?: Session | null;
 }
 
 // NavigationContent props - includes session launch trigger and active session

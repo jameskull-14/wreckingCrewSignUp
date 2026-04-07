@@ -1,10 +1,12 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
+from sqlalchemy import cast, Integer
 from typing import List, Optional
 import models
 import schemas
 from database import get_db
 from routers.websockets import manager
+from models.performer import PerformerStatus
 
 router = APIRouter(
     prefix="/api/performers",
@@ -158,8 +160,49 @@ async def update_performer(
 
     update_data = performer.model_dump(exclude_unset=True)
 
+    # Check if status is being updated
+    status_changed = 'status' in update_data
+    old_status = db_performer.status
+    new_status = update_data.get('status')
+
     for field, value in update_data.items():
         setattr(db_performer, field, value)
+
+    # Handle cascading song status updates
+    if status_changed and new_status:
+        song_selections = db.query(models.PerformerSongSelectionModel).filter(
+            models.PerformerSongSelectionModel.performer_id == performer_id
+        ).all()
+
+        if new_status == PerformerStatus.performing:
+            # Mark any other performers in this session who are "performing" as "completed"
+            other_performing_performers = db.query(models.PerformerModel).filter(
+                models.PerformerModel.session_id == db_performer.session_id,
+                models.PerformerModel.performer_id != performer_id,
+                models.PerformerModel.status == PerformerStatus.performing
+            ).all()
+
+            for other_performer in other_performing_performers:
+                other_performer.status = PerformerStatus.completed
+                # Mark all their songs as completed (they're done performing)
+                other_songs = db.query(models.PerformerSongSelectionModel).filter(
+                    models.PerformerSongSelectionModel.performer_id == other_performer.performer_id
+                ).all()
+                for other_song in other_songs:
+                    if other_song.status in [PerformerStatus.waiting, PerformerStatus.performing]:
+                        other_song.status = PerformerStatus.completed
+
+            # Set the song with selection_order 1 to performing if not already set
+            for song_selection in song_selections:
+                if int(song_selection.selection_order) == 1 and song_selection.status == PerformerStatus.waiting:
+                    song_selection.status = PerformerStatus.performing
+                    break
+
+        elif new_status == PerformerStatus.completed:
+            # Mark all waiting or performing songs as completed
+            for song_selection in song_selections:
+                if song_selection.status in [PerformerStatus.waiting, PerformerStatus.performing]:
+                    song_selection.status = PerformerStatus.completed
 
     db.commit()
     db.refresh(db_performer)

@@ -45,11 +45,14 @@ export default function OverviewPanel({ adminSettings, activeSession }: Overview
   // Subscribe to WebSocket updates for real-time counts
   useEffect(() => {
     const unsubscribe = subscribe((message) => {
-      if (message.type === 'performer_created' || message.type === 'performer_updated') {
-        // Refresh counts when performers change
-        setTimeout(() => {
-          fetchCounts();
-        }, 500);
+      if (
+        message.type === 'performer_created' ||
+        message.type === 'performer_updated' ||
+        message.type === 'song_selection_created' ||
+        message.type === 'song_selection_updated'
+      ) {
+        // Refresh counts when performers or song selections change
+        fetchCounts();
       }
     });
 

@@ -39,7 +39,7 @@ function App(): React.ReactElement {
           </SessionProvider>
         } />
         <Route path="/public_session/:adminId/:sessionId" element={<PublicKaraokePage />} />
-        <Route path="/qr/:adminId" element={<QRCodeFullPage />} />
+        <Route path="/qr/:adminId/:sessionId" element={<QRCodeFullPage />} />
 
       </Routes>
       {/* <Toaster /> */}

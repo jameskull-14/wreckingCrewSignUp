@@ -56,17 +56,31 @@ def get_sessions(
         .subquery()
     )
 
+    # Subquery to count total songs in session (from session_song table)
+    total_session_songs_subquery = (
+        db.query(
+            models.SessionSongModel.session_id,
+            func.count(models.SessionSongModel.song_id).label('total_session_songs')
+        )
+        .group_by(models.SessionSongModel.session_id)
+        .subquery()
+    )
+
     # Main query with left joins to include song counts and performer counts
     query = db.query(
         models.SessionModel,
         func.coalesce(song_count_subquery.c.song_count, 0).label('song_count'),
-        func.coalesce(performer_count_subquery.c.performer_count, 0).label('performer_count')
+        func.coalesce(performer_count_subquery.c.performer_count, 0).label('performer_count'),
+        func.coalesce(total_session_songs_subquery.c.total_session_songs, 0).label('total_session_songs')
     ).outerjoin(
         song_count_subquery,
         models.SessionModel.session_id == song_count_subquery.c.session_id
     ).outerjoin(
         performer_count_subquery,
         models.SessionModel.session_id == performer_count_subquery.c.session_id
+    ).outerjoin(
+        total_session_songs_subquery,
+        models.SessionModel.session_id == total_session_songs_subquery.c.session_id
     )
 
     # Apply filters
@@ -79,10 +93,11 @@ def get_sessions(
 
     # Convert to response format
     sessions = []
-    for session, song_count, performer_count in results:
+    for session, song_count, performer_count, total_session_songs in results:
         session_dict = session.__dict__.copy()
         session_dict['song_count'] = song_count
         session_dict['performer_count'] = performer_count
+        session_dict['total_session_songs'] = total_session_songs
         sessions.append(session_dict)
 
     return sessions
@@ -364,3 +379,104 @@ def delete_session(session_id: int, db: Session = Depends(get_db)):
     db.delete(session)
     db.commit()
     return None
+
+
+@router.post("/{session_id}/generate-time-slots")
+def generate_time_slots(session_id: int, db: Session = Depends(get_db)):
+    """
+    Generate time slot performers for a session in Time mode.
+
+    Creates empty performer placeholders for each time slot based on the session's
+    start_time, end_time, performance_time, and changeover_time.
+
+    Args:
+        session_id: The unique identifier of the session
+        db: Database session (injected)
+
+    Returns:
+        Dictionary with count of generated slots and list of time slots
+
+    Raises:
+        HTTPException: 404 error if session is not found
+        HTTPException: 400 error if session is not in Time mode
+    """
+    from datetime import datetime, timedelta
+    from models.performer import PerformerStatus, PerformerType
+
+    # Get session
+    session = db.query(models.SessionModel).filter(
+        models.SessionModel.session_id == session_id
+    ).first()
+
+    if not session:
+        raise HTTPException(status_code=404, detail="Session not found")
+
+    if session.session_mode != 'Time':
+        raise HTTPException(status_code=400, detail="Session must be in Time mode to generate time slots")
+
+    # Delete existing empty time slot performers (those without a performer_name)
+    db.query(models.PerformerModel).filter(
+        models.PerformerModel.session_id == session_id,
+        models.PerformerModel.performer_name == ""
+    ).delete()
+
+    # Parse times
+    start_time_parts = session.start_time.split(':')
+    end_time_parts = session.end_time.split(':')
+    performance_parts = session.performance_time.split(':')
+    changeover_parts = session.changeover_time.split(':')
+
+    start_hour, start_minute = int(start_time_parts[0]), int(start_time_parts[1])
+    end_hour, end_minute = int(end_time_parts[0]), int(end_time_parts[1])
+    performance_hours, performance_minutes = int(performance_parts[0]), int(performance_parts[1])
+    changeover_hours, changeover_minutes = int(changeover_parts[0]), int(changeover_parts[1])
+
+    # Create datetime objects for easier calculation
+    base_date = datetime(2000, 1, 1)
+    current_time = base_date.replace(hour=start_hour, minute=start_minute)
+    end_datetime = base_date.replace(hour=end_hour, minute=end_minute)
+
+    # Handle case where end time is next day (e.g., midnight or later)
+    if end_datetime <= current_time:
+        end_datetime += timedelta(days=1)
+
+    performance_duration = timedelta(hours=performance_hours, minutes=performance_minutes)
+    changeover_duration = timedelta(hours=changeover_hours, minutes=changeover_minutes)
+    total_slot_duration = performance_duration + changeover_duration
+
+    generated_slots = []
+    queue_number = 1
+
+    while current_time + performance_duration <= end_datetime:
+        slot_start = current_time
+        slot_end = current_time + performance_duration
+
+        # Create time slot performer
+        time_slot_performer = models.PerformerModel(
+            session_id=session_id,
+            performer_name="",  # Empty - waiting to be claimed
+            performer_username="Guest",
+            queue_number=queue_number,
+            status=PerformerStatus.waiting,
+            performer_type=PerformerType.individual,
+            time_slot_start=slot_start.strftime("%H:%M"),
+            time_slot_end=slot_end.strftime("%H:%M")
+        )
+
+        db.add(time_slot_performer)
+        generated_slots.append({
+            "queue_number": queue_number,
+            "time_slot_start": slot_start.strftime("%H:%M"),
+            "time_slot_end": slot_end.strftime("%H:%M")
+        })
+
+        # Move to next slot
+        current_time += total_slot_duration
+        queue_number += 1
+
+    db.commit()
+
+    return {
+        "generated_count": len(generated_slots),
+        "slots": generated_slots
+    }

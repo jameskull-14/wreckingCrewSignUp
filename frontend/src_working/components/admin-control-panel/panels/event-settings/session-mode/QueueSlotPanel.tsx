@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { SettingsPanelBaseProps } from "../../../../../types/componentTypes/navigationContentProps";
 import { Card, CardContent, CardHeader, CardTitle } from "../../../../shared/Card";
-import { Plus, Timer } from "lucide-react";
+import { Timer } from "lucide-react";
 import { Label } from "../../../../shared/Label";
 import { Input } from "../../../../shared/Input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../../../shared/Select";
@@ -98,13 +98,17 @@ export default function QueueSlotPanel({
         <>
         {showToast && (
           <div className="fixed top-4 right-4 z-50">
-            <div className="bg-green-600 text-white px-6 py-4 rounded-lg shadow-lg min-w-[300px]">
+            <div
+              className="text-white px-6 py-4 rounded-lg shadow-lg min-w-[300px]"
+              style={{ backgroundColor: '#16a34a' }}
+            >
               <p className="font-semibold mb-2">Your changes have been saved</p>
-              <div className="w-full bg-green-800 h-1 rounded-full overflow-hidden">
+              <div className="w-full h-1 rounded-full overflow-hidden" style={{ backgroundColor: 'rgba(255, 255, 255, 0.3)' }}>
                 <div
-                  className="bg-white h-full transition-all"
+                  className="h-full transition-all"
                   style={{
                     width: '100%',
+                    backgroundColor: '#ffffff',
                     animation: 'shrink 3s linear forwards'
                   }}
                 ></div>
@@ -223,8 +227,7 @@ export default function QueueSlotPanel({
                         onClick={handleTimeChange}
                         className="w-full bg-gradient-to-r from-blue-500 to-sky-500 hover:from-blue-600 hover:to-sky-600 text-white"
                     >
-                            <Plus className="w-4 h-4 mr-2" />
-                            Generate Start / End Time
+                            Save Changes
                         </Button></>
             {/* )} */}
           </CardContent>

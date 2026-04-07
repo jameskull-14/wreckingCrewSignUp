@@ -28,6 +28,9 @@ export interface Session {
     status: SessionStatus;
     created_date: string;
     updated_date: string;
+    song_count?: number;
+    performer_count?: number;
+    total_session_songs?: number;
 }
 
 export interface SessionCreate {

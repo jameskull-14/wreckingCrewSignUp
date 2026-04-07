@@ -44,6 +44,12 @@ export class SessionAPI {
             method: 'DELETE',
         })
     }
+
+    async generateTimeSlots(session_id: number) {
+        return this.client.request(`/api/sessions/${session_id}/generate-time-slots`, {
+            method: 'POST'
+        });
+    }
 }
 
 export const SessionClient = new SessionAPI(apiClient);

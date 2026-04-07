@@ -12,7 +12,8 @@ import { Button } from "../../../shared/Button.js";
 export default function EventSettingsPanel({
     adminSettings,
     onUpdateAdminSettings,
-    adminInfo
+    adminInfo,
+    activeSession
 }: SettingsPanelBaseProps)
 {
     const [newTitle, setNewTitle] = useState(adminSettings?.session_title || '');
@@ -162,6 +163,7 @@ export default function EventSettingsPanel({
                 onUpdateAdminSettings = {onUpdateAdminSettings}
                 adminSettings={adminSettings}
                 adminInfo = {adminInfo}
+                activeSession = {activeSession}
             />
         </div>
 );

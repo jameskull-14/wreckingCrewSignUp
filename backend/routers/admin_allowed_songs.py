@@ -190,6 +190,31 @@ def copy_songs_from_session(
     }
 
 
+@router.delete("/clear/{admin_user_id}", status_code=204)
+def clear_all_admin_allowed_songs(
+    admin_user_id: int,
+    db: Session = Depends(get_db)
+):
+    """
+    Delete all admin allowed song associations for a specific admin.
+
+    Permanently removes all admin-song associations from the database for the given admin.
+
+    Args:
+        admin_user_id: The admin user ID
+        db: Database session (injected)
+
+    Returns:
+        None (204 No Content status)
+    """
+    deleted_count = db.query(models.AdminAllowedSongModel).filter(
+        models.AdminAllowedSongModel.admin_user_id == admin_user_id
+    ).delete()
+
+    db.commit()
+    return None
+
+
 @router.delete("/{admin_user_id}/{song_id}", status_code=204)
 def delete_admin_allowed_song(
     admin_user_id: int,

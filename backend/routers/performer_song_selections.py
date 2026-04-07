@@ -1,10 +1,12 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session, joinedload
-from sqlalchemy import asc, desc
+from sqlalchemy import asc, desc, cast, Integer
 from typing import List, Optional
 import models
 import schemas
 from database import get_db
+from routers.websockets import manager
+from models.performer import PerformerStatus
 
 router = APIRouter(
     prefix="/api/performer-song-selections",
@@ -100,7 +102,7 @@ def get_performer_song_selection(selection_id: int, db: Session = Depends(get_db
 
 
 @router.post("/", response_model=schemas.PerformerSongSelectionResponse)
-def create_performer_song_selection(
+async def create_performer_song_selection(
     selection: schemas.PerformerSongSelectionCreate,
     db: Session = Depends(get_db)
 ):
@@ -190,11 +192,23 @@ def create_performer_song_selection(
     db.add(new_selection)
     db.commit()
     db.refresh(new_selection)
+
+    # Broadcast song selection created to all connected clients
+    await manager.broadcast(session.admin_user_id, {
+        "type": "song_selection_created",
+        "data": {
+            "performer_id": new_selection.performer_id,
+            "selection_id": new_selection.performer_selection_id,
+            "song_id": new_selection.song_id,
+            "selection_order": new_selection.selection_order
+        }
+    })
+
     return new_selection
 
 
 @router.put("/{selection_id}", response_model=schemas.PerformerSongSelectionResponse)
-def update_performer_song_selection(
+async def update_performer_song_selection(
     selection_id: int,
     selection: schemas.PerformerSongSelectionUpdate,
     db: Session = Depends(get_db)
@@ -204,6 +218,8 @@ def update_performer_song_selection(
 
     Updates one or more fields of an existing performer song selection. Only the
     fields provided in the request will be updated; omitted fields remain unchanged.
+
+    If status is changed to "performing", automatically marks all previous songs as "completed".
 
     Args:
         selection_id: The unique identifier of the selection to update
@@ -225,11 +241,45 @@ def update_performer_song_selection(
 
     update_data = selection.model_dump(exclude_unset=True)
 
+    # Check if status is being changed to "performing"
+    if 'status' in update_data and update_data['status'] == PerformerStatus.performing:
+        # Get all song selections for this performer, ordered by selection_order
+        all_selections = db.query(models.PerformerSongSelectionModel).filter(
+            models.PerformerSongSelectionModel.performer_id == db_selection.performer_id
+        ).order_by(cast(models.PerformerSongSelectionModel.selection_order, Integer)).all()
+
+        # Mark all songs before this one as completed
+        current_order = int(db_selection.selection_order)
+        for song_sel in all_selections:
+            song_order = int(song_sel.selection_order)
+            if song_order < current_order and song_sel.status != PerformerStatus.completed:
+                song_sel.status = PerformerStatus.completed
+
     for field, value in update_data.items():
         setattr(db_selection, field, value)
 
     db.commit()
     db.refresh(db_selection)
+
+    # Broadcast update
+    performer = db.query(models.PerformerModel).filter(
+        models.PerformerModel.performer_id == db_selection.performer_id
+    ).first()
+
+    if performer:
+        session = db.query(models.SessionModel).filter(
+            models.SessionModel.session_id == performer.session_id
+        ).first()
+
+        if session:
+            await manager.broadcast(session.admin_user_id, {
+                "type": "song_selection_updated",
+                "data": {
+                    "performer_id": db_selection.performer_id,
+                    "selection_id": db_selection.performer_selection_id
+                }
+            })
+
     return db_selection
 
 
