@@ -33,3 +33,7 @@ class AdminUserResponse(AdminUserBase):
 class AdminUserLogin(BaseModel):
     email: EmailStr
     password: str
+
+
+class TokenVerify(BaseModel):
+    token: str

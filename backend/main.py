@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from database import engine, Base
 import models
 from routers import (
+    auth,
     songs,
     performer_song_selections,
     admin_allowed_songs,
@@ -34,6 +35,7 @@ app.add_middleware(
 )
 
 # Include routers
+app.include_router(auth.router)
 app.include_router(songs.router)
 app.include_router(performer_song_selections.router)
 app.include_router(admin_allowed_songs.router)
