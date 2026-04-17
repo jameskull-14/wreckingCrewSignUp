@@ -1,0 +1,143 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model admin_allowed_song {
+  admin_user_id Int
+  song_id       Int
+  admin_user    admin_user @relation(fields: [admin_user_id], references: [admin_user_id], onDelete: Cascade, onUpdate: NoAction)
+  song          song       @relation(fields: [song_id], references: [song_id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@id([admin_user_id, song_id])
+  @@index([admin_user_id], map: "idx_admin_allowed_song_admin")
+  @@index([song_id], map: "idx_admin_allowed_song_song")
+}
+
+model admin_user {
+  admin_user_id      Int                  @id @default(autoincrement())
+  email              String               @unique @db.VarChar(255)
+  password           String               @db.VarChar(255)
+  first_name         String               @db.VarChar(100)
+  last_name          String?              @db.VarChar(100)
+  created_on         DateTime             @default(now()) @db.Timestamp(6)
+  last_login         DateTime?            @db.Timestamp(6)
+  login_attempts     Int?                 @default(0)
+  locked_until       DateTime?            @db.Timestamp(6)
+  admin_allowed_song admin_allowed_song[]
+  admin_user_setting admin_user_setting?
+  session            session[]
+
+  @@index([email], map: "idx_admin_user_email")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model admin_user_setting {
+  admin_setting_id    Int        @id @default(autoincrement())
+  admin_user_id       Int        @unique(map: "idx_admin_user_setting_user")
+  session_title       String     @default("Karaoke") @db.VarChar(255)
+  use_all_songs       String     @default("1") @db.Bit(1)
+  all_song_reuse      String     @default("0") @db.Bit(1)
+  session_mode        String     @db.VarChar(50)
+  songs_per_performer Int        @default(1)
+  time_start          DateTime?  @db.Timestamp(6)
+  end_time            DateTime?  @db.Timestamp(6)
+  changeover_time     Int?
+  performance_time    Int?
+  created_date        DateTime   @default(now()) @db.Timestamp(6)
+  updated_date        DateTime   @default(now()) @db.Timestamp(6)
+  admin_user          admin_user @relation(fields: [admin_user_id], references: [admin_user_id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model performer {
+  performer_id             Int                        @id @default(autoincrement())
+  session_id               Int
+  performer_name           String                     @db.VarChar(255)
+  performer_username       String                     @default("Guest") @db.VarChar(255)
+  queue_number             Int
+  status                   String                     @db.VarChar(50)
+  session                  session                    @relation(fields: [session_id], references: [session_id], onDelete: Cascade, onUpdate: NoAction)
+  performer_song_selection performer_song_selection[]
+
+  @@index([session_id, queue_number], map: "idx_performer_queue")
+  @@index([session_id], map: "idx_performer_session")
+  @@index([status], map: "idx_performer_status")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model performer_song_selection {
+  performer_selection_id Int       @id @default(autoincrement())
+  performer_id           Int
+  song_id                Int
+  selection_order        String    @db.VarChar(10)
+  is_singing             String    @db.Bit(1)
+  instrument             String?   @db.VarChar(100)
+  status                 String    @db.VarChar(50)
+  created_at             DateTime  @default(now()) @db.Timestamp(6)
+  performer              performer @relation(fields: [performer_id], references: [performer_id], onDelete: Cascade, onUpdate: NoAction)
+  song                   song      @relation(fields: [song_id], references: [song_id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([performer_id, selection_order], map: "idx_performer_song_selection_order")
+  @@index([performer_id], map: "idx_performer_song_selection_performer")
+  @@index([song_id], map: "idx_performer_song_selection_song")
+  @@index([status], map: "idx_performer_song_selection_status")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model session {
+  session_id          Int            @id @default(autoincrement())
+  admin_user_id       Int
+  status              String         @default("Active") @db.VarChar(50)
+  session_title       String         @default("Karaoke") @db.VarChar(255)
+  use_all_songs       String         @default("1") @db.Bit(1)
+  all_song_reuse      String         @default("0") @db.Bit(1)
+  session_mode        String         @db.VarChar(50)
+  songs_per_performer Int            @default(1)
+  time_start          DateTime?      @db.Timestamp(6)
+  end_time            DateTime?      @db.Timestamp(6)
+  changeover_time     Int?
+  performance_time    Int?
+  created_date        DateTime       @default(now()) @db.Timestamp(6)
+  updated_date        DateTime       @default(now()) @db.Timestamp(6)
+  performer           performer[]
+  admin_user          admin_user     @relation(fields: [admin_user_id], references: [admin_user_id], onDelete: Cascade, onUpdate: NoAction)
+  session_song        session_song[]
+
+  @@index([admin_user_id], map: "idx_session_admin_user")
+  @@index([created_date(sort: Desc)], map: "idx_session_created_date")
+  @@index([status], map: "idx_session_status")
+}
+
+model session_song {
+  session_id Int
+  song_id    Int
+  session    session @relation(fields: [session_id], references: [session_id], onDelete: Cascade, onUpdate: NoAction)
+  song       song    @relation(fields: [song_id], references: [song_id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@id([session_id, song_id])
+  @@index([session_id], map: "idx_session_song_session")
+  @@index([song_id], map: "idx_session_song_song")
+}
+
+model song {
+  song_id                  Int                        @id @default(autoincrement())
+  song_title               String                     @db.VarChar(255)
+  artist                   String                     @db.VarChar(255)
+  genre                    String?                    @db.VarChar(100)
+  year_released            Int?
+  verified                 String                     @default("0") @db.Bit(1)
+  admin_allowed_song       admin_allowed_song[]
+  performer_song_selection performer_song_selection[]
+  session_song             session_song[]
+
+  @@index([artist], map: "idx_song_artist")
+  @@index([song_title], map: "idx_song_title")
+  @@index([song_title, artist], map: "idx_song_title_artist")
+  @@index([verified], map: "idx_song_verified")
+}
