@@ -59,6 +59,10 @@ export default function QueuePanel({
             await PerformerClient.update(performer.performer_id, {
                 status: newStatus as PerformerStatus
             });
+            // Refetch performers to update the UI immediately
+            if (onPerformerCreated) {
+                onPerformerCreated();
+            }
         } catch (error) {
             console.error("Error updating performer status:", error);
         }
@@ -76,6 +80,11 @@ export default function QueuePanel({
                 await PerformerClient.update(performer.performer_id, {
                     status: PerformerStatus.performing
                 });
+            }
+
+            // Refetch performers to update the UI immediately
+            if (onPerformerCreated) {
+                onPerformerCreated();
             }
         } catch (error) {
             console.error("Error updating song status:", error);
@@ -112,11 +121,15 @@ export default function QueuePanel({
                 <div className="flex items-start justify-between">
                     <div className="flex-1">
                         <div className="flex items-center gap-4">
-                            <div className="flex items-center gap-2">
-                                <span className="text-amber-400 text-xl font-bold">#{queueNumber}</span>
+                            <div className="flex items-center gap-3">
                                 <CardTitle className="text-2xl font-bold text-white" style={isSkipped ? { textDecoration: 'line-through' } : {}}>
                                     {displayName}
                                 </CardTitle>
+                                {timeSlotDisplay && (
+                                    <span className="text-gray-400 text-sm font-medium">
+                                        {timeSlotDisplay}
+                                    </span>
+                                )}
                             </div>
                             {performer && (
                                 <>
@@ -143,11 +156,6 @@ export default function QueuePanel({
                                 </>
                             )}
                         </div>
-                        {timeSlotDisplay && (
-                            <div className="text-amber-400 text-sm font-semibold mt-1">
-                                {timeSlotDisplay}
-                            </div>
-                        )}
                     </div>
                     {isAdmin && onEdit && performer && (
                         <button

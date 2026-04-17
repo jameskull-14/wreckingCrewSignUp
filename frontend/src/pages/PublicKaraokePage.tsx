@@ -94,6 +94,27 @@ function PublicKaraokePageContent({
         return () => window.removeEventListener('storage', handleStorageChange);
     }, [adminId]);
 
+    // Periodically check session status to ensure it hasn't been completed
+    useEffect(() => {
+        if (!sessionId) return;
+
+        const checkSessionStatus = async () => {
+            try {
+                const session = await SessionClient.get(parseInt(sessionId));
+                if (session && session.status !== 'Active') {
+                    console.log('⚠️ Session is no longer active, status:', session.status);
+                    setSessionActive(false);
+                }
+            } catch (error) {
+                console.error('Error checking session status:', error);
+            }
+        };
+
+        // Check every 10 seconds
+        const interval = setInterval(checkSessionStatus, 10000);
+        return () => clearInterval(interval);
+    }, [sessionId]);
+
     if (!sessionActive) {
         return (
             <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center">
@@ -128,7 +149,7 @@ function PublicKaraokePageContent({
                             </div>
                             <div>
                                 <h1 className="text-4xl md:text-6xl font-bold bg-gradient-to-r from-amber-400 via-orange-400 to-red-400 bg-clip-text text-transparent">
-                                    Karaoke Live
+                                    {adminSettings?.session_title || "Karaoke Live"}
                                 </h1>
                                 <div className="flex items-center justify-center gap-2 mt-2">
                                     <Sparkles className="w-5 h-5 text-amber-400" />

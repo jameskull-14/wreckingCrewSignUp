@@ -232,24 +232,33 @@ async def create_session(session: schemas.SessionCreate, db: Session = Depends(g
     print(f"Admin user ID: {session.admin_user_id}")
     print(f"Found {len(allowed_songs)} songs in admin_allowed_song to copy")
 
-    songs_copied = 0
-    for allowed_song in allowed_songs:
-        # Check if song already exists in session (avoid duplicates)
-        existing = db.query(models.SessionSongModel).filter(
-            models.SessionSongModel.session_id == new_session.session_id,
-            models.SessionSongModel.song_id == allowed_song.song_id
-        ).first()
+    # Get all song_ids from allowed_songs
+    allowed_song_ids = [song.song_id for song in allowed_songs]
 
-        if not existing:
-            session_song = models.SessionSongModel(
+    # Get existing song_ids in session (to avoid duplicates)
+    existing_song_ids = set()
+    if allowed_song_ids:
+        existing_songs = db.query(models.SessionSongModel.song_id).filter(
+            models.SessionSongModel.session_id == new_session.session_id,
+            models.SessionSongModel.song_id.in_(allowed_song_ids)
+        ).all()
+        existing_song_ids = {row.song_id for row in existing_songs}
+
+    # Bulk create session_songs for non-duplicate songs
+    session_songs = []
+    for allowed_song in allowed_songs:
+        if allowed_song.song_id not in existing_song_ids:
+            session_songs.append(models.SessionSongModel(
                 session_id=new_session.session_id,
                 song_id=allowed_song.song_id
-            )
-            db.add(session_song)
-            songs_copied += 1
+            ))
             print(f"  ✓ Copying song_id {allowed_song.song_id} to session {new_session.session_id}")
         else:
             print(f"  ⊘ song_id {allowed_song.song_id} already exists in session, skipping")
+
+    songs_copied = len(session_songs)
+    if session_songs:
+        db.bulk_save_objects(session_songs)
 
     print(f"\nTotal songs copied: {songs_copied}")
 
@@ -458,9 +467,7 @@ def generate_time_slots(session_id: int, db: Session = Depends(get_db)):
             performer_username="Guest",
             queue_number=queue_number,
             status=PerformerStatus.waiting,
-            performer_type=PerformerType.individual,
-            time_slot_start=slot_start.strftime("%H:%M"),
-            time_slot_end=slot_end.strftime("%H:%M")
+            performer_type=PerformerType.individual
         )
 
         db.add(time_slot_performer)

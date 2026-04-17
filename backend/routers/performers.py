@@ -90,13 +90,16 @@ async def create_performer(performer: schemas.PerformerCreate, db: Session = Dep
     """
 
     print("call session")
-    # Verify session exists
+    # Verify session exists and is active
     session = db.query(models.SessionModel).filter(
         models.SessionModel.session_id == performer.session_id
     ).first()
     if not session:
         raise HTTPException(status_code=400, detail="Session not found")
-    
+
+    if session.status != "Active":
+        raise HTTPException(status_code=400, detail="Cannot add performers to a completed or paused session")
+
     print("✅ Frontend reachedcreate_performer endpoint")
 
     new_performer = models.PerformerModel(
@@ -157,6 +160,14 @@ async def update_performer(
 
     if not db_performer:
         raise HTTPException(status_code=404, detail="Performer not found")
+
+    # Verify session is still active
+    session = db.query(models.SessionModel).filter(
+        models.SessionModel.session_id == db_performer.session_id
+    ).first()
+
+    if session and session.status != "Active":
+        raise HTTPException(status_code=400, detail="Cannot update performers in a completed or paused session")
 
     update_data = performer.model_dump(exclude_unset=True)
 

@@ -59,9 +59,8 @@ class SongListService:
             'list_id': song_list.song_list_id
         }
 
-        # Track unique song_ids for admin_allowed_song
-        processed_song_ids = set()
-
+        # Parse all CSV rows first
+        csv_songs = []
         for idx, row in enumerate(rows):
             # Skip empty rows
             if not row or len(row) < 2 or not row[0].strip():
@@ -70,25 +69,31 @@ class SongListService:
             raw_title = row[0].strip()
             raw_artist = row[1].strip() if len(row) > 1 and row[1] else ""
 
-            try:
-                # Find or create song
-                song_id = self._find_or_create_song(
-                    db=db,
-                    title=raw_title,
-                    artist=raw_artist
-                )
+            csv_songs.append({
+                'idx': idx,
+                'title': raw_title,
+                'artist': raw_artist
+            })
 
-                # Track song_id for admin_allowed_song
+        # Bulk find or create all songs
+        song_map = self._bulk_find_or_create_songs(db, csv_songs)
+
+        # Track unique song_ids for admin_allowed_song
+        processed_song_ids = set()
+
+        # Bulk create song_list_items
+        song_list_items = []
+        for song_data in csv_songs:
+            try:
+                song_id = song_map[(song_data['title'].lower(), song_data['artist'].lower())]
                 processed_song_ids.add(song_id)
 
-                # Create song_list_item
-                song_list_item = models.SongListItemModel(
+                song_list_items.append(models.SongListItemModel(
                     song_list_id=song_list.song_list_id,
                     song_id=song_id,
-                    raw_title=raw_title,
-                    raw_artist=raw_artist
-                )
-                db.add(song_list_item)
+                    raw_title=song_data['title'],
+                    raw_artist=song_data['artist']
+                ))
 
                 results['processed'] += 1
                 results['added'] += 1
@@ -96,13 +101,14 @@ class SongListService:
             except Exception as e:
                 # Track error but continue processing
                 results['errors'].append({
-                    'row': idx + 1,
-                    'title': raw_title,
-                    'artist': raw_artist,
+                    'row': song_data['idx'] + 1,
+                    'title': song_data['title'],
+                    'artist': song_data['artist'],
                     'error': str(e)
                 })
 
-        # Commit all song_list_items
+        # Bulk insert all song_list_items
+        db.bulk_save_objects(song_list_items)
         db.commit()
 
         # Add all processed songs to admin_allowed_song
@@ -131,39 +137,68 @@ class SongListService:
         return any(header in first_col for header in headers) or \
                any(header in second_col for header in headers)
 
-    def _find_or_create_song(self, db: Session, title: str, artist: str) -> int:
+    def _bulk_find_or_create_songs(self, db: Session, csv_songs: List[Dict]) -> Dict[Tuple[str, str], int]:
         """
-        Find existing song or create new one.
+        Bulk find or create songs from CSV data.
 
         Args:
             db: Database session
-            title: Song title
-            artist: Artist name
+            csv_songs: List of dicts with 'title' and 'artist' keys
 
         Returns:
-            song_id of existing or newly created song
-
-        Raises:
-            Exception if song cannot be created
+            Dictionary mapping (title.lower(), artist.lower()) to song_id
         """
-        # Try to find existing song (case-insensitive)
-        existing_song = db.query(models.SongModel).filter(
-            models.SongModel.song_title.ilike(title),
-            models.SongModel.artist.ilike(artist)
-        ).first()
+        if not csv_songs:
+            return {}
 
-        if existing_song:
-            return existing_song.song_id
+        # Get unique songs from CSV (case-insensitive deduplication)
+        unique_songs = {}
+        for song in csv_songs:
+            key = (song['title'].lower(), song['artist'].lower())
+            if key not in unique_songs:
+                unique_songs[key] = {'title': song['title'], 'artist': song['artist']}
 
-        # Create new song
-        new_song = models.SongModel(
-            song_title=title,
-            artist=artist
-        )
-        db.add(new_song)
-        db.flush()  # Flush to get the ID without committing
+        # Query all existing songs in one go (case-insensitive)
+        from sqlalchemy import func, tuple_
 
-        return new_song.song_id
+        # Build case-insensitive lookup
+        song_pairs = [(s['title'], s['artist']) for s in unique_songs.values()]
+
+        existing_songs = db.query(
+            func.lower(models.SongModel.song_title).label('title_lower'),
+            func.lower(models.SongModel.artist).label('artist_lower'),
+            models.SongModel.song_id
+        ).filter(
+            tuple_(func.lower(models.SongModel.song_title), func.lower(models.SongModel.artist)).in_(
+                [(t.lower(), a.lower()) for t, a in song_pairs]
+            )
+        ).all()
+
+        # Map existing songs
+        song_map = {}
+        for row in existing_songs:
+            song_map[(row.title_lower, row.artist_lower)] = row.song_id
+
+        # Find songs that need to be created
+        songs_to_create = []
+        for key, song_data in unique_songs.items():
+            if key not in song_map:
+                songs_to_create.append(models.SongModel(
+                    song_title=song_data['title'],
+                    artist=song_data['artist']
+                ))
+
+        # Bulk insert new songs
+        if songs_to_create:
+            db.bulk_save_objects(songs_to_create, return_defaults=True)
+            db.flush()
+
+            # Add newly created songs to the map
+            for song in songs_to_create:
+                key = (song.song_title.lower(), song.artist.lower())
+                song_map[key] = song.song_id
+
+        return song_map
 
     def _add_songs_to_admin_allowed(self, db: Session, admin_user_id: int, song_ids: set) -> None:
         """
@@ -188,13 +223,16 @@ class SongListService:
         # Filter out songs that are already allowed
         new_song_ids = song_ids - existing_song_ids
 
-        # Create new admin_allowed_song entries
-        for song_id in new_song_ids:
-            admin_allowed_song = models.AdminAllowedSongModel(
-                admin_user_id=admin_user_id,
-                song_id=song_id
-            )
-            db.add(admin_allowed_song)
+        # Bulk create new admin_allowed_song entries
+        if new_song_ids:
+            allowed_songs = [
+                models.AdminAllowedSongModel(
+                    admin_user_id=admin_user_id,
+                    song_id=song_id
+                )
+                for song_id in new_song_ids
+            ]
+            db.bulk_save_objects(allowed_songs)
 
         # Commit the new allowed songs
         db.commit()

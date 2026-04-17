@@ -6,6 +6,7 @@ import schemas
 from database import get_db
 from passlib.context import CryptContext
 from datetime import datetime
+from models.session import SessionMode
 
 router = APIRouter(
     prefix="/api/admin-users",
@@ -117,6 +118,26 @@ def create_admin_user(user: schemas.AdminUserCreate, db: Session = Depends(get_d
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
+
+    # Create default admin settings for the new user
+    default_settings = models.AdminUserSettingModel(
+        admin_user_id=new_user.admin_user_id,
+        session_title="Live Band Karaoke",
+        session_host=user.first_name,
+        use_all_songs=False,
+        allow_song_reuse=False,
+        session_mode=SessionMode.Order,
+        songs_per_performer=1,
+        start_time="19:00",
+        end_time="23:00",
+        changeover_time="00:05",
+        performance_time="00:10",
+        allow_instrument_use=False
+    )
+
+    db.add(default_settings)
+    db.commit()
+
     return new_user
 
 

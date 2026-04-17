@@ -139,6 +139,9 @@ async def create_performer_song_selection(
     if not session:
         raise HTTPException(status_code=400, detail="Session not found")
 
+    if session.status != "Active":
+        raise HTTPException(status_code=400, detail="Cannot add songs to a completed or paused session")
+
     # Get admin settings
     admin_settings = db.query(models.AdminUserSettingModel).filter(
         models.AdminUserSettingModel.admin_user_id == session.admin_user_id
@@ -238,6 +241,19 @@ async def update_performer_song_selection(
 
     if not db_selection:
         raise HTTPException(status_code=404, detail="Performer song selection not found")
+
+    # Verify session is still active
+    performer = db.query(models.PerformerModel).filter(
+        models.PerformerModel.performer_id == db_selection.performer_id
+    ).first()
+
+    if performer:
+        session = db.query(models.SessionModel).filter(
+            models.SessionModel.session_id == performer.session_id
+        ).first()
+
+        if session and session.status != "Active":
+            raise HTTPException(status_code=400, detail="Cannot update songs in a completed or paused session")
 
     update_data = selection.model_dump(exclude_unset=True)
 
