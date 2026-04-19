@@ -22,8 +22,8 @@ from routers import (
 # Create database tables
 Base.metadata.create_all(bind=engine)
 
-# start the fastAPI 
-app = FastAPI(title="My FastAPI Backend")
+# start the fastAPI
+app = FastAPI(title="My FastAPI Backend", redirect_slashes=False)
 
 # CORS - Allow React frontend to connect
 import os

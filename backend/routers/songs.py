@@ -13,7 +13,7 @@ router = APIRouter(
 )
 
 
-@router.get("/", response_model=List[schemas.SongResponse])
+@router.get("", response_model=List[schemas.SongResponse])
 def get_songs(
     song_id: Optional[int] = Query(None, description="the songs identifier"),
     song_title: Optional[str] = Query(None, description="the songs name"),
@@ -112,7 +112,7 @@ def get_song(song_id: int, db: Session = Depends(get_db)):
     return song
 
 
-@router.post("/", response_model=schemas.SongResponse)
+@router.post("", response_model=schemas.SongResponse)
 def create_song(song: schemas.SongCreate, db: Session = Depends(get_db)):
     """
     Create a new song.

@@ -27,7 +27,7 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
     return pwd_context.verify(plain_password, hashed_password)
 
 
-@router.get("/", response_model=List[schemas.AdminUserResponse])
+@router.get("", response_model=List[schemas.AdminUserResponse])
 def get_admin_users(
     email: Optional[str] = Query(None, description="Filter by email"),
     db: Session = Depends(get_db)
@@ -80,7 +80,7 @@ def get_admin_user(admin_user_id: int, db: Session = Depends(get_db)):
     return user
 
 
-@router.post("/", response_model=schemas.AdminUserResponse)
+@router.post("", response_model=schemas.AdminUserResponse)
 def create_admin_user(user: schemas.AdminUserCreate, db: Session = Depends(get_db)):
     """
     Create a new admin user.

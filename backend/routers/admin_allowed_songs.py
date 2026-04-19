@@ -11,7 +11,7 @@ router = APIRouter(
 )
 
 
-@router.get("/", response_model=List[schemas.AdminAllowedSongResponse])
+@router.get("", response_model=List[schemas.AdminAllowedSongResponse])
 def get_admin_allowed_songs(
     admin_user_id: Optional[int] = Query(None, description="Filter by admin user ID"),
     song_id: Optional[int] = Query(None, description="Filter by song ID"),
@@ -61,7 +61,7 @@ def get_admin_allowed_songs(
     ]
 
 
-@router.post("/", response_model=schemas.AdminAllowedSongResponse)
+@router.post("", response_model=schemas.AdminAllowedSongResponse)
 def create_admin_allowed_song(
     allowed_song: schemas.AdminAllowedSongCreate,
     db: Session = Depends(get_db)
