@@ -24,10 +24,12 @@ export default function AdminPage ({ adminInfo, onLogout }: AdminPageProps) {
     useEffect(() => {
         const loadData = async () => {
             try{
+                const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+
                 // Load settings and active session in parallel
                 const [settingsRes, sessionRes] = await Promise.all([
-                    fetch(`api/admin-user-settings?admin_user_id=${adminInfo.admin_user_id}`),
-                    fetch(`api/sessions?admin_user_id=${adminInfo.admin_user_id}&status=Active`)
+                    fetch(`${API_BASE_URL}/api/admin-user-settings?admin_user_id=${adminInfo.admin_user_id}`),
+                    fetch(`${API_BASE_URL}/api/sessions?admin_user_id=${adminInfo.admin_user_id}&status=Active`)
                 ]);
 
                 const settings = await settingsRes.json();
