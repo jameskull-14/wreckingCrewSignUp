@@ -9,6 +9,8 @@ interface AuthFormProps {
     onAuthSuccess: (user: any, token: string) => void;
 }
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+
 export default function AuthForm({ onAuthSuccess }: AuthFormProps) {
     const [isLogin, setIsLogin] = useState(true);
     const [email, setEmail] = useState("");
@@ -30,7 +32,7 @@ export default function AuthForm({ onAuthSuccess }: AuthFormProps) {
                 ? { email, password }
                 : { email, password, first_name: firstName, last_name: lastName };
 
-            const response = await fetch(endpoint, {
+            const response = await fetch(`${API_BASE_URL}${endpoint}`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(body),
@@ -47,7 +49,7 @@ export default function AuthForm({ onAuthSuccess }: AuthFormProps) {
                 onAuthSuccess(data.user, data.access_token);
             } else {
                 // Registration successful, now log them in
-                const loginResponse = await fetch("/api/auth/login", {
+                const loginResponse = await fetch(`${API_BASE_URL}/api/auth/login`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ email, password }),

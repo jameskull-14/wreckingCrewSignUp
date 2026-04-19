@@ -3,6 +3,8 @@ import AdminPage from "./AdminPage";
 import AuthForm from "../components/auth/AuthForm.js";
 import { AdminUser } from "../types/apiTypes/adminUser";
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+
 export default function AdminLoginPage() {
     const [adminInfo, setAdminInfo] = useState<AdminUser | null>(null);
     const [authToken, setAuthToken] = useState<string | null>(null);
@@ -17,7 +19,7 @@ export default function AdminLoginPage() {
             if (token && userStr) {
                 try {
                     // Verify token is still valid
-                    const response = await fetch("/api/auth/verify", {
+                    const response = await fetch(`${API_BASE_URL}/api/auth/verify`, {
                         method: "POST",
                         headers: {
                             "Content-Type": "application/json",
