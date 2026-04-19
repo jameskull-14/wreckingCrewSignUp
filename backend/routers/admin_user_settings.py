@@ -12,7 +12,7 @@ router = APIRouter(
 )
 
 
-@router.get("/", response_model=List[schemas.AdminUserSettingResponse])
+@router.get("", response_model=List[schemas.AdminUserSettingResponse])
 def get_admin_user_settings(
     admin_user_id: Optional[int] = Query(None, description="Filter by admin user ID"),
     db: Session = Depends(get_db)
