@@ -26,9 +26,22 @@ Base.metadata.create_all(bind=engine)
 app = FastAPI(title="My FastAPI Backend")
 
 # CORS - Allow React frontend to connect
+import os
+
+# Allow both local development and production domains
+allowed_origins = [
+    "http://localhost:5173",  # Local Vite dev server
+    "http://localhost:5174",  # Alternative local port
+]
+
+# Add production frontend URL from environment variable
+frontend_url = os.getenv("FRONTEND_URL")
+if frontend_url:
+    allowed_origins.append(frontend_url)
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],  # Vite dev server
+    allow_origins=allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

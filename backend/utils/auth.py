@@ -3,12 +3,13 @@ Authentication utilities for password hashing and JWT token management.
 """
 import bcrypt
 import jwt
+import os
 from datetime import datetime, timedelta, timezone
 from typing import Optional
 from fastapi import HTTPException, status
 
-# Secret key for JWT - in production, store this in environment variables
-SECRET_KEY = "your-secret-key-change-this-in-production"
+# Secret key for JWT - MUST be set in environment variables for production
+SECRET_KEY = os.getenv("JWT_SECRET_KEY", "your-secret-key-change-this-in-production")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24 * 7  # 7 days
 
