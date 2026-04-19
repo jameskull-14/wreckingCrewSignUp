@@ -14,7 +14,7 @@ router = APIRouter(
 )
 
 
-@router.get("/", response_model=List[schemas.PerformerSongSelectionResponse])
+@router.get("", response_model=List[schemas.PerformerSongSelectionResponse])
 def get_performer_song_selections(
     performer_id: Optional[str] = Query(None, description="Filter by performer ID"),
     song_id: Optional[str] = Query(None, description="Filter by song ID"),
@@ -101,7 +101,7 @@ def get_performer_song_selection(selection_id: int, db: Session = Depends(get_db
     return selection
 
 
-@router.post("/", response_model=schemas.PerformerSongSelectionResponse)
+@router.post("", response_model=schemas.PerformerSongSelectionResponse)
 async def create_performer_song_selection(
     selection: schemas.PerformerSongSelectionCreate,
     db: Session = Depends(get_db)

@@ -77,7 +77,7 @@ def search_session_songs(
     return results
 
 
-@router.get("/", response_model=List[schemas.SessionSongResponse])
+@router.get("", response_model=List[schemas.SessionSongResponse])
 def get_session_songs(
     session_id: Optional[int] = Query(None, description="Filter by session ID"),
     song_id: Optional[int] = Query(None, description="Filter by song ID"),
@@ -128,7 +128,7 @@ def get_session_songs(
     ]
 
 
-@router.post("/", response_model=schemas.SessionSongResponse)
+@router.post("", response_model=schemas.SessionSongResponse)
 def create_session_song(
     session_song: schemas.SessionSongCreate,
     db: Session = Depends(get_db)

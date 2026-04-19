@@ -65,7 +65,7 @@ def get_admin_user_setting(setting_id: int, db: Session = Depends(get_db)):
     return setting
 
 
-@router.post("/", response_model=schemas.AdminUserSettingResponse)
+@router.post("", response_model=schemas.AdminUserSettingResponse)
 def create_admin_user_setting(
     setting: schemas.AdminUserSettingCreate,
     db: Session = Depends(get_db)

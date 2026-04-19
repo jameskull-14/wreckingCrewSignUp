@@ -178,7 +178,7 @@ def get_session_info(session_id: int, db: Session = Depends(get_db)):
     }
 
 
-@router.post("/", response_model=schemas.SessionResponse)
+@router.post("", response_model=schemas.SessionResponse)
 async def create_session(session: schemas.SessionCreate, db: Session = Depends(get_db)):
     """
     Create a new session.

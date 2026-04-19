@@ -12,7 +12,7 @@ router = APIRouter(
 )
 
 
-@router.get("/", response_model=List[schemas.SongListResponse])
+@router.get("", response_model=List[schemas.SongListResponse])
 async def get_song_lists(
     admin_user_id: Optional[int] = Query(None, description="Filter by admin user ID"),
     db: Session = Depends(get_db)
@@ -39,7 +39,7 @@ async def get_song_list(song_list_id: int, db: Session = Depends(get_db)):
     return song_list
 
 
-@router.post("/", response_model=schemas.SongListResponse)
+@router.post("", response_model=schemas.SongListResponse)
 async def create_song_list(
     song_list: schemas.SongListCreate,
     db: Session = Depends(get_db)

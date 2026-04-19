@@ -14,7 +14,7 @@ router = APIRouter(
 )
 
 
-@router.get("/", response_model=List[schemas.PerformerResponse])
+@router.get("", response_model=List[schemas.PerformerResponse])
 def get_performers(
     session_id: Optional[int] = Query(None, description="Filter by session ID"),
     status: Optional[str] = Query(None, description="Filter by status"),
@@ -71,7 +71,7 @@ def get_performer(performer_id: int, db: Session = Depends(get_db)):
     return performer
 
 
-@router.post("/", response_model=schemas.PerformerResponse)
+@router.post("", response_model=schemas.PerformerResponse)
 async def create_performer(performer: schemas.PerformerCreate, db: Session = Depends(get_db)):
     """
     Create a new performer.
