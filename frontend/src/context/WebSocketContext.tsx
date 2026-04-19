@@ -28,11 +28,13 @@ export function WebSocketProvider({ adminId, children }: WebSocketProviderProps)
     if (!adminId) return;
 
     const connect = () => {
-      // Determine WebSocket URL based on current location
-      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-      const host = window.location.hostname;
-      const port = import.meta.env.DEV ? '8000' : window.location.port; // Backend runs on 8000 in dev
-      const wsUrl = `${protocol}//${host}:${port}/ws/${adminId}`;
+      // Get backend URL from environment variable
+      const apiBaseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+
+      // Convert HTTP(S) URL to WebSocket URL
+      const wsUrl = apiBaseUrl
+        .replace('https://', 'wss://')
+        .replace('http://', 'ws://') + `/ws/${adminId}`;
 
       console.log(`Connecting to WebSocket: ${wsUrl}`);
       const ws = new WebSocket(wsUrl);
