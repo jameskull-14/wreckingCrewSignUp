@@ -13,7 +13,7 @@ router = APIRouter(
 )
 
 
-@router.get("/", response_model=List[schemas.SessionResponse])
+@router.get("", response_model=List[schemas.SessionResponse])
 def get_sessions(
     admin_user_id: Optional[int] = Query(None, description="Filter by admin user ID"),
     status: Optional[str] = Query(None, description="Filter by status"),
