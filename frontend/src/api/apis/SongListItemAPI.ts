@@ -21,7 +21,7 @@ export class SongListItemAPI {
     }
 
     async create(item_data: SongListItemCreate){
-        return this.client.request('/api/song-list-items/', {
+        return this.client.request('/api/song-list-items', {
             method: 'POST',
             body: JSON.stringify(item_data)
         });
