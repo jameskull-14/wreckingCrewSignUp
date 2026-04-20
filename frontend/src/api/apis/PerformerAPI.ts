@@ -22,7 +22,7 @@ export class PerformerAPI {
     }
 
     async create(performer_data: PerformerCreate){
-        return this.client.request('/api/performers/', {
+        return this.client.request('/api/performers', {
             method: 'POST',
             body: JSON.stringify(performer_data)
         });

@@ -22,7 +22,7 @@ export class SessionSongListAPI {
     }
 
     async create(session_song_list_data: SessionSongListCreate){
-        return this.client.request('/api/session-song-lists/', {
+        return this.client.request('/api/session-song-lists', {
             method: 'POST',
             body: JSON.stringify(session_song_list_data)
         });
