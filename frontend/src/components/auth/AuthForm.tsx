@@ -79,7 +79,7 @@ export default function AuthForm({ onAuthSuccess }: AuthFormProps) {
                             <Music className="w-7 h-7 text-gray-900" />
                         </div>
                         <CardTitle className="text-3xl font-bold text-amber-400">
-                            Karaoke Admin
+                            Admin Login
                         </CardTitle>
                     </div>
                     <div className="flex gap-2">
@@ -203,7 +203,7 @@ export default function AuthForm({ onAuthSuccess }: AuthFormProps) {
                             ) : isLogin ? (
                                 <>
                                     <LogIn className="w-4 h-4 mr-2" />
-                                    Login to Admin
+                                    Login to Account
                                 </>
                             ) : (
                                 <>
