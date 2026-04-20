@@ -147,23 +147,21 @@ function PublicKaraokePageContent({
                             <div className="w-16 h-16 rounded-full bg-gradient-to-r from-amber-400 to-orange-500 flex items-center justify-center">
                                 <Music className="w-8 h-8 text-gray-900" />
                             </div>
-                            <div>
-                                <h1 className="text-4xl md:text-6xl font-bold bg-gradient-to-r from-amber-400 via-orange-400 to-red-400 bg-clip-text text-transparent">
-                                    {adminSettings?.session_title || "Karaoke Live"}
-                                </h1>
-                                <div className="flex items-center justify-center gap-2 mt-2">
-                                    <Sparkles className="w-5 h-5 text-amber-400" />
-                                    <p className="text-amber-200/80 text-lg">Sign up • Sing • Shine</p>
-                                    <Sparkles className="w-5 h-5 text-amber-400" />
-                                </div>
-                            </div>
+                            <h1 className="text-4xl md:text-6xl font-bold bg-gradient-to-r from-amber-400 via-orange-400 to-red-400 bg-clip-text text-transparent">
+                                {adminSettings?.session_title || "Karaoke Live"}
+                            </h1>
                         </div>
 
                         {adminInfo && (
-                            <div className="flex justify-center items-center gap-4 flex-wrap">
-                                <span className="text-amber-300 font-semibold">
+                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px' }}>
+                                <span style={{ color: '#fcd34d', fontSize: '2.5rem', fontWeight: 800, letterSpacing: '0.02em' }}>
                                     Hosted by {adminSettings?.session_host ? adminSettings.session_host : adminInfo.first_name}
                                 </span>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                    <Sparkles style={{ width: '28px', height: '28px', color: '#fbbf24' }} />
+                                    <p style={{ color: 'rgba(253,230,138,0.85)', fontSize: '1.75rem', fontWeight: 600, margin: 0 }}>Sign up • Sing • Shine</p>
+                                    <Sparkles style={{ width: '28px', height: '28px', color: '#fbbf24' }} />
+                                </div>
                             </div>
                         )}
                     </motion.div>
