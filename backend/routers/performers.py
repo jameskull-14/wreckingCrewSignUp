@@ -7,6 +7,7 @@ import schemas
 from database import get_db
 from routers.websockets import manager
 from models.performer import PerformerStatus
+from models.session import SessionStatus
 
 router = APIRouter(
     prefix="/api/performers",
@@ -97,7 +98,6 @@ async def create_performer(performer: schemas.PerformerCreate, db: Session = Dep
     if not session:
         raise HTTPException(status_code=400, detail="Session not found")
 
-    from models.session import SessionStatus
     if session.status != SessionStatus.Active:
         raise HTTPException(status_code=400, detail="Cannot add performers to a completed or paused session")
 
