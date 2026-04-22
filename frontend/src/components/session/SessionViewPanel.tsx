@@ -26,6 +26,9 @@ interface TimeSlotPanel {
     timeSlotStart: string;
     timeSlotEnd: string;
     performer: Performer | null;
+    isFeaturedAct?: boolean;
+    featuredActName?: string;
+    featuredActStatus?: string;
 }
 
 export default function SessionViewPanel({
@@ -49,6 +52,10 @@ export default function SessionViewPanel({
 
         try {
             const sessionData = await SessionClient.get(parseInt(sessionId));
+            console.log('📥 Session data fetched');
+            if (sessionData.featured_act_name) {
+                console.log(`🎭 Featured act: ${sessionData.featured_act_name} (${sessionData.featured_act_start_time} - ${sessionData.featured_act_end_time})`);
+            }
             setSession(sessionData);
         } catch (error) {
             console.error('Error fetching session:', error);
@@ -75,6 +82,11 @@ export default function SessionViewPanel({
         }
     }, [sessionId])
 
+    const refetchAll = useCallback(async () => {
+        await fetchSession();
+        await fetchPerformers();
+    }, [fetchSession, fetchPerformers])
+
     useEffect(() => {
         fetchSession();
         fetchPerformers();
@@ -86,7 +98,7 @@ export default function SessionViewPanel({
             return [];
         }
 
-        const { start_time, end_time, performance_time, changeover_time } = session;
+        const { start_time, end_time, performance_time, changeover_time, featured_act_name, featured_act_start_time, featured_act_end_time, featured_act_status } = session;
 
         if (!start_time || !end_time || !performance_time) {
             console.warn('Time mode requires start_time, end_time, and performance_time');
@@ -113,25 +125,76 @@ export default function SessionViewPanel({
         const changeoverMinutes = changeover_time ? parseTime(changeover_time) : 0;
         const totalSlotTime = performanceMinutes + changeoverMinutes;
 
+        // Parse featured act times if they exist
+        let featuredActStartMinutes: number | null = null;
+        let featuredActEndMinutes: number | null = null;
+        if (featured_act_name && featured_act_start_time && featured_act_end_time) {
+            featuredActStartMinutes = parseTime(featured_act_start_time);
+            featuredActEndMinutes = parseTime(featured_act_end_time);
+            console.log(`🎭 Featured act detected: ${featured_act_start_time} - ${featured_act_end_time}`);
+        }
+
         let currentTime = startMinutes;
         let queueNumber = 1;
 
         while (currentTime + performanceMinutes <= endMinutes) {
-            const slotStart = formatTime(currentTime);
-            const slotEnd = formatTime(currentTime + performanceMinutes);
+            const slotStart = currentTime;
+            const slotEnd = currentTime + performanceMinutes;
+
+            // Check if this slot would overlap with the featured act
+            if (featuredActStartMinutes !== null && featuredActEndMinutes !== null) {
+                // Check for overlap: slot overlaps if slot_start < feat_end AND slot_end > feat_start
+                if (slotStart < featuredActEndMinutes && slotEnd > featuredActStartMinutes) {
+                    // This slot overlaps with featured act, skip to after featured act
+                    console.log(`⏭️  Skipping slot at ${formatTime(slotStart)} - overlaps with featured act`);
+                    currentTime = featuredActEndMinutes;
+                    continue;
+                }
+            }
+
+            const slotStartFormatted = formatTime(slotStart);
+            const slotEndFormatted = formatTime(slotEnd);
 
             // Find performer with this queue number
             const performer = performers.find(p => p.queue_number === queueNumber) || null;
 
             slots.push({
                 queueNumber,
-                timeSlotStart: slotStart,
-                timeSlotEnd: slotEnd,
+                timeSlotStart: slotStartFormatted,
+                timeSlotEnd: slotEndFormatted,
                 performer
             });
 
             currentTime += totalSlotTime;
             queueNumber++;
+        }
+
+        // Add featured act slot if defined
+        if (featured_act_name && featured_act_start_time && featured_act_end_time) {
+            console.log('✅ Adding featured act slot to schedule');
+            const featuredActSlot: TimeSlotPanel = {
+                queueNumber: 0, // Featured act doesn't have a queue number
+                timeSlotStart: featured_act_start_time,
+                timeSlotEnd: featured_act_end_time,
+                performer: null,
+                isFeaturedAct: true,
+                featuredActName: featured_act_name,
+                featuredActStatus: featured_act_status || undefined
+            };
+
+            // Insert the featured act slot in chronological order
+            const featuredActStartMinutes = parseTime(featured_act_start_time);
+            const insertIndex = slots.findIndex(slot => parseTime(slot.timeSlotStart) > featuredActStartMinutes);
+
+            if (insertIndex === -1) {
+                // Featured act is after all slots, add to end
+                slots.push(featuredActSlot);
+                console.log('📍 Featured act added at end');
+            } else {
+                // Insert featured act at the correct position
+                slots.splice(insertIndex, 0, featuredActSlot);
+                console.log(`📍 Featured act inserted at position ${insertIndex}`);
+            }
         }
 
         return slots;
@@ -194,9 +257,9 @@ export default function SessionViewPanel({
                     <CardContent className="space-y-3">
                         {isTimeMode && timeSlots.length > 0 ? (
                             // Time mode: show all time slots
-                            timeSlots.map((slot) => (
+                            timeSlots.map((slot, index) => (
                                 <QueuePanel
-                                    key={slot.queueNumber}
+                                    key={slot.isFeaturedAct ? `featured-act` : slot.queueNumber}
                                     isAdmin={isAdmin}
                                     adminSettings={adminSettings}
                                     performer={slot.performer}
@@ -208,7 +271,10 @@ export default function SessionViewPanel({
                                     session={session}
                                     sessionId={sessionId}
                                     performers={performers}
-                                    onPerformerCreated={fetchPerformers}
+                                    onPerformerCreated={slot.isFeaturedAct ? refetchAll : fetchPerformers}
+                                    isFeaturedAct={slot.isFeaturedAct}
+                                    featuredActName={slot.featuredActName}
+                                    featuredActStatus={slot.featuredActStatus}
                                 />
                             ))
                         ) : (

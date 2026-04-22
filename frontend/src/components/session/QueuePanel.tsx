@@ -7,7 +7,7 @@ import { Pencil, Plus } from "lucide-react";
 import { PerformerType, PerformerStatus } from "../../types/apiTypes/performer";
 import { SessionMode } from "../../types/apiTypes/session";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../shared/Select";
-import { PerformerClient, PerformerSongSelectionClient } from "../../api/frontendClient";
+import { PerformerClient, PerformerSongSelectionClient, SessionClient } from "../../api/frontendClient";
 import SignUpModal from "./SignUpModal";
 
 export default function QueuePanel({
@@ -22,7 +22,10 @@ export default function QueuePanel({
     session,
     sessionId,
     performers,
-    onPerformerCreated
+    onPerformerCreated,
+    isFeaturedAct,
+    featuredActName,
+    featuredActStatus
 }: QueuePanelInterface){
     const [isSignUpOpen, setIsSignUpOpen] = useState(false);
 
@@ -34,7 +37,9 @@ export default function QueuePanel({
 
     const isTimeMode = session?.session_mode === SessionMode.Time;
 
-    const displayName = !performer || performer.performer_name === ""
+    const displayName = isFeaturedAct
+        ? featuredActName || "Featured Act"
+        : !performer || performer.performer_name === ""
         ? "Available Time Slot"
         : performer.performer_type === PerformerType.group
         ? `Band: ${performer.performer_name}`
@@ -91,6 +96,22 @@ export default function QueuePanel({
         }
     };
 
+    const handleFeaturedActStatusChange = async (newStatus: string) => {
+        if (!session) return;
+        try {
+            await SessionClient.update(session.session_id, {
+                featured_act_status: newStatus
+            });
+
+            // Refetch session to update the UI immediately
+            if (onPerformerCreated) {
+                onPerformerCreated();
+            }
+        } catch (error) {
+            console.error("Error updating featured act status:", error);
+        }
+    };
+
     // Determine styling based on status
     const isSkipped = performer?.status === PerformerStatus.skipped;
     const isCompleted = performer?.status === PerformerStatus.completed;
@@ -116,12 +137,17 @@ export default function QueuePanel({
     };
 
     return(
-        <Card className={`bg-gradient-to-br from-gray-900 to-gray-800 border-amber-400/30 ${isGreyedOut ? 'opacity-50' : ''}`}>
+        <Card className={`bg-gradient-to-br from-gray-900 to-gray-800 ${isFeaturedAct ? 'border-purple-500/50' : 'border-amber-400/30'} ${isGreyedOut ? 'opacity-50' : ''}`}>
             <CardHeader className="border-b border-amber-400/20">
                 <div className="flex items-start justify-between">
                     <div className="flex-1">
                         <div className="flex items-center gap-4">
                             <div className="flex items-center gap-3">
+                                {isFeaturedAct && (
+                                    <span className="bg-purple-500/20 text-purple-400 px-3 py-1 rounded-full text-xs font-semibold border border-purple-500/50">
+                                        ⭐ FEATURED ACT
+                                    </span>
+                                )}
                                 <CardTitle className="text-2xl font-bold text-white" style={isSkipped ? { textDecoration: 'line-through' } : {}}>
                                     {displayName}
                                 </CardTitle>
@@ -131,7 +157,7 @@ export default function QueuePanel({
                                     </span>
                                 )}
                             </div>
-                            {performer && (
+                            {performer && !isFeaturedAct && (
                                 <>
                                     {isAdmin ? (
                                         <Select
@@ -155,9 +181,30 @@ export default function QueuePanel({
                                     )}
                                 </>
                             )}
+                            {isFeaturedAct && isAdmin && (
+                                <Select
+                                    value={featuredActStatus || PerformerStatus.waiting}
+                                    onValueChange={handleFeaturedActStatusChange}
+                                >
+                                    <SelectTrigger className={`w-40 bg-gray-900/50 border-purple-500/30 ${getStatusColor((featuredActStatus || PerformerStatus.waiting) as PerformerStatus)}`}>
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value={PerformerStatus.waiting}>Waiting</SelectItem>
+                                        <SelectItem value={PerformerStatus.performing}>Performing</SelectItem>
+                                        <SelectItem value={PerformerStatus.completed}>Completed</SelectItem>
+                                        <SelectItem value={PerformerStatus.skipped}>Skipped</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            )}
+                            {isFeaturedAct && !isAdmin && (
+                                <span className={`text-sm font-semibold ${getStatusColor((featuredActStatus || PerformerStatus.waiting) as PerformerStatus)}`}>
+                                    {getStatusLabel((featuredActStatus || PerformerStatus.waiting) as PerformerStatus)}
+                                </span>
+                            )}
                         </div>
                     </div>
-                    {isAdmin && onEdit && performer && (
+                    {isAdmin && onEdit && performer && !isFeaturedAct && (
                         <button
                             onClick={onEdit}
                             className="p-2 text-amber-400 hover:text-amber-300 hover:bg-amber-400/10 rounded-md transition-colors"
@@ -168,7 +215,11 @@ export default function QueuePanel({
                     )}
                 </div>
                 <CardContent>
-                    {!performer ? (
+                    {isFeaturedAct ? (
+                        <div className="flex flex-col items-center justify-center py-4">
+                            <p className="text-purple-400 italic">Special performance - not available for signup</p>
+                        </div>
+                    ) : !performer ? (
                         <div className="flex flex-col items-center justify-center py-4">
                             <p className="text-gray-400 italic mb-3">No one signed up yet</p>
                             {isTimeMode && (

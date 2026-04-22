@@ -214,6 +214,10 @@ async def create_session(session: schemas.SessionCreate, db: Session = Depends(g
         end_time=session.end_time,
         changeover_time=session.changeover_time,
         performance_time=session.performance_time,
+        featured_act_name=session.featured_act_name,
+        featured_act_start_time=session.featured_act_start_time,
+        featured_act_end_time=session.featured_act_end_time,
+        featured_act_status=session.featured_act_status,
         status=session.status
     )
 
@@ -453,12 +457,41 @@ def generate_time_slots(session_id: int, db: Session = Depends(get_db)):
     changeover_duration = timedelta(hours=changeover_hours, minutes=changeover_minutes)
     total_slot_duration = performance_duration + changeover_duration
 
+    # Parse featured act times if they exist
+    featured_act_start = None
+    featured_act_end = None
+    if session.featured_act_name and session.featured_act_start_time and session.featured_act_end_time:
+        feat_start_parts = session.featured_act_start_time.split(':')
+        feat_end_parts = session.featured_act_end_time.split(':')
+        feat_start_hour, feat_start_minute = int(feat_start_parts[0]), int(feat_start_parts[1])
+        feat_end_hour, feat_end_minute = int(feat_end_parts[0]), int(feat_end_parts[1])
+        featured_act_start = base_date.replace(hour=feat_start_hour, minute=feat_start_minute)
+        featured_act_end = base_date.replace(hour=feat_end_hour, minute=feat_end_minute)
+
+        # Handle case where featured act times are next day
+        if featured_act_start < current_time:
+            featured_act_start += timedelta(days=1)
+        if featured_act_end <= featured_act_start:
+            featured_act_end += timedelta(days=1)
+
+        print(f"🎭 Featured act '{session.featured_act_name}' scheduled: {featured_act_start.strftime('%H:%M')} - {featured_act_end.strftime('%H:%M')}")
+        print(f"   Regular slots will avoid this time period")
+
     generated_slots = []
     queue_number = 1
 
     while current_time + performance_duration <= end_datetime:
         slot_start = current_time
         slot_end = current_time + performance_duration
+
+        # Check if this slot would overlap with the featured act
+        if featured_act_start and featured_act_end:
+            # Check for overlap: slot overlaps if slot_start < feat_end AND slot_end > feat_start
+            if slot_start < featured_act_end and slot_end > featured_act_start:
+                # This slot overlaps with featured act, skip to after featured act
+                print(f"⏭️  Skipping slot {queue_number} at {slot_start.strftime('%H:%M')} - overlaps with featured act")
+                current_time = featured_act_end
+                continue
 
         # Create time slot performer
         time_slot_performer = models.PerformerModel(

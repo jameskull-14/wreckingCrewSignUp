@@ -4,6 +4,7 @@ import { Music, Sparkles, PowerOff } from "lucide-react";
 import { motion } from "framer-motion";
 import { AdminUser } from "../types/apiTypes/adminUser.js";
 import { AdminUserSetting } from "../types/apiTypes/adminUserSetting.js";
+import { Session } from "../types/apiTypes/session.js";
 import { WebSocketMessageType } from "../types/apiTypes/websocket.js";
 import { WebSocketProvider, useWebSocket } from "../context/WebSocketContext.js";
 import { AdminUserClient, AdminUserSettingClient, SessionClient } from "../api/frontendClient.js";
@@ -22,6 +23,7 @@ function PublicKaraokePageContent({
     const { subscribe } = useWebSocket();
     const [adminInfo, setAdminInfo] = useState<AdminUser | null>(null);
     const [adminSettings, setAdminSettings] = useState<AdminUserSetting | null>(null);
+    const [session, setSession] = useState<Session | null>(null);
     const [sessionActive, setSessionActive] = useState(false);
 
     useEffect(() => {
@@ -49,15 +51,16 @@ function PublicKaraokePageContent({
 
                 // Check if THIS specific session is actually active
                 console.log('🔍 Checking session status...');
-                const session = await SessionClient.get(parseInt(sessionId));
-                console.log('Session data:', session);
+                const sessionData = await SessionClient.get(parseInt(sessionId));
+                console.log('Session data:', sessionData);
+                setSession(sessionData);
 
                 // Only set active if session exists and status is "Active" (not "Complete")
-                if (session && session.status === 'Active') {
+                if (sessionData && sessionData.status === 'Active') {
                     console.log('✅ Session is active');
                     setSessionActive(true);
                 } else {
-                    console.log('❌ Session is not active. Status:', session?.status);
+                    console.log('❌ Session is not active. Status:', sessionData?.status);
                     setSessionActive(false);
                 }
             } catch (error) {
@@ -157,6 +160,19 @@ function PublicKaraokePageContent({
                                 <span style={{ color: '#fcd34d', fontSize: '2.5rem', fontWeight: 800, letterSpacing: '0.02em' }}>
                                     Hosted by {adminSettings?.session_host ? adminSettings.session_host : adminInfo.first_name}
                                 </span>
+                                {session?.custom_link_url && session?.custom_link_prompt && session?.custom_link_text && (
+                                    <p style={{ color: 'rgba(253,230,138,0.9)', fontSize: '1.125rem', fontWeight: 500, margin: 0 }}>
+                                        {session.custom_link_prompt}{' '}
+                                        <a
+                                            href={session.custom_link_url}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            style={{ color: '#60a5fa', textDecoration: 'underline', fontWeight: 600 }}
+                                        >
+                                            {session.custom_link_text}
+                                        </a>
+                                    </p>
+                                )}
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                                     <Sparkles style={{ width: '28px', height: '28px', color: '#fbbf24' }} />
                                     <p style={{ color: 'rgba(253,230,138,0.85)', fontSize: '1.75rem', fontWeight: 600, margin: 0 }}>Sign up • Sing • Shine</p>

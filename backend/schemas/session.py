@@ -17,9 +17,16 @@ class SessionBase(BaseModel):
     end_time: Optional[str] = None
     changeover_time: Optional[str] = None
     performance_time: Optional[str] = None
+    featured_act_name: Optional[str] = None
+    featured_act_start_time: Optional[str] = None
+    featured_act_end_time: Optional[str] = None
+    featured_act_status: Optional[str] = None
+    custom_link_url: Optional[str] = None
+    custom_link_prompt: Optional[str] = None
+    custom_link_text: Optional[str] = None
     status: SessionStatus = SessionStatus.Active
 
-    @field_validator('start_time', 'end_time', 'changeover_time', 'performance_time')
+    @field_validator('start_time', 'end_time', 'changeover_time', 'performance_time', 'featured_act_start_time', 'featured_act_end_time')
     @classmethod
     def validate_time_format(cls, v):
         if v is not None and not re.match(r'^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$', v):
@@ -43,6 +50,13 @@ class SessionUpdate(BaseModel):
     end_time: Optional[str] = None
     changeover_time: Optional[str] = None
     performance_time: Optional[str] = None
+    featured_act_name: Optional[str] = None
+    featured_act_start_time: Optional[str] = None
+    featured_act_end_time: Optional[str] = None
+    featured_act_status: Optional[str] = None
+    custom_link_url: Optional[str] = None
+    custom_link_prompt: Optional[str] = None
+    custom_link_text: Optional[str] = None
     status: Optional[SessionStatus] = None
 
 
