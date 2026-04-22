@@ -73,6 +73,8 @@ async def websocket_endpoint(websocket: WebSocket, admin_id: int):
     - queue_updated: Queue/timeslot changes
     - session_ended: Session was ended
     """
+    print(f"🔌 WebSocket connection attempt for admin_id: {admin_id}")
+    print(f"🌐 Client origin: {websocket.headers.get('origin', 'unknown')}")
     await manager.connect(websocket, admin_id)
     try:
         while True:
