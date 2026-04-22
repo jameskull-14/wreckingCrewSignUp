@@ -1,18 +1,20 @@
 # Logging Configuration
 
-This application includes conditional logging that automatically disables all console output in production environments.
+This application automatically disables all console/print logging in production environments.
 
 ## How It Works
 
 ### Frontend (React/Vite)
 - **Development**: All logging is enabled by default
-- **Production**: All logging is disabled by default
-- Logging can be explicitly enabled in production by setting `VITE_ENABLE_LOGGING=true` in your `.env` file (not recommended)
+- **Production**: All logging is disabled via THREE methods:
+  1. Runtime console override in `main.tsx` (disables console methods)
+  2. Build-time removal via esbuild `drop` option in `vite.config.js` (strips console statements from bundle)
+  3. Environment check for explicit override
 
 ### Backend (Python/FastAPI)
 - **Development**: All logging is enabled by default (when `ENVIRONMENT=development`)
-- **Production**: All logging is disabled by default (when `ENVIRONMENT=production`)
-- Logging can be explicitly enabled in production by setting `ENABLE_LOGGING=true` in your `.env` file (not recommended)
+- **Production**: All logging is disabled by overriding the built-in `print` function in `main.py`
+- Requires `ENVIRONMENT=production` to be set in production environment variables
 
 ## Usage
 
@@ -62,17 +64,39 @@ ENABLE_LOGGING=false
 
 ## Production Deployment
 
-When deploying to production:
+### Frontend (Vercel)
 
-1. **Frontend (Vercel/Netlify)**:
-   - Vite automatically sets `MODE=production` during build
-   - Make sure `VITE_ENABLE_LOGGING` is not set or is set to `false`
-   - All console logs will be automatically stripped from production builds
+**IMPORTANT**: No environment variables needed! Logging is automatically disabled when Vercel builds with `NODE_ENV=production`.
 
-2. **Backend (Render/Railway)**:
-   - Set `ENVIRONMENT=production` in your production environment variables
-   - Make sure `ENABLE_LOGGING` is not set or is set to `false`
-   - All print statements using the logger will be suppressed
+Optional environment variable (only if you need to force enable logging):
+- `VITE_ENABLE_LOGGING=true` (NOT recommended)
+
+**How to verify**:
+1. Deploy to Vercel
+2. Open browser console on your production site
+3. You should see NO console logs
+
+### Backend (Render)
+
+**REQUIRED**: You MUST set this environment variable in Render:
+
+1. Go to your Render dashboard
+2. Select your backend service
+3. Go to "Environment" tab
+4. Add environment variable:
+   ```
+   ENVIRONMENT=production
+   ```
+5. Click "Save Changes"
+6. Render will automatically redeploy
+
+Optional environment variable (only if you need to force enable logging):
+- `ENABLE_LOGGING=true` (NOT recommended)
+
+**How to verify**:
+1. Check Render logs after deployment
+2. You should see NO print statements from your code
+3. Only system/server logs will appear
 
 ## Migration Guide
 
