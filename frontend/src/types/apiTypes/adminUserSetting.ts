@@ -15,6 +15,13 @@ export interface AdminUserSetting {
     end_time?: string;
     changeover_time?: string;
     performance_time?: string;
+    featured_act_name?: string;
+    featured_act_start_time?: string;
+    featured_act_end_time?: string;
+    featured_act_status?: string;
+    custom_link_url?: string;
+    custom_link_prompt?: string;
+    custom_link_text?: string;
     created_date: string;
     updated_date: string;
 }
@@ -32,6 +39,13 @@ export interface AdminUserSettingCreate {
     end_time?: string;
     changeover_time?: string;
     performance_time?: string;
+    featured_act_name?: string;
+    featured_act_start_time?: string;
+    featured_act_end_time?: string;
+    featured_act_status?: string;
+    custom_link_url?: string;
+    custom_link_prompt?: string;
+    custom_link_text?: string;
 }
 
 export interface AdminUserSettingUpdate {
@@ -46,4 +60,11 @@ export interface AdminUserSettingUpdate {
     end_time?: string;
     changeover_time?: string;
     performance_time?: string;
+    featured_act_name?: string;
+    featured_act_start_time?: string;
+    featured_act_end_time?: string;
+    featured_act_status?: string;
+    custom_link_url?: string;
+    custom_link_prompt?: string;
+    custom_link_text?: string;
 }

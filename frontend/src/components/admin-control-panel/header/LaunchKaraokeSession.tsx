@@ -41,10 +41,20 @@ export default function LaunchKaraokeSession({
           end_time: adminSettings?.end_time,
           changeover_time: adminSettings?.changeover_time,
           performance_time: adminSettings?.performance_time,
+          featured_act_name: adminSettings?.featured_act_name,
+          featured_act_start_time: adminSettings?.featured_act_start_time,
+          featured_act_end_time: adminSettings?.featured_act_end_time,
+          featured_act_status: adminSettings?.featured_act_status,
+          custom_link_url: adminSettings?.custom_link_url,
+          custom_link_prompt: adminSettings?.custom_link_prompt,
+          custom_link_text: adminSettings?.custom_link_text,
           status: SessionStatus.Active
         };
 
         console.log('📤 Creating session with data:', sessionData);
+        if (sessionData.featured_act_name) {
+          console.log(`🎭 Featured act: ${sessionData.featured_act_name} (${sessionData.featured_act_start_time} - ${sessionData.featured_act_end_time})`);
+        }
         const session: Session = await SessionClient.create(sessionData);
         console.log('✅ Session created successfully:', session);
         console.log('Session ID:', session.session_id);

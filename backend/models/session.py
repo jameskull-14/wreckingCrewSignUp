@@ -34,6 +34,13 @@ class SessionModel(Base):
     end_time = Column(String(5), nullable=True)
     changeover_time = Column(String(5), nullable=True)
     performance_time = Column(String(5), nullable=True)
+    featured_act_name = Column(String(255), nullable=True)
+    featured_act_start_time = Column(String(5), nullable=True)
+    featured_act_end_time = Column(String(5), nullable=True)
+    featured_act_status = Column(String(50), nullable=True)
+    custom_link_url = Column(String(500), nullable=True)
+    custom_link_prompt = Column(String(255), nullable=True)
+    custom_link_text = Column(String(100), nullable=True)
     created_date = Column(DateTime(timezone=True), server_default=func.now(), index=True)
     updated_date = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 

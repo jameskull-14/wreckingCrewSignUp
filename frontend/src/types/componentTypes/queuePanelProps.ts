@@ -16,4 +16,7 @@ export interface QueuePanelInterface{
     sessionId: string
     performers: Performer[]
     onPerformerCreated?: () => void
+    isFeaturedAct?: boolean
+    featuredActName?: string
+    featuredActStatus?: string
 }
