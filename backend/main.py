@@ -1,3 +1,12 @@
+import os
+import builtins
+
+# Disable all print logging in production
+if os.getenv("ENVIRONMENT", "development").lower() == "production" and os.getenv("ENABLE_LOGGING", "false").lower() != "true":
+    def noop(*args, **kwargs):
+        pass
+    builtins.print = noop
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from database import engine, Base
