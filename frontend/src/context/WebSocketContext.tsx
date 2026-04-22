@@ -36,7 +36,10 @@ export function WebSocketProvider({ adminId, children }: WebSocketProviderProps)
         .replace('https://', 'wss://')
         .replace('http://', 'ws://') + `/ws/${adminId}`;
 
-      console.log(`Connecting to WebSocket: ${wsUrl}`);
+      console.log(`🔌 Connecting to WebSocket: ${wsUrl}`);
+      console.log(`📍 API Base URL: ${apiBaseUrl}`);
+      console.log(`🌍 Environment: ${import.meta.env.MODE}`);
+
       const ws = new WebSocket(wsUrl);
 
       ws.onopen = () => {
