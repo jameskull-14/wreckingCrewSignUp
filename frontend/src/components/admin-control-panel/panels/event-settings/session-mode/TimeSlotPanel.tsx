@@ -135,6 +135,10 @@ export default function TimeSlotPanel({
         return 'PM';
     });
 
+    // Featured Act Link state
+    const [featuredActLinkUrl, setFeaturedActLinkUrl] = useState(adminSettings?.featured_act_link_url || '');
+    const [featuredActLinkText, setFeaturedActLinkText] = useState(adminSettings?.featured_act_link_text || '');
+
     // Custom Link state
     const [customLinkUrl, setCustomLinkUrl] = useState(adminSettings?.custom_link_url || '');
     const [customLinkPrompt, setCustomLinkPrompt] = useState(adminSettings?.custom_link_prompt || '');
@@ -206,6 +210,8 @@ export default function TimeSlotPanel({
         featured_act_name: featuredActName || undefined,
         featured_act_start_time: featuredActStart24 || undefined,
         featured_act_end_time: featuredActEnd24 || undefined,
+        featured_act_link_url: featuredActLinkUrl || undefined,
+        featured_act_link_text: featuredActLinkText || undefined,
         custom_link_url: customLinkUrl || undefined,
         custom_link_prompt: customLinkPrompt || undefined,
         custom_link_text: customLinkText || undefined,
@@ -227,6 +233,8 @@ export default function TimeSlotPanel({
             featured_act_name: featuredActName || undefined,
             featured_act_start_time: featuredActStart24 || undefined,
             featured_act_end_time: featuredActEnd24 || undefined,
+            featured_act_link_url: featuredActLinkUrl || undefined,
+            featured_act_link_text: featuredActLinkText || undefined,
             custom_link_url: customLinkUrl || undefined,
             custom_link_prompt: customLinkPrompt || undefined,
             custom_link_text: customLinkText || undefined,
@@ -572,6 +580,28 @@ export default function TimeSlotPanel({
                         </SelectContent>
                       </Select>
                     </div>
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-3">
+                  <div>
+                    <Label className="text-white">Featured Act Link URL</Label>
+                    <Input
+                      type="url"
+                      placeholder="e.g., https://facebook.com/artist"
+                      value={featuredActLinkUrl}
+                      onChange={(e) => setFeaturedActLinkUrl(e.target.value)}
+                      className="bg-gray-900/50 border-amber-400/30 text-white"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-white">Featured Act Link Text</Label>
+                    <Input
+                      type="text"
+                      placeholder="e.g., Visit Artist Page"
+                      value={featuredActLinkText}
+                      onChange={(e) => setFeaturedActLinkText(e.target.value)}
+                      className="bg-gray-900/50 border-amber-400/30 text-white"
+                    />
                   </div>
                 </div>
               </div>

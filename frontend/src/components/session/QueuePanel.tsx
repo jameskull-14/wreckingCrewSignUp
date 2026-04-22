@@ -25,7 +25,9 @@ export default function QueuePanel({
     onPerformerCreated,
     isFeaturedAct,
     featuredActName,
-    featuredActStatus
+    featuredActStatus,
+    featuredActLinkUrl,
+    featuredActLinkText
 }: QueuePanelInterface){
     const [isSignUpOpen, setIsSignUpOpen] = useState(false);
 
@@ -218,6 +220,25 @@ export default function QueuePanel({
                     {isFeaturedAct ? (
                         <div className="flex flex-col items-center justify-center py-4">
                             <p className="text-purple-400 italic">Special performance - not available for signup</p>
+                            {(() => {
+                                console.log('🔗 Featured Act Link Debug:', {
+                                    featuredActLinkUrl,
+                                    featuredActLinkText,
+                                    hasUrl: !!featuredActLinkUrl,
+                                    hasText: !!featuredActLinkText
+                                });
+                                return null;
+                            })()}
+                            {featuredActLinkUrl && featuredActLinkText && (
+                                <a
+                                    href={featuredActLinkUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-blue-400 underline hover:text-blue-300 mt-2"
+                                >
+                                    {featuredActLinkText}
+                                </a>
+                            )}
                         </div>
                     ) : !performer ? (
                         <div className="flex flex-col items-center justify-center py-4">

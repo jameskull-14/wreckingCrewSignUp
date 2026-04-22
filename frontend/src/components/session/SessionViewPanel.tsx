@@ -29,6 +29,8 @@ interface TimeSlotPanel {
     isFeaturedAct?: boolean;
     featuredActName?: string;
     featuredActStatus?: string;
+    featuredActLinkUrl?: string;
+    featuredActLinkText?: string;
 }
 
 export default function SessionViewPanel({
@@ -98,7 +100,7 @@ export default function SessionViewPanel({
             return [];
         }
 
-        const { start_time, end_time, performance_time, changeover_time, featured_act_name, featured_act_start_time, featured_act_end_time, featured_act_status } = session;
+        const { start_time, end_time, performance_time, changeover_time, featured_act_name, featured_act_start_time, featured_act_end_time, featured_act_status, featured_act_link_url, featured_act_link_text } = session;
 
         if (!start_time || !end_time || !performance_time) {
             console.warn('Time mode requires start_time, end_time, and performance_time');
@@ -172,6 +174,10 @@ export default function SessionViewPanel({
         // Add featured act slot if defined
         if (featured_act_name && featured_act_start_time && featured_act_end_time) {
             console.log('✅ Adding featured act slot to schedule');
+            console.log('🔗 Featured Act Link Data from Session:', {
+                featured_act_link_url,
+                featured_act_link_text
+            });
             const featuredActSlot: TimeSlotPanel = {
                 queueNumber: 0, // Featured act doesn't have a queue number
                 timeSlotStart: featured_act_start_time,
@@ -179,8 +185,11 @@ export default function SessionViewPanel({
                 performer: null,
                 isFeaturedAct: true,
                 featuredActName: featured_act_name,
-                featuredActStatus: featured_act_status || undefined
+                featuredActStatus: featured_act_status || undefined,
+                featuredActLinkUrl: featured_act_link_url || undefined,
+                featuredActLinkText: featured_act_link_text || undefined
             };
+            console.log('📦 Featured Act Slot Created:', featuredActSlot);
 
             // Insert the featured act slot in chronological order
             const featuredActStartMinutes = parseTime(featured_act_start_time);
@@ -275,6 +284,8 @@ export default function SessionViewPanel({
                                     isFeaturedAct={slot.isFeaturedAct}
                                     featuredActName={slot.featuredActName}
                                     featuredActStatus={slot.featuredActStatus}
+                                    featuredActLinkUrl={slot.featuredActLinkUrl}
+                                    featuredActLinkText={slot.featuredActLinkText}
                                 />
                             ))
                         ) : (

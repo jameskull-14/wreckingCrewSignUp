@@ -21,6 +21,8 @@ class AdminUserSettingBase(BaseModel):
     featured_act_start_time: Optional[str] = None
     featured_act_end_time: Optional[str] = None
     featured_act_status: Optional[str] = None
+    featured_act_link_url: Optional[str] = None
+    featured_act_link_text: Optional[str] = None
     custom_link_url: Optional[str] = None
     custom_link_prompt: Optional[str] = None
     custom_link_text: Optional[str] = None
@@ -53,6 +55,8 @@ class AdminUserSettingUpdate(BaseModel):
     featured_act_start_time: Optional[str] = None
     featured_act_end_time: Optional[str] = None
     featured_act_status: Optional[str] = None
+    featured_act_link_url: Optional[str] = None
+    featured_act_link_text: Optional[str] = None
     custom_link_url: Optional[str] = None
     custom_link_prompt: Optional[str] = None
     custom_link_text: Optional[str] = None
