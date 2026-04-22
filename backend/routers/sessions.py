@@ -206,10 +206,12 @@ async def create_session(session: schemas.SessionCreate, db: Session = Depends(g
     new_session = models.SessionModel(
         admin_user_id=session.admin_user_id,
         session_title=session.session_title,
+        session_host=session.session_host,
         use_all_songs=session.use_all_songs,
         allow_song_reuse=session.allow_song_reuse,
         session_mode=session.session_mode,
         songs_per_performer=session.songs_per_performer,
+        allow_instrument_use=session.allow_instrument_use,
         start_time=session.start_time,
         end_time=session.end_time,
         changeover_time=session.changeover_time,
@@ -218,6 +220,11 @@ async def create_session(session: schemas.SessionCreate, db: Session = Depends(g
         featured_act_start_time=session.featured_act_start_time,
         featured_act_end_time=session.featured_act_end_time,
         featured_act_status=session.featured_act_status,
+        featured_act_link_url=session.featured_act_link_url,
+        featured_act_link_text=session.featured_act_link_text,
+        custom_link_url=session.custom_link_url,
+        custom_link_prompt=session.custom_link_prompt,
+        custom_link_text=session.custom_link_text,
         status=session.status
     )
 

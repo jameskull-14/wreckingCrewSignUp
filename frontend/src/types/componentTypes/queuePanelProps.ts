@@ -19,4 +19,6 @@ export interface QueuePanelInterface{
     isFeaturedAct?: boolean
     featuredActName?: string
     featuredActStatus?: string
+    featuredActLinkUrl?: string
+    featuredActLinkText?: string
 }

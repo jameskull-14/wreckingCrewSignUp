@@ -26,6 +26,8 @@ class AdminUserSettingModel(Base):
     featured_act_start_time = Column(String(5), nullable=True)
     featured_act_end_time = Column(String(5), nullable=True)
     featured_act_status = Column(String(50), nullable=True)
+    featured_act_link_url = Column(String(500), nullable=True)
+    featured_act_link_text = Column(String(100), nullable=True)
     custom_link_url = Column(String(500), nullable=True)
     custom_link_prompt = Column(String(255), nullable=True)
     custom_link_text = Column(String(100), nullable=True)

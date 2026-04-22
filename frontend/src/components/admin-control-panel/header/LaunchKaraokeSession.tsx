@@ -45,6 +45,8 @@ export default function LaunchKaraokeSession({
           featured_act_start_time: adminSettings?.featured_act_start_time,
           featured_act_end_time: adminSettings?.featured_act_end_time,
           featured_act_status: adminSettings?.featured_act_status,
+          featured_act_link_url: adminSettings?.featured_act_link_url,
+          featured_act_link_text: adminSettings?.featured_act_link_text,
           custom_link_url: adminSettings?.custom_link_url,
           custom_link_prompt: adminSettings?.custom_link_prompt,
           custom_link_text: adminSettings?.custom_link_text,
