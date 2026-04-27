@@ -26,6 +26,8 @@ class AdminUserSettingBase(BaseModel):
     custom_link_url: Optional[str] = None
     custom_link_prompt: Optional[str] = None
     custom_link_text: Optional[str] = None
+    show_performer_status: bool = True
+    show_song_status: bool = True
 
     @field_validator('start_time', 'end_time', 'changeover_time', 'performance_time', 'featured_act_start_time', 'featured_act_end_time')
     @classmethod
@@ -60,6 +62,8 @@ class AdminUserSettingUpdate(BaseModel):
     custom_link_url: Optional[str] = None
     custom_link_prompt: Optional[str] = None
     custom_link_text: Optional[str] = None
+    show_performer_status: Optional[bool] = None
+    show_song_status: Optional[bool] = None
 
 
 class AdminUserSettingResponse(AdminUserSettingBase):

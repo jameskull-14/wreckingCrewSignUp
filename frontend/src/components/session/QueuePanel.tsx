@@ -317,8 +317,13 @@ export default function QueuePanel({
                                         )}
                                         </div>
                                         <div className="text-white" style={isSongSkipped ? { textDecoration: 'line-through' } : {}}>
-                                            <div>{selection.song_title || 'Unknown Song'} -</div>
-                                            <div>{selection.artist || 'Unknown Artist'}</div>
+                                            <span className="sm:hidden">
+                                                <div>{selection.song_title || 'Unknown Song'} -</div>
+                                                <div>{selection.artist || 'Unknown Artist'}</div>
+                                            </span>
+                                            <span className="hidden sm:inline">
+                                                {selection.song_title || 'Unknown Song'} - {selection.artist || 'Unknown Artist'}
+                                            </span>
                                         </div>
                                         {adminSettings?.allow_instrument_use && (
                                             <div className="text-sm text-gray-400">
