@@ -27,6 +27,7 @@ class SessionBase(BaseModel):
     custom_link_prompt: Optional[str] = None
     custom_link_text: Optional[str] = None
     status: SessionStatus = SessionStatus.Active
+    allow_performer_notes: bool = True
 
     @field_validator('start_time', 'end_time', 'changeover_time', 'performance_time', 'featured_act_start_time', 'featured_act_end_time')
     @classmethod
@@ -62,6 +63,7 @@ class SessionUpdate(BaseModel):
     custom_link_prompt: Optional[str] = None
     custom_link_text: Optional[str] = None
     status: Optional[SessionStatus] = None
+    allow_performer_notes: Optional[bool] = None
 
 
 class SessionResponse(SessionBase):

@@ -9,6 +9,7 @@ class PerformerBase(BaseModel):
     queue_number: int
     status: PerformerStatus
     performer_type: PerformerType = PerformerType.individual
+    note: Optional[str] = None
 
 
 class PerformerCreate(PerformerBase):
@@ -21,6 +22,7 @@ class PerformerUpdate(BaseModel):
     queue_number: Optional[int] = None
     status: Optional[PerformerStatus] = None
     performer_type: Optional[PerformerType] = None
+    note: Optional[str] = None
 
 
 class PerformerResponse(PerformerBase):

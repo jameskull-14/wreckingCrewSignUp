@@ -37,9 +37,11 @@ export default function SignUpModal({
 }: SignUpPanelInterface){
     const songsPerPerformer = adminSettings?.songs_per_performer || 1;
     const allowInstrumentUse = adminSettings?.allow_instrument_use || false;
+    const allowPerformerNotes = adminSettings?.allow_performer_notes ?? true;
 
     // Initialize state based on edit mode
     const [performerName, setPerformerName] = useState(editMode && performerToEdit ? performerToEdit.performer_name : "");
+    const [note, setNote] = useState(editMode && performerToEdit ? performerToEdit.note || "" : "");
     const [performerType, setPerformerType] = useState<PerformerType>(
         editMode && performerToEdit ? performerToEdit.performer_type : PerformerType.individual
     );
@@ -91,10 +93,12 @@ export default function SignUpModal({
         if (editMode && performerToEdit) {
             setPerformerName(performerToEdit.performer_name);
             setPerformerType(performerToEdit.performer_type);
+            setNote(performerToEdit.note || "");
             setSongSlots(initializeSongSlots());
         } else {
             setPerformerName("");
             setPerformerType(PerformerType.individual);
+            setNote("");
             setSongSlots(Array.from({ length: songsPerPerformer }, () => ({
                 song: null,
                 isSinging: true,
@@ -177,7 +181,8 @@ export default function SignUpModal({
                 queue_number: nextQueueNumber,
                 session_id: session_Id,
                 status: PerformerStatus.waiting,
-                performer_type: performerType
+                performer_type: performerType,
+                note: note.trim() || undefined
             }
 
             const createdPerformer = await PerformerClient.create(performerData);
@@ -220,6 +225,7 @@ export default function SignUpModal({
 
             // Reset form after successful submission
             setPerformerName("");
+            setNote("");
             setSongSlots(Array.from({ length: songsPerPerformer }, () => ({
                 song: null,
                 isSinging: true,
@@ -255,7 +261,8 @@ export default function SignUpModal({
                 performer_username: "Guest",
                 queue_number: performerToEdit.queue_number,
                 status: performerToEdit.status,
-                performer_type: performerType
+                performer_type: performerType,
+                note: note.trim() || undefined
             };
 
             await PerformerClient.update(performerToEdit.performer_id, performerUpdateData);
@@ -471,6 +478,19 @@ export default function SignUpModal({
                     )}
                 </div>
             ))}
+
+            {allowPerformerNotes && (
+                <div>
+                    <label className="text-amber-400 text-sm font-semibold block mb-1">Add Note</label>
+                    <textarea
+                        value={note}
+                        onChange={(e) => setNote(e.target.value)}
+                        placeholder="Optional note for the host..."
+                        rows={2}
+                        className="w-full rounded-md bg-gray-800 border-2 border-amber-400/30 text-white text-sm placeholder:text-gray-500 px-3 py-2 focus:outline-none focus:border-amber-400 resize-none"
+                    />
+                </div>
+            )}
 
             <div className="text-white text-xs text-center mb-2">
                 Debug: Name: {performerName ? '✓' : '✗'} | Session: {sessionId ? '✓' : '✗'}

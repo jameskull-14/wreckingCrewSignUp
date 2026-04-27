@@ -3,7 +3,7 @@ import { QueuePanelInterface } from "../../types/componentTypes/queuePanelProps"
 import { Button } from "../shared/Button";
 import { Card, CardContent, CardHeader, CardTitle } from "../shared/Card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../shared/Dialog";
-import { Pencil, Plus } from "lucide-react";
+import { Pencil, Plus, X } from "lucide-react";
 import { PerformerType, PerformerStatus } from "../../types/apiTypes/performer";
 import { SessionMode } from "../../types/apiTypes/session";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../shared/Select";
@@ -114,6 +114,21 @@ export default function QueuePanel({
         }
     };
 
+    const handleClearPerformer = async () => {
+        if (!performer) return;
+        if (!confirm(`Clear ${performer.performer_name} from this slot? This cannot be undone.`)) return;
+        try {
+            const selections = performerSongSelections.filter(s => s.performer_id === performer.performer_id);
+            for (const selection of selections) {
+                await PerformerSongSelectionClient.delete(selection.performer_selection_id);
+            }
+            await PerformerClient.delete(performer.performer_id);
+            onPerformerCreated?.();
+        } catch (error) {
+            console.error('Error clearing performer slot:', error);
+        }
+    };
+
     // Determine styling based on status
     const isSkipped = performer?.status === PerformerStatus.skipped;
     const isCompleted = performer?.status === PerformerStatus.completed;
@@ -206,14 +221,33 @@ export default function QueuePanel({
                             )}
                         </div>
                     </div>
-                    {isAdmin && onEdit && performer && !isFeaturedAct && (
-                        <button
-                            onClick={onEdit}
-                            className="p-2 text-amber-400 hover:text-amber-300 hover:bg-amber-400/10 rounded-md transition-colors"
-                            title="Edit performer"
-                        >
-                            <Pencil className="w-5 h-5" />
-                        </button>
+                    {isAdmin && performer && !isFeaturedAct && (
+                        <div className="flex items-center gap-1">
+                            {onEdit && (
+                                <div className="relative group">
+                                    <button
+                                        onClick={onEdit}
+                                        className="p-2 text-amber-400 hover:text-amber-300 hover:bg-amber-400/10 rounded-md transition-colors"
+                                    >
+                                        <Pencil className="w-5 h-5" />
+                                    </button>
+                                    <span className="absolute right-0 top-full mt-1 px-2 py-1 text-xs text-white bg-gray-900 border border-gray-700 rounded shadow-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
+                                        Edit Cell
+                                    </span>
+                                </div>
+                            )}
+                            <div className="relative group">
+                                <button
+                                    onClick={handleClearPerformer}
+                                    className="p-2 text-red-500 hover:text-red-400 hover:bg-red-400/10 rounded-md transition-colors"
+                                >
+                                    <X className="w-5 h-5" />
+                                </button>
+                                <span className="absolute right-0 top-full mt-1 px-2 py-1 text-xs text-white bg-gray-900 border border-gray-700 rounded shadow-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
+                                    Clear Cell
+                                </span>
+                            </div>
+                        </div>
                     )}
                 </div>
                 <CardContent>
@@ -337,6 +371,12 @@ export default function QueuePanel({
                         </div>
                     ) : (
                         <p className="text-gray-400">No songs selected</p>
+                    )}
+                    {isAdmin && performer?.note && (
+                        <div className="mt-3 pt-3 border-t border-amber-400/20">
+                            <p className="text-xs text-amber-400 font-semibold mb-1">Note</p>
+                            <p className="text-sm text-gray-300">{performer.note}</p>
+                        </div>
                     )}
                 </CardContent>
             </CardHeader>
