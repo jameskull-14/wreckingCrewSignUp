@@ -289,22 +289,45 @@ export default function SessionViewPanel({
                                 />
                             ))
                         ) : (
-                            // Order mode: show only signed-up performers
-                            performers.map((performer) => (
-                                <QueuePanel
-                                    key={performer.performer_id}
-                                    isAdmin={isAdmin}
-                                    adminSettings={adminSettings}
-                                    performer={performer}
-                                    performerSongSelections={performerSongSelections}
-                                    onEdit={() => handleEditPerformer(performer)}
-                                    queueNumber={performer.queue_number}
-                                    session={session}
-                                    sessionId={sessionId}
-                                    performers={performers}
-                                    onPerformerCreated={fetchPerformers}
-                                />
-                            ))
+                            // Order mode: featured act first (if set), then signed-up performers
+                            <>
+                                {session?.featured_act_name && (
+                                    <QueuePanel
+                                        key="featured-act"
+                                        isAdmin={isAdmin}
+                                        adminSettings={adminSettings}
+                                        performer={null}
+                                        performerSongSelections={performerSongSelections}
+                                        queueNumber={0}
+                                        timeSlotStart={session.featured_act_start_time}
+                                        timeSlotEnd={session.featured_act_end_time}
+                                        session={session}
+                                        sessionId={sessionId}
+                                        performers={performers}
+                                        onPerformerCreated={refetchAll}
+                                        isFeaturedAct={true}
+                                        featuredActName={session.featured_act_name}
+                                        featuredActStatus={session.featured_act_status || undefined}
+                                        featuredActLinkUrl={session.featured_act_link_url || undefined}
+                                        featuredActLinkText={session.featured_act_link_text || undefined}
+                                    />
+                                )}
+                                {performers.map((performer) => (
+                                    <QueuePanel
+                                        key={performer.performer_id}
+                                        isAdmin={isAdmin}
+                                        adminSettings={adminSettings}
+                                        performer={performer}
+                                        performerSongSelections={performerSongSelections}
+                                        onEdit={() => handleEditPerformer(performer)}
+                                        queueNumber={performer.queue_number}
+                                        session={session}
+                                        sessionId={sessionId}
+                                        performers={performers}
+                                        onPerformerCreated={fetchPerformers}
+                                    />
+                                ))}
+                            </>
                         )}
                     </CardContent>
                 </CardHeader>

@@ -43,6 +43,8 @@ class SessionModel(Base):
     custom_link_url = Column(String(500), nullable=True)
     custom_link_prompt = Column(String(255), nullable=True)
     custom_link_text = Column(String(100), nullable=True)
+    show_performer_status = Column(Boolean, default=True, nullable=False)
+    show_song_status = Column(Boolean, default=True, nullable=False)
     created_date = Column(DateTime(timezone=True), server_default=func.now(), index=True)
     updated_date = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 

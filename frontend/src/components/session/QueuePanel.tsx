@@ -143,30 +143,30 @@ export default function QueuePanel({
             <CardHeader className="border-b border-amber-400/20">
                 <div className="flex items-start justify-between">
                     <div className="flex-1">
-                        <div className="flex items-center gap-4">
-                            <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-4 flex-wrap">
+                            <div className="flex items-center gap-3 flex-wrap min-w-0">
                                 {isFeaturedAct && (
                                     <span className="bg-purple-500/20 text-purple-400 px-3 py-1 rounded-full text-xs font-semibold border border-purple-500/50">
                                         ⭐ FEATURED ACT
                                     </span>
                                 )}
-                                <CardTitle className="text-2xl font-bold text-white" style={isSkipped ? { textDecoration: 'line-through' } : {}}>
+                                <CardTitle className="text-xl sm:text-2xl font-bold text-white break-words min-w-0" style={isSkipped ? { textDecoration: 'line-through' } : {}}>
                                     {displayName}
                                 </CardTitle>
                                 {timeSlotDisplay && (
-                                    <span className="text-gray-400 text-sm font-medium">
+                                    <span className="text-gray-400 text-sm font-medium whitespace-nowrap">
                                         {timeSlotDisplay}
                                     </span>
                                 )}
                             </div>
-                            {performer && !isFeaturedAct && (
+                            {performer && !isFeaturedAct && (adminSettings?.show_performer_status ?? true) && (
                                 <>
                                     {isAdmin ? (
                                         <Select
                                             value={performer.status}
                                             onValueChange={handleStatusChange}
                                         >
-                                            <SelectTrigger className={`w-40 bg-gray-900/50 border-amber-400/30 ${getStatusColor(performer.status)}`}>
+                                            <SelectTrigger className={`w-36 sm:w-40 bg-gray-900/50 border-amber-400/30 ${getStatusColor(performer.status)}`}>
                                                 <SelectValue />
                                             </SelectTrigger>
                                             <SelectContent>
@@ -183,12 +183,12 @@ export default function QueuePanel({
                                     )}
                                 </>
                             )}
-                            {isFeaturedAct && isAdmin && (
+                            {isFeaturedAct && isAdmin && (adminSettings?.show_performer_status ?? true) && (
                                 <Select
                                     value={featuredActStatus || PerformerStatus.waiting}
                                     onValueChange={handleFeaturedActStatusChange}
                                 >
-                                    <SelectTrigger className={`w-40 bg-gray-900/50 border-purple-500/30 ${getStatusColor((featuredActStatus || PerformerStatus.waiting) as PerformerStatus)}`}>
+                                    <SelectTrigger className={`w-36 sm:w-40 bg-gray-900/50 border-purple-500/30 ${getStatusColor((featuredActStatus || PerformerStatus.waiting) as PerformerStatus)}`}>
                                         <SelectValue />
                                     </SelectTrigger>
                                     <SelectContent>
@@ -199,7 +199,7 @@ export default function QueuePanel({
                                     </SelectContent>
                                 </Select>
                             )}
-                            {isFeaturedAct && !isAdmin && (
+                            {isFeaturedAct && !isAdmin && (adminSettings?.show_performer_status ?? true) && (
                                 <span className={`text-sm font-semibold ${getStatusColor((featuredActStatus || PerformerStatus.waiting) as PerformerStatus)}`}>
                                     {getStatusLabel((featuredActStatus || PerformerStatus.waiting) as PerformerStatus)}
                                 </span>
@@ -290,38 +290,41 @@ export default function QueuePanel({
                                 const isSongCompleted = songStatus === PerformerStatus.completed;
 
                                 return (
-                                    <div key={selection.performer_selection_id} className="flex items-center justify-between gap-3">
-                                        <div className={`text-white flex-1 ${isSongSkipped || isSongCompleted ? 'opacity-50' : ''}`}>
-                                            <span className="text-amber-400">Song {index + 1}:</span>{' '}
-                                            <span style={isSongSkipped ? { textDecoration: 'line-through' } : {}}>
-                                                {selection.song_title || 'Unknown Song'} - {selection.artist || 'Unknown Artist'}
-                                            </span>
-                                            {adminSettings?.allow_instrument_use && (
-                                                <>
-                                                    {' '}({selection.is_singing ? " Singing " : ""}
-                                                    {selection.instrument ? ` - ${selection.instrument}` : ""})
-                                                </>
-                                            )}
+                                    <div key={selection.performer_selection_id} className={`${isSongSkipped || isSongCompleted ? 'opacity-50' : ''}`}>
+                                        <div className="flex items-center justify-between gap-3">
+                                            <div className="text-amber-400 text-sm">Song {index + 1}:</div>
+                                            {(adminSettings?.show_song_status ?? true) && (
+                                            isAdmin ? (
+                                                <Select
+                                                    value={songStatus}
+                                                    onValueChange={(value) => handleSongStatusChange(selection.performer_selection_id, value)}
+                                                >
+                                                    <SelectTrigger className={`w-32 bg-gray-900/50 border-amber-400/30 text-xs ${getStatusColor(songStatus)}`}>
+                                                        <SelectValue />
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                        <SelectItem value={PerformerStatus.waiting}>Waiting</SelectItem>
+                                                        <SelectItem value={PerformerStatus.performing}>Performing</SelectItem>
+                                                        <SelectItem value={PerformerStatus.completed}>Completed</SelectItem>
+                                                        <SelectItem value={PerformerStatus.skipped}>Skipped</SelectItem>
+                                                    </SelectContent>
+                                                </Select>
+                                            ) : (
+                                                <span className={`text-xs font-semibold ${getStatusColor(songStatus)}`}>
+                                                    {getStatusLabel(songStatus)}
+                                                </span>
+                                            )
+                                        )}
                                         </div>
-                                        {isAdmin ? (
-                                            <Select
-                                                value={songStatus}
-                                                onValueChange={(value) => handleSongStatusChange(selection.performer_selection_id, value)}
-                                            >
-                                                <SelectTrigger className={`w-32 bg-gray-900/50 border-amber-400/30 text-xs ${getStatusColor(songStatus)}`}>
-                                                    <SelectValue />
-                                                </SelectTrigger>
-                                                <SelectContent>
-                                                    <SelectItem value={PerformerStatus.waiting}>Waiting</SelectItem>
-                                                    <SelectItem value={PerformerStatus.performing}>Performing</SelectItem>
-                                                    <SelectItem value={PerformerStatus.completed}>Completed</SelectItem>
-                                                    <SelectItem value={PerformerStatus.skipped}>Skipped</SelectItem>
-                                                </SelectContent>
-                                            </Select>
-                                        ) : (
-                                            <span className={`text-xs font-semibold ${getStatusColor(songStatus)}`}>
-                                                {getStatusLabel(songStatus)}
-                                            </span>
+                                        <div className="text-white" style={isSongSkipped ? { textDecoration: 'line-through' } : {}}>
+                                            <div>{selection.song_title || 'Unknown Song'} -</div>
+                                            <div>{selection.artist || 'Unknown Artist'}</div>
+                                        </div>
+                                        {adminSettings?.allow_instrument_use && (
+                                            <div className="text-sm text-gray-400">
+                                                {selection.is_singing ? "Singing" : ""}
+                                                {selection.instrument ? ` - ${selection.instrument}` : ""}
+                                            </div>
                                         )}
                                     </div>
                                 );

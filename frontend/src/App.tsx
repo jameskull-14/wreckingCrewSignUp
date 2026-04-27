@@ -38,7 +38,9 @@ function App(): React.ReactElement {
             </SongsProvider>
           </SessionProvider>
         } />
+        <Route path="/public_session/:adminId" element={<PublicKaraokePage />} />
         <Route path="/public_session/:adminId/:sessionId" element={<PublicKaraokePage />} />
+        <Route path="/qr/:adminId" element={<QRCodeFullPage />} />
         <Route path="/qr/:adminId/:sessionId" element={<QRCodeFullPage />} />
 
       </Routes>
