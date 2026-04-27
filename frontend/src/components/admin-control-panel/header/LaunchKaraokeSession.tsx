@@ -22,9 +22,6 @@ export default function LaunchKaraokeSession({
     const [toast, setToast] = useState<{ message: string; type: ToastType } | null>(null);
 
     const handleLaunchSession = async () => {
-      console.log('🚀 Launch Session button clicked');
-      console.log('Admin ID:', adminId);
-      console.log('Admin Settings:', adminSettings);
 
       try {
         // Create session in database first
@@ -53,29 +50,19 @@ export default function LaunchKaraokeSession({
           status: SessionStatus.Active
         };
 
-        console.log('📤 Creating session with data:', sessionData);
-        if (sessionData.featured_act_name) {
-          console.log(`🎭 Featured act: ${sessionData.featured_act_name} (${sessionData.featured_act_start_time} - ${sessionData.featured_act_end_time})`);
-        }
         const session: Session = await SessionClient.create(sessionData);
-        console.log('✅ Session created successfully:', session);
-        console.log('Session ID:', session.session_id);
 
         // Update state with the new session
-        console.log('📢 Calling onUpdateSession...');
         onUpdateSession(session);
 
         // Sync localStorage for backward compatibility
         localStorage.setItem(`karaoke_session_${adminId}`, 'active');
-        console.log('💾 localStorage updated');
 
         // Open public window
         const publicUrl = `/public_session/${adminId}/${session.session_id}`;
-        console.log('🌐 Opening public window with URL:', publicUrl);
         const publicWindow = window.open(publicUrl, '_blank');
 
         if (publicWindow) {
-          console.log('✅ Public window opened successfully');
           setToast({ message: 'Session launched successfully!', type: 'success' });
           if (onOpenPublicWindow) {
             onOpenPublicWindow(publicWindow);

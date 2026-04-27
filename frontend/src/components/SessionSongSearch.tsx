@@ -40,14 +40,11 @@ export default function SessionSongSearch({
 
     // Load session info on mount
     useEffect(() => {
-        console.log('\n=== SessionSongSearch: Loading session info ===');
-        console.log('Session ID:', sessionId);
+
 
         const loadSessionInfo = async () => {
             try {
-                console.log('→ Fetching session info...');
                 const info = await SessionClient.getInfo(sessionId);
-                console.log('✓ Session info loaded:', info);
                 setSessionInfo(info);
             } catch (error) {
                 console.error('✗ Error loading session info:', error);
@@ -59,25 +56,17 @@ export default function SessionSongSearch({
 
     // Debounced search effect
     useEffect(() => {
-        console.log('\n=== SessionSongSearch: Search term changed ===');
-        console.log('Search term:', searchTerm);
+
 
         if (!searchTerm.trim()) {
-            console.log('→ Search term empty, clearing results');
             setSearchResults([]);
             return;
         }
 
         const delaySearch = setTimeout(async () => {
-            console.log('→ Starting search after debounce delay...');
-            console.log('  Session ID:', sessionId);
-            console.log('  Search term:', searchTerm);
             setIsLoading(true);
             try {
-                console.log('→ Calling SessionSongClient.search...');
                 const results = await SessionSongClient.search(sessionId, searchTerm);
-                console.log('✓ Search results received:', results);
-                console.log('  Results count:', results?.length || 0);
                 setSearchResults(Array.isArray(results) ? results : []);
             } catch (error) {
                 console.error('✗ Error searching songs:', error);

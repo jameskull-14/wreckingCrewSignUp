@@ -23,27 +23,19 @@ export default function AdminControlPanel({
 
 
     const onUpdateSession = async (session: Session | null) => {
-        console.log('\n========================================');
-        console.log('AdminControlPanel: onUpdateSession called');
-        console.log('  Previous activeSession:', activeSession);
-        console.log('  New session:', session);
-        console.log('========================================\n');
 
         setActiveSession(session);
 
         // Increment trigger when session starts to refresh allowed songs
         if (session) {
-            console.log('  → Session started, incrementing sessionLaunchTrigger');
             setSessionLaunchTrigger(prev => {
                 const newValue = prev + 1;
-                console.log('    sessionLaunchTrigger:', prev, '->', newValue);
                 return newValue;
             });
         }
 
         // Close all windows when ending session
         if (!session) {
-            console.log('  → Session ended, closing windows');
             if (publicWindowRef.current && !publicWindowRef.current.closed) {
                 publicWindowRef.current.close();
             }

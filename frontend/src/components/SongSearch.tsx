@@ -46,25 +46,16 @@ export default function SongSearch({
         if (mode !== "toggle") return;
 
         const loadAllowedSongs = async () => {
-            console.log('\n=== SongSearch: loadAllowedSongs ===');
-            console.log('  - mode:', mode);
-            console.log('  - activeSession:', activeSession);
-            console.log('  - activeSession?.session_id:', activeSession?.session_id);
-            console.log('  - adminUserId:', adminUserId);
-            console.log('  - refreshTrigger:', refreshTrigger);
 
             if (activeSession?.session_id) {
                 // Load from session_song table
                 try {
-                    console.log('  → Loading from SESSION_SONG table for session:', activeSession.session_id);
                     const results = await SessionSongClient.list(activeSession.session_id);
-                    console.log('  ← Loaded', results?.length || 0, 'songs from session_song');
                     const songIds = new Set(
                         Array.isArray(results)
                             ? results.map((item: any) => item.song_id)
                             : []
                     );
-                    console.log('  Song IDs:', Array.from(songIds));
                     setAllowedSongs(songIds);
                 } catch (error) {
                     console.error('  ✗ Error loading session songs:', error);
@@ -72,21 +63,17 @@ export default function SongSearch({
             } else if (adminUserId) {
                 // Load from admin_allowed_song table
                 try {
-                    console.log('  → Loading from ADMIN_ALLOWED_SONG table for admin:', adminUserId);
                     const results = await AdminAllowedSongClient.list(adminUserId);
-                    console.log('  ← Loaded', results?.length || 0, 'songs from admin_allowed_song');
                     const songIds = new Set(
                         Array.isArray(results)
                             ? results.map((item: any) => item.song_id)
                             : []
                     );
-                    console.log('  Song IDs:', Array.from(songIds));
                     setAllowedSongs(songIds);
                 } catch (error) {
                     console.error('  ✗ Error loading allowed songs:', error);
                 }
             }
-            console.log('=== SongSearch: loadAllowedSongs complete ===\n');
         };
 
         loadAllowedSongs();
@@ -109,9 +96,6 @@ export default function SongSearch({
                     SongClient.search({ artist: searchTerm })
                 ]);
 
-                console.log('Title results:', titleResults);
-                console.log('Artist results:', artistResults);
-
                 // Combine and deduplicate results by song_id
                 const combinedMap = new Map();
                 const allResults = [
@@ -126,7 +110,6 @@ export default function SongSearch({
                 });
 
                 const results = Array.from(combinedMap.values());
-                console.log('Final combined results:', results);
                 setSearchResults(results);
             } catch (error) {
                 console.error('Error searching songs:', error);
@@ -155,29 +138,19 @@ export default function SongSearch({
 
         setAddingSongId(song.song_id);
         try {
-            console.log('\n=== SongSearch: Adding song ===');
-            console.log('  Song:', song);
-            console.log('  activeSession:', activeSession);
-            console.log('  adminUserId:', adminUserId);
 
             if (activeSession) {
                 // Add to session_song table
-                console.log('  → Adding to SESSION_SONG table');
-                console.log('  Data:', { session_id: activeSession.session_id, song_id: song.song_id });
                 const result = await SessionSongClient.create({
                     session_id: activeSession.session_id,
                     song_id: song.song_id
                 });
-                console.log('  ✓ Song added to session successfully:', result);
             } else if (adminUserId) {
                 // Add to admin_allowed_song table
-                console.log('  → Adding to ADMIN_ALLOWED_SONG table');
-                console.log('  Data:', { admin_user_id: adminUserId, song_id: song.song_id });
                 const result = await AdminAllowedSongClient.create({
                     admin_user_id: adminUserId,
                     song_id: song.song_id
                 });
-                console.log('  ✓ Song added successfully:', result);
             } else {
                 console.error('  ✗ No admin_user_id or active session found');
                 return;
@@ -187,12 +160,9 @@ export default function SongSearch({
             const newAllowedSongs = new Set(allowedSongs);
             newAllowedSongs.add(song.song_id);
             setAllowedSongs(newAllowedSongs);
-            console.log('  Updated local allowedSongs set');
 
             // Call callback to refresh parent
-            console.log('  Calling onSongAdded callback');
             onSongAdded?.();
-            console.log('=== SongSearch: Adding song complete ===\n');
         } catch (error) {
             console.error('  ✗ Error adding song:', error);
             if (error && typeof error === 'object' && 'detail' in error) {

@@ -38,9 +38,7 @@ export default function SongSelectionModal({
         const loadSongs = async () => {
             setIsLoading(true);
             try {
-                console.log('🎵 Loading all songs for session:', sessionId);
                 const songs = await SessionSongClient.list(sessionId);
-                console.log('✓ Loaded songs:', songs);
 
                 // Sort by artist name
                 const sortedSongs = Array.isArray(songs)
@@ -50,7 +48,6 @@ export default function SongSelectionModal({
                 setAllSongs(sortedSongs);
                 setFilteredSongs(sortedSongs);
             } catch (error) {
-                console.error('❌ Error loading songs:', error);
                 setAllSongs([]);
                 setFilteredSongs([]);
             } finally {

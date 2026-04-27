@@ -167,10 +167,8 @@ export default function SignUpModal({
     };
 
     const handleNewPeformer = async (name: string, sessionId: string) => {
-        console.log('🎤 handleNewPeformer called:', { name, sessionId, nextQueueNumber });
         try {
             const session_Id = parseInt(sessionId);
-            console.log('📝 Parsed sessionId:', session_Id);
 
             // Create the performer first
             const performerData: PerformerCreate = {
@@ -181,10 +179,8 @@ export default function SignUpModal({
                 status: PerformerStatus.waiting,
                 performer_type: performerType
             }
-            console.log('📤 Sending performer data:', performerData);
 
             const createdPerformer = await PerformerClient.create(performerData);
-            console.log('✅ Performer created:', createdPerformer);
 
             // Create performer_song_selection entries for each song slot that has a song
             let selectionOrder = 1;
@@ -201,11 +197,9 @@ export default function SignUpModal({
 
                     try {
                         await PerformerSongSelectionClient.create(songSelection);
-                        console.log(`Song selection ${selectionOrder} created for song:`, slot.song.song_title);
                         selectionOrder++;
                     } catch (selectionError: any) {
                         // If song selection fails, delete the performer and show error
-                        console.error('❌ Error creating song selection:', selectionError);
                         await PerformerClient.delete(createdPerformer.performer_id);
 
                         // Extract error message from API response
@@ -235,7 +229,6 @@ export default function SignUpModal({
             // Show success message with auto-close
             setShowSuccess(true);
         } catch (error) {
-            console.error('❌ Error creating performer:', error);
 
             // Extract error message from API response
             let errorMessage = 'Failed to sign up';
@@ -254,7 +247,6 @@ export default function SignUpModal({
     const handleUpdatePerformer = async (name: string, sessionId: string) => {
         if (!performerToEdit) return;
 
-        console.log('✏️ handleUpdatePerformer called:', { name, sessionId, performerId: performerToEdit.performer_id });
         try {
 
             // Update the performer
@@ -265,10 +257,8 @@ export default function SignUpModal({
                 status: performerToEdit.status,
                 performer_type: performerType
             };
-            console.log('📤 Updating performer data:', performerUpdateData);
 
             await PerformerClient.update(performerToEdit.performer_id, performerUpdateData);
-            console.log('✅ Performer updated');
 
             // Get existing song selections for this performer
             const existingSelections = performerSongSelections
@@ -279,7 +269,6 @@ export default function SignUpModal({
             for (const selection of existingSelections) {
                 await PerformerSongSelectionClient.delete(selection.performer_selection_id);
             }
-            console.log('🗑️ Deleted existing song selections');
 
             // Create new song selections
             let selectionOrder = 1;
@@ -296,10 +285,8 @@ export default function SignUpModal({
 
                     try {
                         await PerformerSongSelectionClient.create(songSelection);
-                        console.log(`Song selection ${selectionOrder} created for song:`, slot.song.song_title);
                         selectionOrder++;
                     } catch (selectionError: any) {
-                        console.error('❌ Error creating song selection:', selectionError);
                         let errorMessage = 'Failed to add song selection';
                         if (selectionError && typeof selectionError === 'object') {
                             if ('detail' in selectionError && typeof selectionError.detail === 'string') {
@@ -317,7 +304,6 @@ export default function SignUpModal({
             // Show success message with auto-close
             setShowSuccess(true);
         } catch (error) {
-            console.error('❌ Error updating performer:', error);
 
             let errorMessage = 'Failed to update performer';
             if (error && typeof error === 'object') {

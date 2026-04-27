@@ -2,8 +2,7 @@ import { useEffect, useState } from "react";
 import AdminPage from "./AdminPage";
 import AuthForm from "../components/auth/AuthForm.js";
 import { AdminUser } from "../types/apiTypes/adminUser";
-
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+import { AuthClient } from "../api/apis/AuthAPI.js";
 
 export default function AdminLoginPage() {
     const [adminInfo, setAdminInfo] = useState<AdminUser | null>(null);
@@ -17,28 +16,11 @@ export default function AdminLoginPage() {
             const userStr = localStorage.getItem("admin_user");
 
             if (token && userStr) {
-                try {
-                    // Verify token is still valid
-                    const response = await fetch(`${API_BASE_URL}/api/auth/verify`, {
-                        method: "POST",
-                        headers: {
-                            "Content-Type": "application/json",
-                        },
-                        body: JSON.stringify({ token }),
-                    });
-
-                    if (response.ok) {
-                        // Token is valid, restore session
-                        const user = JSON.parse(userStr);
-                        setAdminInfo(user);
-                        setAuthToken(token);
-                    } else {
-                        // Token is invalid, clear storage
-                        localStorage.removeItem("admin_auth_token");
-                        localStorage.removeItem("admin_user");
-                    }
-                } catch (error) {
-                    console.error("Error verifying token:", error);
+                const valid = await AuthClient.verify(token);
+                if (valid) {
+                    setAdminInfo(JSON.parse(userStr));
+                    setAuthToken(token);
+                } else {
                     localStorage.removeItem("admin_auth_token");
                     localStorage.removeItem("admin_user");
                 }
@@ -59,7 +41,6 @@ export default function AdminLoginPage() {
         setAdminInfo(user);
         setAuthToken(token);
 
-        console.log("✅ Authentication successful:", user);
     };
 
     const handleLogout = () => {
@@ -71,7 +52,6 @@ export default function AdminLoginPage() {
         setAdminInfo(null);
         setAuthToken(null);
 
-        console.log("👋 Logged out");
     };
 
     // Show loading while checking auth

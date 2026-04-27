@@ -4,7 +4,7 @@ import { Music, Sparkles, PowerOff } from "lucide-react";
 import { motion } from "framer-motion";
 import { AdminUser } from "../types/apiTypes/adminUser.js";
 import { AdminUserSetting } from "../types/apiTypes/adminUserSetting.js";
-import { Session } from "../types/apiTypes/session.js";
+import { Session, SessionStatus } from "../types/apiTypes/session.js";
 import { WebSocketMessageType } from "../types/apiTypes/websocket.js";
 import { WebSocketProvider, useWebSocket } from "../context/WebSocketContext.js";
 import { AdminUserClient, AdminUserSettingClient, SessionClient } from "../api/frontendClient.js";
@@ -43,10 +43,10 @@ function PublicKaraokePageContent({
                 // If no sessionId in URL, find the active session for this admin
                 let resolvedSessionId = sessionId;
                 if (!resolvedSessionId) {
-                    const activeSessions = await SessionClient.list(parseInt(adminId), 'Active');
+                    const activeSessions = await SessionClient.list(parseInt(adminId), SessionStatus.Active);
                     if (activeSessions && activeSessions.length > 0) {
                         resolvedSessionId = activeSessions[0].session_id.toString();
-                        setActiveSessionId(resolvedSessionId);
+                        setActiveSessionId(resolvedSessionId ?? null);
                     }
                 }
 
@@ -58,7 +58,7 @@ function PublicKaraokePageContent({
                 const sessionData = await SessionClient.get(parseInt(resolvedSessionId));
                 setSession(sessionData);
 
-                if (sessionData && sessionData.status === 'Active') {
+                if (sessionData && sessionData.status === SessionStatus.Active) {
                     setActiveSessionId(resolvedSessionId);
                     setSessionActive(true);
                 } else {

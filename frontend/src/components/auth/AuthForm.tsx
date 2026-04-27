@@ -4,12 +4,11 @@ import { Input } from "../shared/Input.js";
 import { Button } from "../shared/Button.js";
 import { Label } from "../shared/Label.js";
 import { Music, UserPlus, LogIn, AlertCircle } from "lucide-react";
+import { AuthClient } from "../../api/apis/AuthAPI.js";
 
 interface AuthFormProps {
     onAuthSuccess: (user: any, token: string) => void;
 }
-
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
 export default function AuthForm({ onAuthSuccess }: AuthFormProps) {
     const [isLogin, setIsLogin] = useState(true);
@@ -26,43 +25,11 @@ export default function AuthForm({ onAuthSuccess }: AuthFormProps) {
         setLoading(true);
 
         try {
-            const endpoint = isLogin ? "/api/auth/login" : "/api/auth/register";
+            const data = isLogin
+                ? await AuthClient.login({ email, password })
+                : await AuthClient.register({ email, password, first_name: firstName, last_name: lastName });
 
-            const body = isLogin
-                ? { email, password }
-                : { email, password, first_name: firstName, last_name: lastName };
-
-            const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(body),
-            });
-
-            const data = await response.json();
-
-            if (!response.ok) {
-                throw new Error(data.detail || "Authentication failed");
-            }
-
-            if (isLogin) {
-                // Login response has access_token and user
-                onAuthSuccess(data.user, data.access_token);
-            } else {
-                // Registration successful, now log them in
-                const loginResponse = await fetch(`${API_BASE_URL}/api/auth/login`, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ email, password }),
-                });
-
-                const loginData = await loginResponse.json();
-
-                if (!loginResponse.ok) {
-                    throw new Error(loginData.detail || "Login after registration failed");
-                }
-
-                onAuthSuccess(loginData.user, loginData.access_token);
-            }
+            onAuthSuccess(data.user, data.access_token);
         } catch (err: any) {
             setError(err.message || "An error occurred");
         } finally {
