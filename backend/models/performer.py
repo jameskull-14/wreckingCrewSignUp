@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, Enum
+from sqlalchemy import Column, Integer, String, Text, ForeignKey, Enum
 from sqlalchemy.orm import relationship
 from database import Base
 import enum
@@ -27,6 +27,7 @@ class PerformerModel(Base):
     queue_number = Column(Integer, nullable=False, index=True)
     status = Column(Enum(PerformerStatus), nullable=False, index=True)
     performer_type = Column(Enum(PerformerType), nullable=False, default=PerformerType.individual, server_default='individual')
+    note = Column(Text, nullable=True)
 
     # Relationships
     session = relationship("SessionModel", back_populates="performers")

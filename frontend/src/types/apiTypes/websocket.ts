@@ -3,6 +3,7 @@
 export enum WebSocketMessageType {
   PERFORMER_CREATED = 'performer_created',
   PERFORMER_UPDATED = 'performer_updated',
+  PERFORMER_DELETED = 'performer_deleted',
   SONG_SELECTION_CREATED = 'song_selection_created',
   SONG_SELECTION_UPDATED = 'song_selection_updated',
   SETTINGS_UPDATED = 'settings_updated',

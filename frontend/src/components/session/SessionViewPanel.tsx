@@ -208,6 +208,11 @@ export default function SessionViewPanel({
                 fetchPerformers();
             }
 
+            // When a performer is deleted (slot cleared), refresh the list
+            if (message.type === WebSocketMessageType.PERFORMER_DELETED) {
+                fetchPerformers();
+            }
+
             // When a song selection is created, refresh the list
             if (message.type === WebSocketMessageType.SONG_SELECTION_CREATED) {
                 fetchPerformers();

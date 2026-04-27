@@ -109,7 +109,8 @@ async def create_performer(performer: schemas.PerformerCreate, db: Session = Dep
         queue_number=performer.queue_number,
         status=performer.status,
         session_id=performer.session_id,
-        performer_type=performer.performer_type
+        performer_type=performer.performer_type,
+        note=performer.note
     )
 
     db.add(new_performer)
@@ -241,7 +242,7 @@ async def update_performer(
 
 
 @router.delete("/{performer_id}", status_code=204)
-def delete_performer(performer_id: int, db: Session = Depends(get_db)):
+async def delete_performer(performer_id: int, db: Session = Depends(get_db)):
     """
     Delete a performer.
 
@@ -264,6 +265,22 @@ def delete_performer(performer_id: int, db: Session = Depends(get_db)):
     if not performer:
         raise HTTPException(status_code=404, detail="Performer not found")
 
+    session_id = performer.session_id
+
+    session = db.query(models.SessionModel).filter(
+        models.SessionModel.session_id == session_id
+    ).first()
+
     db.delete(performer)
     db.commit()
+
+    if session:
+        await manager.broadcast(session.admin_user_id, {
+            "type": "performer_deleted",
+            "data": {
+                "performer_id": performer_id,
+                "session_id": session_id
+            }
+        })
+
     return None

@@ -20,6 +20,7 @@ export interface Performer {
     status: PerformerStatus;
     session_id: number;
     performer_type: PerformerType;
+    note?: string;
 }
 
 export interface PerformerCreate {
@@ -29,6 +30,7 @@ export interface PerformerCreate {
     status: PerformerStatus;
     session_id: number;
     performer_type?: PerformerType;
+    note?: string;
 }
 
 export interface PerformerUpdate {
@@ -37,4 +39,5 @@ export interface PerformerUpdate {
     queue_number?: number;
     status?: PerformerStatus;
     performer_type?: PerformerType;
+    note?: string;
 }

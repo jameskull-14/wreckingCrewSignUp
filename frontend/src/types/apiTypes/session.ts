@@ -36,6 +36,7 @@ export interface Session {
     custom_link_text?: string;
     show_performer_status?: boolean;
     show_song_status?: boolean;
+    allow_performer_notes?: boolean;
     status: SessionStatus;
     created_date: string;
     updated_date: string;
@@ -94,5 +95,6 @@ export interface SessionUpdate {
     custom_link_text?: string;
     show_performer_status?: boolean;
     show_song_status?: boolean;
+    allow_performer_notes?: boolean;
     status?: SessionStatus;
 }

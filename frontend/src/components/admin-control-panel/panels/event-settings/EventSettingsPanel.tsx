@@ -1,6 +1,6 @@
 import SessionModePanel from "./SessionModePanel.js";
 import { SettingsPanelBaseProps } from "../../../../types/componentTypes/navigationContentProps.js";
-import { Database, RefreshCw, Users, Guitar, Eye, Music } from "lucide-react";
+import { Database, RefreshCw, Users, Guitar, Eye, Music, MessageSquare } from "lucide-react";
 import { Switch } from "../../../shared/Switch.js";
 import { Label } from "../../../shared/Label.js";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../../shared/Select.js";
@@ -29,7 +29,7 @@ export default function EventSettingsPanel({
         }
     }, [adminSettings?.session_title, adminSettings?.session_host]);
 
-    const handleUpdateSession = async (field: 'use_all_songs' | 'allow_song_reuse' | 'allow_instrument_use' | 'show_performer_status' | 'show_song_status', value: boolean) => {
+    const handleUpdateSession = async (field: 'use_all_songs' | 'allow_song_reuse' | 'allow_instrument_use' | 'show_performer_status' | 'show_song_status' | 'allow_performer_notes', value: boolean) => {
         onUpdateAdminSettings({
             ...adminSettings,
             [field]: value
@@ -204,6 +204,22 @@ export default function EventSettingsPanel({
                             <Switch
                                 checked={adminSettings?.show_song_status ?? true}
                                 onCheckedChange={() => handleUpdateSession('show_song_status', !(adminSettings?.show_song_status ?? true))}
+                            />
+                        </div>
+                    </div>
+                    <div className="flex items-center justify-between p-4 bg-gray-800/50 rounded-lg border border-gray-600/50">
+                        <div className="flex items-center gap-3">
+                            <MessageSquare className="w-6 h-6 text-amber-400" />
+                            <div>
+                                <Label className="text-white font-semibold">Allow Performer Notes</Label>
+                                <p className="text-gray-400 text-sm">When on, performers can add a private note visible only to the host</p>
+                            </div>
+                        </div>
+                        <div className="flex items-center gap-3">
+                            <span className="text-sm text-gray-400">{adminSettings?.allow_performer_notes ?? true ? 'On' : 'Off'}</span>
+                            <Switch
+                                checked={adminSettings?.allow_performer_notes ?? true}
+                                onCheckedChange={() => handleUpdateSession('allow_performer_notes', !(adminSettings?.allow_performer_notes ?? true))}
                             />
                         </div>
                     </div>
