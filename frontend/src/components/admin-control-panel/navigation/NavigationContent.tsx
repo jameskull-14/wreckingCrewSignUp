@@ -16,13 +16,15 @@ export default function NavigationContent({
 }: NavigationContentProps) {
 
     return (
-        <Tabs defaultValue="overview" className="space-y-6">
-            <TabsList className="bg-gray-800 border border-amber-400/30">
-                <TabsTrigger value="overview">Overview</TabsTrigger>
-                <TabsTrigger value="settings">Event Settings</TabsTrigger>
-                <TabsTrigger value="database">Session Songs</TabsTrigger>
-                <TabsTrigger value="export">Export</TabsTrigger>
-            </TabsList>
+        <Tabs defaultValue="overview" className="space-y-6 w-full min-w-0">
+            <div className="overflow-x-auto">
+                <TabsList className="bg-gray-800 border border-amber-400/30 min-w-max">
+                    <TabsTrigger value="overview">Overview</TabsTrigger>
+                    <TabsTrigger value="settings">Event Settings</TabsTrigger>
+                    <TabsTrigger value="database">Session Songs</TabsTrigger>
+                    <TabsTrigger value="export">Export</TabsTrigger>
+                </TabsList>
+            </div>
 
             <TabsContent value="overview">
                 <OverviewPanel

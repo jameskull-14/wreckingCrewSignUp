@@ -3,8 +3,8 @@ import { useParams } from 'react-router-dom';
 import { QRCodeSVG } from 'qrcode.react';
 
 export default function QRCodeFullPage() {
-    const { adminId, sessionId } = useParams<{ adminId: string; sessionId: string }>();
-    const signupUrl = `${window.location.origin}/public_session/${adminId}/${sessionId}`;
+    const { adminId } = useParams<{ adminId: string }>();
+    const signupUrl = `${window.location.origin}/public_session/${adminId}`;
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center p-8">

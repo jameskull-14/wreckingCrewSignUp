@@ -7,6 +7,8 @@ import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from ".
 import { Button } from "../../../../shared/Button";
 import { SettingsPanelBaseProps } from "../../../../../types/componentTypes/navigationContentProps";
 import { SessionClient } from "../../../../../api/frontendClient";
+import FeaturedActPanel from "./FeaturedActPanel";
+import CustomLinkPanel from "./CustomLinkPanel";
 
 // Helper functions outside component
 const convertFrom24Hour = (time24: string): { hour: number; minute: number; period: 'AM' | 'PM' } => {
@@ -281,6 +283,9 @@ export default function TimeSlotPanel({
             to { width: 0%; }
           }
         `}</style>
+        <div className="space-y-4">
+
+        {/* Time Slot Settings */}
         <Card className="bg-gray-800/50 border-amber-400/20">
           <CardHeader>
             <CardTitle className="text-lg font-semibold text-amber-400 flex items-center gap-2">
@@ -387,10 +392,10 @@ export default function TimeSlotPanel({
                 </div>
               </div>
             </div>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="flex items-center gap-3">
-                <Label className="text-white whitespace-nowrap">Performance Time</Label>
+              <div className="flex flex-col gap-2">
+                <Label className="text-white">Performance Time</Label>
                 <div className="flex gap-2 items-center">
                   <Input
                     type="number"
@@ -428,9 +433,9 @@ export default function TimeSlotPanel({
                   <span className="text-white text-sm">Minutes</span>
                 </div>
               </div>
-              
-              <div className="flex items-center gap-3">
-                <Label className="text-white whitespace-nowrap">Changeover Time</Label>
+
+              <div className="flex flex-col gap-2">
+                <Label className="text-white">Changeover Time</Label>
                 <div className="flex gap-2 items-center">
                   <Input
                     type="number"
@@ -470,180 +475,6 @@ export default function TimeSlotPanel({
               </div>
             </div>
 
-            {/* Featured Act Section */}
-            <div className="border-t border-amber-400/20 pt-4 mt-2">
-              <h3 className="text-amber-400 font-semibold mb-3">Featured Act (Optional)</h3>
-              <div className="space-y-3">
-                <div>
-                  <Label className="text-white">Act Name</Label>
-                  <Input
-                    type="text"
-                    placeholder="e.g., House Band, Special Guest"
-                    value={featuredActName}
-                    onChange={(e) => setFeaturedActName(e.target.value)}
-                    className="bg-gray-900/50 border-amber-400/30 text-white"
-                  />
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Label className="text-white">Featured Act Start Time</Label>
-                    <div className="flex gap-2 items-center">
-                      <Input
-                        type="number"
-                        min="1"
-                        max="12"
-                        placeholder="Hour"
-                        value={featuredActStartHour}
-                        onChange={(e) => {
-                          const val = e.target.value;
-                          if (val === '' || (val.length <= 2 && parseInt(val) >= 0)) {
-                            setFeaturedActStartHour(val);
-                          }
-                        }}
-                        onFocus={(e) => e.target.select()}
-                        className="bg-gray-900/50 border-amber-400/30 text-white w-20 text-sm"
-                      />
-                      <span className="text-white">:</span>
-                      <Input
-                        type="number"
-                        min="0"
-                        max="59"
-                        placeholder="Min"
-                        value={featuredActStartMinute}
-                        onChange={(e) => {
-                          const val = e.target.value;
-                          if (val === '' || (val.length <= 2 && parseInt(val) <= 59)) {
-                            setFeaturedActStartMinute(val);
-                          }
-                        }}
-                        onFocus={(e) => e.target.select()}
-                        className="bg-gray-900/50 border-amber-400/30 text-white w-20 text-sm"
-                      />
-                      <Select
-                        value={featuredActStartPeriod}
-                        onValueChange={(value) => setFeaturedActStartPeriod(value as 'AM' | 'PM')}
-                      >
-                        <SelectTrigger className="bg-gray-900/50 border-amber-400/30 text-white w-24 text-sm">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="AM">AM</SelectItem>
-                          <SelectItem value="PM">PM</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-                  <div>
-                    <Label className="text-white">Featured Act End Time</Label>
-                    <div className="flex gap-2 items-center">
-                      <Input
-                        type="number"
-                        min="1"
-                        max="12"
-                        placeholder="Hour"
-                        value={featuredActEndHour}
-                        onChange={(e) => {
-                          const val = e.target.value;
-                          if (val === '' || (val.length <= 2 && parseInt(val) >= 0)) {
-                            setFeaturedActEndHour(val);
-                          }
-                        }}
-                        onFocus={(e) => e.target.select()}
-                        className="bg-gray-900/50 border-amber-400/30 text-white w-20 text-sm"
-                      />
-                      <span className="text-white">:</span>
-                      <Input
-                        type="number"
-                        min="0"
-                        max="59"
-                        placeholder="Min"
-                        value={featuredActEndMinute}
-                        onChange={(e) => {
-                          const val = e.target.value;
-                          if (val === '' || (val.length <= 2 && parseInt(val) <= 59)) {
-                            setFeaturedActEndMinute(val);
-                          }
-                        }}
-                        onFocus={(e) => e.target.select()}
-                        className="bg-gray-900/50 border-amber-400/30 text-white w-20 text-sm"
-                      />
-                      <Select
-                        value={featuredActEndPeriod}
-                        onValueChange={(value) => setFeaturedActEndPeriod(value as 'AM' | 'PM')}
-                      >
-                        <SelectTrigger className="bg-gray-900/50 border-amber-400/30 text-white w-24 text-sm">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="AM">AM</SelectItem>
-                          <SelectItem value="PM">PM</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-3">
-                  <div>
-                    <Label className="text-white">Featured Act Link URL</Label>
-                    <Input
-                      type="url"
-                      placeholder="e.g., https://facebook.com/artist"
-                      value={featuredActLinkUrl}
-                      onChange={(e) => setFeaturedActLinkUrl(e.target.value)}
-                      className="bg-gray-900/50 border-amber-400/30 text-white"
-                    />
-                  </div>
-                  <div>
-                    <Label className="text-white">Featured Act Link Text</Label>
-                    <Input
-                      type="text"
-                      placeholder="e.g., Visit Artist Page"
-                      value={featuredActLinkText}
-                      onChange={(e) => setFeaturedActLinkText(e.target.value)}
-                      className="bg-gray-900/50 border-amber-400/30 text-white"
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Custom Link Section */}
-            <div className="border-t border-amber-400/20 pt-4 mt-2">
-              <h3 className="text-amber-400 font-semibold mb-3">Custom Link (Optional)</h3>
-              <div className="space-y-3">
-                <div>
-                  <Label className="text-white">Link URL</Label>
-                  <Input
-                    type="url"
-                    placeholder="e.g., https://facebook.com/event"
-                    value={customLinkUrl}
-                    onChange={(e) => setCustomLinkUrl(e.target.value)}
-                    className="bg-gray-900/50 border-amber-400/30 text-white"
-                  />
-                </div>
-                <div>
-                  <Label className="text-white">Prompt Text</Label>
-                  <Input
-                    type="text"
-                    placeholder="e.g., Post your pictures here"
-                    value={customLinkPrompt}
-                    onChange={(e) => setCustomLinkPrompt(e.target.value)}
-                    className="bg-gray-900/50 border-amber-400/30 text-white"
-                  />
-                </div>
-                <div>
-                  <Label className="text-white">Link Display Text</Label>
-                  <Input
-                    type="text"
-                    placeholder="e.g., Click Here"
-                    value={customLinkText}
-                    onChange={(e) => setCustomLinkText(e.target.value)}
-                    className="bg-gray-900/50 border-amber-400/30 text-white"
-                  />
-                </div>
-              </div>
-            </div>
-
             <Button
               onClick={handleGenerateSlots}
               className="w-full bg-gradient-to-r from-blue-500 to-sky-500 hover:from-blue-600 hover:to-sky-600 text-white"
@@ -652,6 +483,28 @@ export default function TimeSlotPanel({
             </Button>
           </CardContent>
         </Card>
+
+        <FeaturedActPanel
+          featuredActName={featuredActName} setFeaturedActName={setFeaturedActName}
+          featuredActStartHour={featuredActStartHour} setFeaturedActStartHour={setFeaturedActStartHour}
+          featuredActStartMinute={featuredActStartMinute} setFeaturedActStartMinute={setFeaturedActStartMinute}
+          featuredActStartPeriod={featuredActStartPeriod} setFeaturedActStartPeriod={setFeaturedActStartPeriod}
+          featuredActEndHour={featuredActEndHour} setFeaturedActEndHour={setFeaturedActEndHour}
+          featuredActEndMinute={featuredActEndMinute} setFeaturedActEndMinute={setFeaturedActEndMinute}
+          featuredActEndPeriod={featuredActEndPeriod} setFeaturedActEndPeriod={setFeaturedActEndPeriod}
+          featuredActLinkUrl={featuredActLinkUrl} setFeaturedActLinkUrl={setFeaturedActLinkUrl}
+          featuredActLinkText={featuredActLinkText} setFeaturedActLinkText={setFeaturedActLinkText}
+          onSave={handleGenerateSlots}
+        />
+
+        <CustomLinkPanel
+          customLinkUrl={customLinkUrl} setCustomLinkUrl={setCustomLinkUrl}
+          customLinkPrompt={customLinkPrompt} setCustomLinkPrompt={setCustomLinkPrompt}
+          customLinkText={customLinkText} setCustomLinkText={setCustomLinkText}
+          onSave={handleGenerateSlots}
+        />
+
+        </div>
         </>
     )
 }

@@ -63,16 +63,16 @@ export default function AdminPage ({ adminInfo, onLogout }: AdminPageProps) {
             return;
         }
 
-        // Update admin settings (this broadcasts via WebSocket automatically)
+        // Optimistically update local state immediately so UI responds without waiting for API
+        setAdminSettings(prev => prev ? { ...prev, ...newSettings } : null);
+
+        // Persist to backend (broadcasts via WebSocket to other clients automatically)
         await AdminUserSettingClient.update(adminSettings.admin_setting_id, newSettings)
 
-        // If there's an active session, update it too
+        // If there's an active session, keep it in sync too
         if (activeSession) {
             await SessionClient.update(activeSession.session_id,newSettings)
         }
-
-        // Merge the update with existing settings
-        setAdminSettings(prev => prev ? { ...prev, ...newSettings } : null);
     }
 
 

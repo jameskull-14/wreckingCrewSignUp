@@ -24,6 +24,8 @@ export interface AdminUserSetting {
     custom_link_url?: string;
     custom_link_prompt?: string;
     custom_link_text?: string;
+    show_performer_status?: boolean;
+    show_song_status?: boolean;
     created_date: string;
     updated_date: string;
 }
@@ -50,6 +52,8 @@ export interface AdminUserSettingCreate {
     custom_link_url?: string;
     custom_link_prompt?: string;
     custom_link_text?: string;
+    show_performer_status?: boolean;
+    show_song_status?: boolean;
 }
 
 export interface AdminUserSettingUpdate {
@@ -73,4 +77,6 @@ export interface AdminUserSettingUpdate {
     custom_link_url?: string;
     custom_link_prompt?: string;
     custom_link_text?: string;
+    show_performer_status?: boolean;
+    show_song_status?: boolean;
 }

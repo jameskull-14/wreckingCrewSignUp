@@ -6,15 +6,14 @@ import { QrCode, Maximize2 } from "lucide-react";
 
 interface AdminQRCodeProps {
     adminId: number;
-    sessionId: number;
     onOpenFullPage?: (window: Window) => void;
 }
 
-export default function AdminQRCode({ adminId, sessionId, onOpenFullPage }: AdminQRCodeProps) {
-    const signupUrl = `${window.location.origin}/public_session/${adminId}/${sessionId}`;
+export default function AdminQRCode({ adminId, onOpenFullPage }: AdminQRCodeProps) {
+    const signupUrl = `${window.location.origin}/public_session/${adminId}`;
 
     const handleOpenFullPage = () => {
-        const qrWindow = window.open(`/qr/${adminId}/${sessionId}`, '_blank');
+        const qrWindow = window.open(`/qr/${adminId}`, '_blank');
         if (qrWindow && onOpenFullPage) {
             onOpenFullPage(qrWindow);
         }
@@ -45,9 +44,14 @@ export default function AdminQRCode({ adminId, sessionId, onOpenFullPage }: Admi
                     <p className="text-sm text-gray-400 text-center">
                         Scan to join the karaoke session
                     </p>
-                    <p className="text-xs text-gray-500 text-center break-all max-w-xs">
-                        {signupUrl}
-                    </p>
+                    <a
+                        href={signupUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-xs text-blue-400 underline hover:text-blue-300 text-center break-all max-w-xs"
+                    >
+                        Public URL
+                    </a>
                     <Button
                         onClick={handleOpenFullPage}
                         className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white"

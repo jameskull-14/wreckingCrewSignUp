@@ -1,6 +1,6 @@
 import SessionModePanel from "./SessionModePanel.js";
 import { SettingsPanelBaseProps } from "../../../../types/componentTypes/navigationContentProps.js";
-import { Database, RefreshCw, Users, Guitar } from "lucide-react";
+import { Database, RefreshCw, Users, Guitar, Eye, Music } from "lucide-react";
 import { Switch } from "../../../shared/Switch.js";
 import { Label } from "../../../shared/Label.js";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../../shared/Select.js";
@@ -8,6 +8,7 @@ import { useState, useEffect } from "react";
 import { CardContent } from "../../../shared/Card.js";
 import { Input } from "../../../shared/Input.js";
 import { Button } from "../../../shared/Button.js";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "../../../shared/Tabs.js";
 
 export default function EventSettingsPanel({
     adminSettings,
@@ -28,7 +29,7 @@ export default function EventSettingsPanel({
         }
     }, [adminSettings?.session_title, adminSettings?.session_host]);
 
-    const handleUpdateSession = async (field: 'use_all_songs' | 'allow_song_reuse' | 'allow_instrument_use', value: boolean) => {
+    const handleUpdateSession = async (field: 'use_all_songs' | 'allow_song_reuse' | 'allow_instrument_use' | 'show_performer_status' | 'show_song_status', value: boolean) => {
         onUpdateAdminSettings({
             ...adminSettings,
             [field]: value
@@ -53,6 +54,12 @@ export default function EventSettingsPanel({
     
     return(
         <div>
+        <Tabs defaultValue="general">
+            <TabsList className="mb-4 bg-gray-800/50 border border-amber-400/20">
+                <TabsTrigger value="general" className="data-[state=active]:bg-amber-400/20 data-[state=active]:text-amber-400 text-gray-400">General</TabsTrigger>
+                <TabsTrigger value="advanced" className="data-[state=active]:bg-amber-400/20 data-[state=active]:text-amber-400 text-gray-400">Advanced</TabsTrigger>
+            </TabsList>
+            <TabsContent value="general">
             <CardContent className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
@@ -165,6 +172,44 @@ export default function EventSettingsPanel({
                 adminInfo = {adminInfo}
                 activeSession = {activeSession}
             />
+            </TabsContent>
+            <TabsContent value="advanced">
+                <div className="space-y-4">
+                    <div className="flex items-center justify-between p-4 bg-gray-800/50 rounded-lg border border-gray-600/50">
+                        <div className="flex items-center gap-3">
+                            <Eye className="w-6 h-6 text-amber-400" />
+                            <div>
+                                <Label className="text-white font-semibold">Show Performer Status</Label>
+                                <p className="text-gray-400 text-sm">When off, performer status is hidden from admins and the public</p>
+                            </div>
+                        </div>
+                        <div className="flex items-center gap-3">
+                            <span className="text-sm text-gray-400">{adminSettings?.show_performer_status ?? true ? 'On' : 'Off'}</span>
+                            <Switch
+                                checked={adminSettings?.show_performer_status ?? true}
+                                onCheckedChange={() => handleUpdateSession('show_performer_status', !(adminSettings?.show_performer_status ?? true))}
+                            />
+                        </div>
+                    </div>
+                    <div className="flex items-center justify-between p-4 bg-gray-800/50 rounded-lg border border-gray-600/50">
+                        <div className="flex items-center gap-3">
+                            <Music className="w-6 h-6 text-amber-400" />
+                            <div>
+                                <Label className="text-white font-semibold">Show Song Status</Label>
+                                <p className="text-gray-400 text-sm">When off, song status is hidden from admins and the public</p>
+                            </div>
+                        </div>
+                        <div className="flex items-center gap-3">
+                            <span className="text-sm text-gray-400">{adminSettings?.show_song_status ?? true ? 'On' : 'Off'}</span>
+                            <Switch
+                                checked={adminSettings?.show_song_status ?? true}
+                                onCheckedChange={() => handleUpdateSession('show_song_status', !(adminSettings?.show_song_status ?? true))}
+                            />
+                        </div>
+                    </div>
+                </div>
+            </TabsContent>
+        </Tabs>
         </div>
 );
 }

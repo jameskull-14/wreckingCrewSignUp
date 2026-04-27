@@ -13,7 +13,7 @@ import SessionViewPanel from "../components/session/SessionViewPanel.js";
 
 interface PublicPageInterface{
     adminId: string,
-    sessionId: string
+    sessionId?: string
 }
 
 function PublicKaraokePageContent({
@@ -24,43 +24,44 @@ function PublicKaraokePageContent({
     const [adminInfo, setAdminInfo] = useState<AdminUser | null>(null);
     const [adminSettings, setAdminSettings] = useState<AdminUserSetting | null>(null);
     const [session, setSession] = useState<Session | null>(null);
+    const [activeSessionId, setActiveSessionId] = useState<string | null>(sessionId || null);
     const [sessionActive, setSessionActive] = useState(false);
 
     useEffect(() => {
-        console.log('🎤 PublicKaraokePage loading...');
-        console.log('Admin ID:', adminId);
-        console.log('Session ID:', sessionId);
-
         const loadData = async () => {
             try {
-                console.log('📥 Fetching admin data and settings...');
-                // Fetch admin info, settings, and verify session status
                 const [adminData, settingsData] = await Promise.all([
                     AdminUserClient.get(parseInt(adminId)),
                     AdminUserSettingClient.list(parseInt(adminId))
                 ]);
 
-                console.log('Admin data:', adminData);
-                console.log('Settings data:', settingsData);
                 setAdminInfo(adminData);
-
-                // API returns an array, get the first item
                 if (settingsData && settingsData.length > 0) {
                     setAdminSettings(settingsData[0]);
                 }
 
-                // Check if THIS specific session is actually active
-                console.log('🔍 Checking session status...');
-                const sessionData = await SessionClient.get(parseInt(sessionId));
-                console.log('Session data:', sessionData);
+                // If no sessionId in URL, find the active session for this admin
+                let resolvedSessionId = sessionId;
+                if (!resolvedSessionId) {
+                    const activeSessions = await SessionClient.list(parseInt(adminId), 'Active');
+                    if (activeSessions && activeSessions.length > 0) {
+                        resolvedSessionId = activeSessions[0].session_id.toString();
+                        setActiveSessionId(resolvedSessionId);
+                    }
+                }
+
+                if (!resolvedSessionId) {
+                    setSessionActive(false);
+                    return;
+                }
+
+                const sessionData = await SessionClient.get(parseInt(resolvedSessionId));
                 setSession(sessionData);
 
-                // Only set active if session exists and status is "Active" (not "Complete")
                 if (sessionData && sessionData.status === 'Active') {
-                    console.log('✅ Session is active');
+                    setActiveSessionId(resolvedSessionId);
                     setSessionActive(true);
                 } else {
-                    console.log('❌ Session is not active. Status:', sessionData?.status);
                     setSessionActive(false);
                 }
             } catch (error) {
@@ -69,7 +70,7 @@ function PublicKaraokePageContent({
             }
         };
 
-        if (adminId && sessionId) loadData();
+        if (adminId) loadData();
     }, [adminId, sessionId]);
 
     // Subscribe to WebSocket updates for real-time setting changes
@@ -99,13 +100,12 @@ function PublicKaraokePageContent({
 
     // Periodically check session status to ensure it hasn't been completed
     useEffect(() => {
-        if (!sessionId) return;
+        if (!activeSessionId) return;
 
         const checkSessionStatus = async () => {
             try {
-                const session = await SessionClient.get(parseInt(sessionId));
-                if (session && session.status !== 'Active') {
-                    console.log('⚠️ Session is no longer active, status:', session.status);
+                const s = await SessionClient.get(parseInt(activeSessionId));
+                if (s && s.status !== 'Active') {
                     setSessionActive(false);
                 }
             } catch (error) {
@@ -113,10 +113,9 @@ function PublicKaraokePageContent({
             }
         };
 
-        // Check every 10 seconds
         const interval = setInterval(checkSessionStatus, 10000);
         return () => clearInterval(interval);
-    }, [sessionId]);
+    }, [activeSessionId]);
 
     if (!sessionActive) {
         return (
@@ -182,10 +181,10 @@ function PublicKaraokePageContent({
                         )}
                     </motion.div>
 
-                    {adminInfo && adminSettings && (
+                    {adminInfo && adminSettings && activeSessionId && (
                         <SessionViewPanel
                             adminSettings={adminSettings}
-                            sessionId={sessionId}
+                            sessionId={activeSessionId}
                             isAdmin={false}
                         />
                     )}
@@ -196,24 +195,18 @@ function PublicKaraokePageContent({
 }
 
 export default function PublicKaraokePage() {
-    const { adminId, sessionId} = useParams<{ adminId:string; sessionId: string}>();
+    const { adminId, sessionId } = useParams<{ adminId: string; sessionId?: string }>();
 
-    console.log('🌐 PublicKaraokePage - URL params:', { adminId, sessionId });
-
-    if (!adminId || !sessionId) {
-        console.error('❌ Invalid session - missing adminId or sessionId');
+    if (!adminId) {
         return (
             <div className="min-h-screen bg-gray-900 flex items-center justify-center">
                 <div className="text-white text-center space-y-4">
                     <h1 className="text-4xl font-bold text-red-400">Invalid Session</h1>
-                    <p className="text-gray-400">Missing admin ID or session ID in URL</p>
-                    <p className="text-sm text-gray-500">URL format: /public_session/[adminId]/[sessionId]</p>
+                    <p className="text-gray-400">Missing admin ID in URL</p>
                 </div>
             </div>
         );
     }
-
-    console.log('✅ Valid params, rendering PublicKaraokePageContent');
 
     return (
         <WebSocketProvider adminId={adminId}>
