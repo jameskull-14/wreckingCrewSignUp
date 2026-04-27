@@ -160,13 +160,8 @@ export default function QueuePanel({
                     <div className="flex-1">
                         <div className="flex items-center gap-4 flex-wrap">
                             <div className="flex items-center gap-3 flex-wrap min-w-0">
-                                {isFeaturedAct && (
-                                    <span className="bg-purple-500/20 text-purple-400 px-3 py-1 rounded-full text-xs font-semibold border border-purple-500/50">
-                                        ⭐ FEATURED ACT
-                                    </span>
-                                )}
                                 <CardTitle className="text-xl sm:text-2xl font-bold text-white break-words min-w-0" style={isSkipped ? { textDecoration: 'line-through' } : {}}>
-                                    {displayName}
+                                    {isFeaturedAct ? "⭐ Featured Act" : displayName}
                                 </CardTitle>
                                 {timeSlotDisplay && (
                                     <span className="text-gray-400 text-sm font-medium whitespace-nowrap">
@@ -252,26 +247,22 @@ export default function QueuePanel({
                 </div>
                 <CardContent>
                     {isFeaturedAct ? (
-                        <div className="flex flex-col items-center justify-center py-4">
-                            <p className="text-purple-400 italic">Special performance - not available for signup</p>
-                            {(() => {
-                                console.log('🔗 Featured Act Link Debug:', {
-                                    featuredActLinkUrl,
-                                    featuredActLinkText,
-                                    hasUrl: !!featuredActLinkUrl,
-                                    hasText: !!featuredActLinkText
-                                });
-                                return null;
-                            })()}
+                        <div className="flex flex-col items-center justify-center py-4 space-y-3">
+                            <p className="text-purple-300 text-lg font-medium">
+                                Special Performance by - {featuredActName || "Featured Act"}
+                            </p>
                             {featuredActLinkUrl && featuredActLinkText && (
-                                <a
-                                    href={featuredActLinkUrl}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="text-blue-400 underline hover:text-blue-300 mt-2"
-                                >
-                                    {featuredActLinkText}
-                                </a>
+                                <div className="flex items-center gap-2">
+                                    <span className="text-white font-medium">Band Links:</span>
+                                    <a
+                                        href={featuredActLinkUrl}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="text-blue-400 underline hover:text-blue-300"
+                                    >
+                                        {featuredActLinkText}
+                                    </a>
+                                </div>
                             )}
                         </div>
                     ) : !performer ? (
