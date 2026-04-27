@@ -54,10 +54,6 @@ export default function SessionViewPanel({
 
         try {
             const sessionData = await SessionClient.get(parseInt(sessionId));
-            console.log('📥 Session data fetched');
-            if (sessionData.featured_act_name) {
-                console.log(`🎭 Featured act: ${sessionData.featured_act_name} (${sessionData.featured_act_start_time} - ${sessionData.featured_act_end_time})`);
-            }
             setSession(sessionData);
         } catch (error) {
             console.error('Error fetching session:', error);
@@ -70,7 +66,6 @@ export default function SessionViewPanel({
             return;
         }
 
-        console.log('🔄 Fetching performers for session:', sessionId);
         try{
             const performerData = await PerformerClient.list(sessionId)
             // Sort by queue_number to preserve order
@@ -133,7 +128,6 @@ export default function SessionViewPanel({
         if (featured_act_name && featured_act_start_time && featured_act_end_time) {
             featuredActStartMinutes = parseTime(featured_act_start_time);
             featuredActEndMinutes = parseTime(featured_act_end_time);
-            console.log(`🎭 Featured act detected: ${featured_act_start_time} - ${featured_act_end_time}`);
         }
 
         let currentTime = startMinutes;
@@ -148,7 +142,6 @@ export default function SessionViewPanel({
                 // Check for overlap: slot overlaps if slot_start < feat_end AND slot_end > feat_start
                 if (slotStart < featuredActEndMinutes && slotEnd > featuredActStartMinutes) {
                     // This slot overlaps with featured act, skip to after featured act
-                    console.log(`⏭️  Skipping slot at ${formatTime(slotStart)} - overlaps with featured act`);
                     currentTime = featuredActEndMinutes;
                     continue;
                 }
@@ -173,11 +166,6 @@ export default function SessionViewPanel({
 
         // Add featured act slot if defined
         if (featured_act_name && featured_act_start_time && featured_act_end_time) {
-            console.log('✅ Adding featured act slot to schedule');
-            console.log('🔗 Featured Act Link Data from Session:', {
-                featured_act_link_url,
-                featured_act_link_text
-            });
             const featuredActSlot: TimeSlotPanel = {
                 queueNumber: 0, // Featured act doesn't have a queue number
                 timeSlotStart: featured_act_start_time,
@@ -189,7 +177,6 @@ export default function SessionViewPanel({
                 featuredActLinkUrl: featured_act_link_url || undefined,
                 featuredActLinkText: featured_act_link_text || undefined
             };
-            console.log('📦 Featured Act Slot Created:', featuredActSlot);
 
             // Insert the featured act slot in chronological order
             const featuredActStartMinutes = parseTime(featured_act_start_time);
@@ -198,11 +185,9 @@ export default function SessionViewPanel({
             if (insertIndex === -1) {
                 // Featured act is after all slots, add to end
                 slots.push(featuredActSlot);
-                console.log('📍 Featured act added at end');
             } else {
                 // Insert featured act at the correct position
                 slots.splice(insertIndex, 0, featuredActSlot);
-                console.log(`📍 Featured act inserted at position ${insertIndex}`);
             }
         }
 
@@ -212,29 +197,24 @@ export default function SessionViewPanel({
     // Subscribe to WebSocket updates for real-time performer changes
     useEffect(() => {
         const unsubscribe = subscribe((message) => {
-            console.log('📡 WebSocket message received in SessionViewPanel:', message);
 
             // When a performer is created, refresh the list
             if (message.type === WebSocketMessageType.PERFORMER_CREATED) {
-                console.log('🎤 New performer created, refreshing list...');
                 fetchPerformers();
             }
 
             // When a performer is updated, refresh the list
             if (message.type === WebSocketMessageType.PERFORMER_UPDATED) {
-                console.log('✏️ Performer updated, refreshing list...');
                 fetchPerformers();
             }
 
             // When a song selection is created, refresh the list
             if (message.type === WebSocketMessageType.SONG_SELECTION_CREATED) {
-                console.log('🎵 Song selection created, refreshing list...');
                 fetchPerformers();
             }
 
             // When a song selection is updated, refresh the list
             if (message.type === WebSocketMessageType.SONG_SELECTION_UPDATED) {
-                console.log('🎵 Song selection updated, refreshing list...');
                 fetchPerformers();
             }
         });

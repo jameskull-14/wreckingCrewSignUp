@@ -1,4 +1,4 @@
-import { SessionCreate, SessionUpdate } from "../../types/apiTypes/session";
+import { SessionCreate, SessionStatus, SessionUpdate } from "../../types/apiTypes/session";
 import { apiClient } from "./APIClient";
 
 export class SessionAPI {
@@ -16,7 +16,7 @@ export class SessionAPI {
         return this.client.request(`/api/sessions/${session_id}/info`, { method: 'GET' });
     }
 
-    async list(admin_user_id?: number, status?: string){
+    async list(admin_user_id?: number, status?: SessionStatus){
         const params = new URLSearchParams();
         if (admin_user_id) params.append('admin_user_id', admin_user_id.toString());
         if (status) params.append('status', status);

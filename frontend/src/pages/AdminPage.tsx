@@ -5,7 +5,7 @@ import { motion } from "framer-motion"
 import { Button } from "../components/shared/Button.js"
 import { AdminUser } from "../types/apiTypes/adminUser.js";
 import { AdminUserSetting, AdminUserSettingUpdate } from "../types/apiTypes/adminUserSetting.js";
-import { Session } from "../types/apiTypes/session.js";
+import { Session, SessionStatus } from "../types/apiTypes/session.js";
 import { AdminUserSettingClient } from "../api/apis/AdminUserSettingAPI.js";
 import { SessionClient } from "../api/frontendClient.js";
 import { WebSocketProvider, useWebSocket } from "../context/WebSocketContext.js";
@@ -24,16 +24,10 @@ export default function AdminPage ({ adminInfo, onLogout }: AdminPageProps) {
     useEffect(() => {
         const loadData = async () => {
             try{
-                const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
-
-                // Load settings and active session in parallel
-                const [settingsRes, sessionRes] = await Promise.all([
-                    fetch(`${API_BASE_URL}/api/admin-user-settings?admin_user_id=${adminInfo.admin_user_id}`),
-                    fetch(`${API_BASE_URL}/api/sessions?admin_user_id=${adminInfo.admin_user_id}&status=Active`)
+                const [settings, sessions] = await Promise.all([
+                    AdminUserSettingClient.list(adminInfo.admin_user_id),
+                    SessionClient.list(adminInfo.admin_user_id, SessionStatus.Active)
                 ]);
-
-                const settings = await settingsRes.json();
-                const sessions = await sessionRes.json();
 
                 // API returns array, take first element
                 const adminSetting = Array.isArray(settings) && settings.length > 0 ? settings[0] : null;
