@@ -170,7 +170,7 @@ export default function QueueSlotPanel({
           <CardHeader>
             <CardTitle className="text-lg font-semibold text-amber-400 flex items-center gap-2">
               <Timer className="w-5 h-5" />
-              Queue Settings
+              Order Settings
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">

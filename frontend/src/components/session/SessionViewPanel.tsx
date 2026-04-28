@@ -31,6 +31,7 @@ interface TimeSlotPanel {
     featuredActStatus?: string;
     featuredActLinkUrl?: string;
     featuredActLinkText?: string;
+    isPartial?: boolean;
 }
 
 export default function SessionViewPanel({
@@ -89,85 +90,165 @@ export default function SessionViewPanel({
         fetchPerformers();
     }, [sessionId, fetchSession, fetchPerformers])
 
-    // Generate time slots based on session settings
+    // Generate time slots based on session settings with dynamic durations
     const generateTimeSlots = useCallback((): TimeSlotPanel[] => {
         if (!session || session.session_mode !== SessionMode.Time) {
             return [];
         }
 
-        const { start_time, end_time, performance_time, changeover_time, featured_act_name, featured_act_start_time, featured_act_end_time, featured_act_status, featured_act_link_url, featured_act_link_text } = session;
+        const {
+            start_time, end_time, performance_time, changeover_time, songs_per_performer,
+            featured_act_name, featured_act_start_time, featured_act_end_time,
+            featured_act_status, featured_act_link_url, featured_act_link_text
+        } = session;
 
         if (!start_time || !end_time || !performance_time) {
-            console.warn('Time mode requires start_time, end_time, and performance_time');
             return [];
         }
 
-        const slots: TimeSlotPanel[] = [];
-
-        // Parse times (format: "HH:MM")
-        const parseTime = (timeStr: string): number => {
-            const [hours, minutes] = timeStr.split(':').map(Number);
-            return hours * 60 + minutes;
+        const parseTime = (t: string): number => {
+            const [h, m] = t.split(':').map(Number);
+            return h * 60 + m;
+        };
+        const formatTime = (mins: number): string => {
+            const h = Math.floor(mins / 60);
+            const m = mins % 60;
+            return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
         };
 
-        const formatTime = (totalMinutes: number): string => {
-            const hours = Math.floor(totalMinutes / 60);
-            const minutes = totalMinutes % 60;
-            return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
-        };
+        const startMins = parseTime(start_time);
+        const endMins = parseTime(end_time);
+        const perfMins = parseTime(performance_time);
+        const changeoverMins = changeover_time ? parseTime(changeover_time) : 0;
+        const fullSlot = perfMins + changeoverMins;
+        const songsPerPerformer = songs_per_performer || 1;
+        const timePerSong = perfMins / songsPerPerformer;
 
-        const startMinutes = parseTime(start_time);
-        const endMinutes = parseTime(end_time);
-        const performanceMinutes = parseTime(performance_time);
-        const changeoverMinutes = changeover_time ? parseTime(changeover_time) : 0;
-        const totalSlotTime = performanceMinutes + changeoverMinutes;
-
-        // Parse featured act times if they exist
-        let featuredActStartMinutes: number | null = null;
-        let featuredActEndMinutes: number | null = null;
+        let featActStart: number | null = null;
+        let featActEnd: number | null = null;
         if (featured_act_name && featured_act_start_time && featured_act_end_time) {
-            featuredActStartMinutes = parseTime(featured_act_start_time);
-            featuredActEndMinutes = parseTime(featured_act_end_time);
+            featActStart = parseTime(featured_act_start_time);
+            featActEnd = parseTime(featured_act_end_time);
         }
 
-        let currentTime = startMinutes;
-        let queueNumber = 1;
-
-        while (currentTime + performanceMinutes <= endMinutes) {
-            const slotStart = currentTime;
-            const slotEnd = currentTime + performanceMinutes;
-
-            // Check if this slot would overlap with the featured act
-            if (featuredActStartMinutes !== null && featuredActEndMinutes !== null) {
-                // Check for overlap: slot overlaps if slot_start < feat_end AND slot_end > feat_start
-                if (slotStart < featuredActEndMinutes && slotEnd > featuredActStartMinutes) {
-                    // This slot overlaps with featured act, skip to after featured act
-                    currentTime = featuredActEndMinutes;
+        // Pre-compute the static start time for each queue number (original sequential layout)
+        const staticStartByQueueNum = new Map<number, number>();
+        {
+            let t = startMins;
+            let qNum = 1;
+            while (t + perfMins <= endMins) {
+                if (featActStart !== null && featActEnd !== null &&
+                    t < featActEnd && t + perfMins > featActStart) {
+                    t = featActEnd;
                     continue;
+                }
+                staticStartByQueueNum.set(qNum, t);
+                t += fullSlot;
+                qNum++;
+            }
+        }
+
+        const sortedPerformers = [...performers].sort((a, b) => a.queue_number - b.queue_number);
+        const takenQueueNums = new Set(performers.map(p => p.queue_number));
+        const slots: TimeSlotPanel[] = [];
+        let currentTime = startMins;
+        let dynamicQueueNum = 1;
+
+        // Fill the time range [from, to) with dynamic empty slots, skipping the featured act.
+        // Returns the next queue number to assign.
+        const fillGap = (from: number, to: number, startQNum: number): number => {
+            let t = from;
+            let qNum = startQNum;
+
+            while (t < to) {
+                // Jump over the featured act block if we land inside it
+                if (featActStart !== null && featActEnd !== null && t >= featActStart && t < featActEnd) {
+                    t = featActEnd;
+                    continue;
+                }
+
+                // Effective upper bound for this iteration: stop at featured act start if it falls within the gap
+                const upper = (featActStart !== null && featActEnd !== null &&
+                    featActStart > t && featActStart < to)
+                    ? featActStart
+                    : to;
+
+                const remaining = upper - t;
+
+                if (remaining >= perfMins) {
+                    while (takenQueueNums.has(qNum)) qNum++;
+                    slots.push({
+                        queueNumber: qNum,
+                        timeSlotStart: formatTime(t),
+                        timeSlotEnd: formatTime(t + perfMins),
+                        performer: null
+                    });
+                    takenQueueNums.add(qNum);
+                    qNum++;
+                    t += fullSlot;
+                } else if (remaining >= timePerSong) {
+                    const partialSongs = Math.floor(remaining / timePerSong);
+                    slots.push({
+                        queueNumber: 0,
+                        timeSlotStart: formatTime(t),
+                        timeSlotEnd: formatTime(t + partialSongs * timePerSong),
+                        performer: null,
+                        isPartial: true
+                    });
+                    if (upper === featActStart && featActEnd !== null) {
+                        t = featActEnd;
+                    } else {
+                        break;
+                    }
+                } else {
+                    if (upper === featActStart && featActEnd !== null) {
+                        t = featActEnd;
+                    } else {
+                        break;
+                    }
                 }
             }
 
-            const slotStartFormatted = formatTime(slotStart);
-            const slotEndFormatted = formatTime(slotEnd);
+            return qNum;
+        };
 
-            // Find performer with this queue number
-            const performer = performers.find(p => p.queue_number === queueNumber) || null;
+        for (const performer of sortedPerformers) {
+            const staticStart = staticStartByQueueNum.get(performer.queue_number);
+            if (staticStart === undefined) continue;
 
+            // Fill the gap between currentTime and this performer's reserved start
+            if (currentTime < staticStart) {
+                dynamicQueueNum = fillGap(currentTime, staticStart, dynamicQueueNum);
+            }
+
+            // How many songs has this performer actually selected?
+            const songCount = performerSongSelections.filter(
+                s => s.performer_id === performer.performer_id
+            ).length;
+            const effectiveSongs = songCount > 0
+                ? Math.min(songCount, songsPerPerformer)
+                : songsPerPerformer;
+            const effectivePerformanceDuration = effectiveSongs * timePerSong;
+
+            const performerStart = Math.max(currentTime, staticStart);
             slots.push({
-                queueNumber,
-                timeSlotStart: slotStartFormatted,
-                timeSlotEnd: slotEndFormatted,
+                queueNumber: performer.queue_number,
+                timeSlotStart: formatTime(performerStart),
+                timeSlotEnd: formatTime(performerStart + effectivePerformanceDuration),
                 performer
             });
 
-            currentTime += totalSlotTime;
-            queueNumber++;
+            currentTime = performerStart + effectivePerformanceDuration + changeoverMins;
+            dynamicQueueNum = performer.queue_number + 1;
         }
 
-        // Add featured act slot if defined
+        // Fill any remaining time after the last performer
+        fillGap(currentTime, endMins, dynamicQueueNum);
+
+        // Insert featured act at its fixed chronological position
         if (featured_act_name && featured_act_start_time && featured_act_end_time) {
             const featuredActSlot: TimeSlotPanel = {
-                queueNumber: 0, // Featured act doesn't have a queue number
+                queueNumber: 0,
                 timeSlotStart: featured_act_start_time,
                 timeSlotEnd: featured_act_end_time,
                 performer: null,
@@ -178,21 +259,17 @@ export default function SessionViewPanel({
                 featuredActLinkText: featured_act_link_text || undefined
             };
 
-            // Insert the featured act slot in chronological order
-            const featuredActStartMinutes = parseTime(featured_act_start_time);
-            const insertIndex = slots.findIndex(slot => parseTime(slot.timeSlotStart) > featuredActStartMinutes);
-
+            const featStart = parseTime(featured_act_start_time);
+            const insertIndex = slots.findIndex(slot => parseTime(slot.timeSlotStart) > featStart);
             if (insertIndex === -1) {
-                // Featured act is after all slots, add to end
                 slots.push(featuredActSlot);
             } else {
-                // Insert featured act at the correct position
                 slots.splice(insertIndex, 0, featuredActSlot);
             }
         }
 
         return slots;
-    }, [session, performers])
+    }, [session, performers, performerSongSelections])
 
     // Subscribe to WebSocket updates for real-time performer changes
     useEffect(() => {
@@ -253,7 +330,7 @@ export default function SessionViewPanel({
                             // Time mode: show all time slots
                             timeSlots.map((slot, index) => (
                                 <QueuePanel
-                                    key={slot.isFeaturedAct ? `featured-act` : slot.queueNumber}
+                                    key={slot.isFeaturedAct ? `featured-act` : slot.isPartial ? `partial-${index}` : slot.queueNumber}
                                     isAdmin={isAdmin}
                                     adminSettings={adminSettings}
                                     performer={slot.performer}
@@ -271,6 +348,7 @@ export default function SessionViewPanel({
                                     featuredActStatus={slot.featuredActStatus}
                                     featuredActLinkUrl={slot.featuredActLinkUrl}
                                     featuredActLinkText={slot.featuredActLinkText}
+                                    isPartial={slot.isPartial}
                                 />
                             ))
                         ) : (

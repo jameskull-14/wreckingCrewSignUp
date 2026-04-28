@@ -21,4 +21,5 @@ export interface QueuePanelInterface{
     featuredActStatus?: string
     featuredActLinkUrl?: string
     featuredActLinkText?: string
+    isPartial?: boolean
 }

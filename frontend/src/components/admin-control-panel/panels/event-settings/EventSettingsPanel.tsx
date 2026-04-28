@@ -147,7 +147,7 @@ export default function EventSettingsPanel({
                         />
                     </div>
                 </div>
-                <div key="use-all-songs" className="flex items-center justify-between p-4 bg-gray-800/50 rounded-lg border border-gray-600/50">
+                {/* <div key="use-all-songs" className="flex items-center justify-between p-4 bg-gray-800/50 rounded-lg border border-gray-600/50">
                     <div className="flex items-center gap-3">
                         <Database className="w-6 h-6 text-blue-400" />
                         <div>
@@ -161,7 +161,7 @@ export default function EventSettingsPanel({
                             handleUpdateSession('use_all_songs', !adminSettings?.use_all_songs)} />
                     </div>
 
-                </div>
+                </div> */}
             </div>
             <div style={{ marginTop: '32px', marginBottom: '16px' }}>
                 <h3 className="text-lg font-semibold text-amber-400">Queueing</h3>
