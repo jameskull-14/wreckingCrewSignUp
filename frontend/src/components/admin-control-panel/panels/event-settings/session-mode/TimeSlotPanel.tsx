@@ -218,9 +218,7 @@ export default function TimeSlotPanel({
         custom_link_prompt: customLinkPrompt || undefined,
         custom_link_text: customLinkText || undefined,
       };
-      if (updatedSettings.featured_act_name) {
-        console.log(`💾 Saving featured act: ${updatedSettings.featured_act_name} (${updatedSettings.featured_act_start_time} - ${updatedSettings.featured_act_end_time})`);
-      }
+      
       onUpdateAdminSettings(updatedSettings);
 
       // Update active session if it exists
@@ -244,7 +242,6 @@ export default function TimeSlotPanel({
 
           // Generate time slots
           const result = await SessionClient.generateTimeSlots(activeSession.session_id);
-          console.log('Time slots generated:', result);
         } catch (error) {
           console.error('Error updating session:', error);
         }
@@ -290,7 +287,7 @@ export default function TimeSlotPanel({
           <CardHeader>
             <CardTitle className="text-lg font-semibold text-amber-400 flex items-center gap-2">
               <Timer className="w-5 h-5" />
-              Advanced Time Slot Settings
+              Time Slot Settings
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">

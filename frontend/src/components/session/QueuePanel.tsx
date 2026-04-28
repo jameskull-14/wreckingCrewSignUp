@@ -27,7 +27,8 @@ export default function QueuePanel({
     featuredActName,
     featuredActStatus,
     featuredActLinkUrl,
-    featuredActLinkText
+    featuredActLinkText,
+    isPartial
 }: QueuePanelInterface){
     const [isSignUpOpen, setIsSignUpOpen] = useState(false);
 
@@ -42,7 +43,7 @@ export default function QueuePanel({
     const displayName = isFeaturedAct
         ? featuredActName || "Featured Act"
         : !performer || performer.performer_name === ""
-        ? "Available Time Slot"
+        ? isPartial ? "Partial Slot" : "Available Time Slot"
         : performer.performer_type === PerformerType.group
         ? `Band: ${performer.performer_name}`
         : performer.performer_name
@@ -267,8 +268,8 @@ export default function QueuePanel({
                         </div>
                     ) : !performer ? (
                         <div className="flex flex-col items-center justify-center py-4">
-                            <p className="text-gray-400 italic mb-3">No one signed up yet</p>
-                            {isTimeMode && (
+                            <p className="text-gray-400 italic mb-3">{isPartial ? "Not enough time for a full slot" : "No one signed up yet"}</p>
+                            {isTimeMode && !isPartial && (
                                 <>
                                     <Button
                                         onClick={() => setIsSignUpOpen(true)}
