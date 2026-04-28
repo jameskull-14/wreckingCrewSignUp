@@ -45,6 +45,7 @@ export default function SessionViewPanel({
     const [performerSongSelections, setPerformerSongSelections] = useState<PerformerSongSelection[]>([]);
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [editingPerformer, setEditingPerformer] = useState<Performer | null>(null);
+    const [extraSlotsCount, setExtraSlotsCount] = useState(0);
 
 
     const fetchSession = useCallback(async () => {
@@ -131,22 +132,36 @@ export default function SessionViewPanel({
             featActEnd = parseTime(featured_act_end_time);
         }
 
+        // Extend end time by any admin-added extra slots
+        const effectiveEndMins = endMins + extraSlotsCount * fullSlot;
+
         // Pre-compute the static start time for each queue number (original sequential layout)
         const staticStartByQueueNum = new Map<number, number>();
+        let lastStaticQueueNum = 0;
+        let lastStaticStart = startMins;
         {
             let t = startMins;
             let qNum = 1;
-            while (t + perfMins <= endMins) {
+            while (t + perfMins <= effectiveEndMins) {
                 if (featActStart !== null && featActEnd !== null &&
                     t < featActEnd && t + perfMins > featActStart) {
                     t = featActEnd;
                     continue;
                 }
                 staticStartByQueueNum.set(qNum, t);
+                lastStaticQueueNum = qNum;
+                lastStaticStart = t;
                 t += fullSlot;
                 qNum++;
             }
         }
+
+        // Extrapolates static start for performers whose queue number falls outside the
+        // pre-computed range (e.g. extra-slot performers after a page refresh resets extraSlotsCount)
+        const getStaticStart = (queueNum: number): number => {
+            if (staticStartByQueueNum.has(queueNum)) return staticStartByQueueNum.get(queueNum)!;
+            return lastStaticStart + (queueNum - lastStaticQueueNum) * fullSlot;
+        };
 
         const sortedPerformers = [...performers].sort((a, b) => a.queue_number - b.queue_number);
         const takenQueueNums = new Set(performers.map(p => p.queue_number));
@@ -213,8 +228,7 @@ export default function SessionViewPanel({
         };
 
         for (const performer of sortedPerformers) {
-            const staticStart = staticStartByQueueNum.get(performer.queue_number);
-            if (staticStart === undefined) continue;
+            const staticStart = getStaticStart(performer.queue_number);
 
             // Fill the gap between currentTime and this performer's reserved start
             if (currentTime < staticStart) {
@@ -242,8 +256,8 @@ export default function SessionViewPanel({
             dynamicQueueNum = performer.queue_number + 1;
         }
 
-        // Fill any remaining time after the last performer
-        fillGap(currentTime, endMins, dynamicQueueNum);
+        // Fill any remaining time after the last performer (including extra slots)
+        fillGap(currentTime, effectiveEndMins, dynamicQueueNum);
 
         // Insert featured act at its fixed chronological position
         if (featured_act_name && featured_act_start_time && featured_act_end_time) {
@@ -269,7 +283,7 @@ export default function SessionViewPanel({
         }
 
         return slots;
-    }, [session, performers, performerSongSelections])
+    }, [session, performers, performerSongSelections, extraSlotsCount])
 
     // Subscribe to WebSocket updates for real-time performer changes
     useEffect(() => {
@@ -395,19 +409,30 @@ export default function SessionViewPanel({
                     </CardContent>
                 </CardHeader>
             </Card>
-            <div className="flex justify-center mt-4">
+            <div className="flex justify-center items-center mt-4 gap-3">
+                {isTimeMode && isAdmin && (
+                    <Button
+                        onClick={() => setExtraSlotsCount(c => c + 1)}
+                        className="flex items-center gap-2 bg-amber-500 hover:bg-amber-600 text-gray-900 font-semibold"
+                    >
+                        <Plus className="h-5 w-5" />
+                        Add Extra Slot
+                    </Button>
+                )}
                 <Dialog open={isDialogOpen} onOpenChange={handleDialogChange}>
-                    <DialogTrigger asChild>
-                        <Button
-                            className="flex items-center gap-2"
-                            style={{ backgroundColor: '#16a34a' }}
-                            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#15803d'}
-                            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#16a34a'}
-                        >
-                            <Plus className="h-5 w-5" />
-                            Sign Up
-                        </Button>
-                    </DialogTrigger>
+                    {!isTimeMode && (
+                        <DialogTrigger asChild>
+                            <Button
+                                className="flex items-center gap-2"
+                                style={{ backgroundColor: '#16a34a' }}
+                                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#15803d'}
+                                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#16a34a'}
+                            >
+                                <Plus className="h-5 w-5" />
+                                Sign Up
+                            </Button>
+                        </DialogTrigger>
+                    )}
                     <DialogContent className="bg-gradient-to-br from-gray-900 to-gray-800 border-amber-400/30 max-w-lg" hideClose>
                         <DialogHeader>
                             <DialogTitle className="text-amber-400">
